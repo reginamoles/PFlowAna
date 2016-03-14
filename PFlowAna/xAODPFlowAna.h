@@ -16,6 +16,8 @@ public:
   // protected from being send from the submission node to the worker
   // node (done by the //!)
 public:
+
+  int m_eventCounter; //!
   // Tree *myTree; //!
   // TH1 *myHist; //!
 
