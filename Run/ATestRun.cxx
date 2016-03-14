@@ -23,14 +23,15 @@ void ATestRun (const std::string& submitDir)
   // that you copy all subdirectories and point this to the directory
   // containing all the files, not the subdirectories.
 
+
+   // Construct the samples to run on:
   // use SampleHandler to scan all of the subdirectories of a directory for particular MC single file:
-  //const char* inputFilePath = gSystem->ExpandPathName ("$ALRB_TutorialData/p2452/");
-  //SH::ScanDir().filePattern("DAOD_SUSY1.07053638._000013.pool.root.1").scan(sh,inputFilePath);
+  SH::SampleHandler sh;
+  const char* inputFilePath = gSystem->ExpandPathName ("$DataFiles/JZ3/user.moles.147913.Pythia8_AU2CT10_jetjet_JZ3W.recon.AOD.e3099_s2832_r7617_AOD.67276209/");
+  SH::ScanDir().filePattern("user.moles.7760083.AOD._000049.pool.root").scan(sh,inputFilePath); //One indiviudual file
+  //SH::ScanDir().scan(sh,inputFilePath); //All files in the directory
+
   
-
-  SH::DiskListLocal list("./../../../../../workspace/MC/AOD/JZ3/user.moles.147913.Pythia8_AU2CT10_jetjet_JZ3W.recon.AOD.e3099_s2832_r7617_AOD.67276209/");
-  SH::scanFiles(sh, list);
-
   // set the name of the tree in our files
   // in the xAOD the TTree containing the EDM containers is "CollectionTree"
   sh.setMetaString ("nc_tree", "CollectionTree");
