@@ -10,6 +10,9 @@
 #include <EventLoop/Worker.h>
 #include <PFlowAna/xAODPFlowAna.h>
 
+// EDM includes:
+#include "xAODEventInfo/EventInfo.h"
+#include "xAODJet/JetContainer.h"
 
 // this is needed to distribute the algorithm to the workers
 ClassImp(xAODPFlowAna)
@@ -98,10 +101,12 @@ EL::StatusCode xAODPFlowAna :: initialize ()
 
 
   xAOD::TEvent* event = wk()->xaodEvent(); // you should have already added this as described before
-
+  
   // Print the number of events in our xAOD
-  Info("initialize()", "Number of events = %lli", event->getEntries() ); 
+  Info("initialize()", "Number of events = %lli", event->getEntries() );
+  
 
+  m_eventCounter = 0;//Count number of events
 
  return EL::StatusCode::SUCCESS;
 }
@@ -116,9 +121,44 @@ EL::StatusCode xAODPFlowAna :: execute ()
   // code will go.
   
   //called once, before the first event is executed 
-  
   ANA_CHECK_SET_TYPE (EL::StatusCode);
+  xAOD::TEvent* event = wk()->xaodEvent();
+ 
+  
+  if( (m_eventCounter % 100) ==0 ) Info("execute()", "Event number = %i", m_eventCounter );
+  m_eventCounter++;
 
+  
+  //----------------------------
+  // Event information
+  //--------------------------- 
+  const xAOD::EventInfo* eventInfo = 0;
+  ANA_CHECK(event->retrieve( eventInfo, "EventInfo"));  
+  
+  // check if the event is data or MC
+  bool isMC = false;
+
+  if(eventInfo->eventType( xAOD::EventInfo::IS_SIMULATION ) ){
+    isMC = true; // can do something with this later
+  }   
+
+  //----------------------------
+  // Jet information
+  //--------------------------- 
+  
+  const xAOD::JetContainer* jets = 0;
+  
+  ANA_CHECK(event->retrieve( jets, "AntiKt4EMTopoJets" ));
+  Info("execute()", "  number of jets = %lu", jets->size());
+  
+  // loop over the jets in the container
+  xAOD::JetContainer::const_iterator jet_itr = jets->begin();
+  xAOD::JetContainer::const_iterator jet_end = jets->end();
+  for( ; jet_itr != jet_end; ++jet_itr ) {
+    Info("execute()", "  jet pt = %.2f GeV", ((*jet_itr)->pt() * 0.001)); // just to print out something
+  } // end for loop over jets
+    
+  
   return EL::StatusCode::SUCCESS;
 }
 
@@ -149,7 +189,9 @@ EL::StatusCode xAODPFlowAna :: finalize ()
   // finalize(): called once, after the final event has completed 
   
   ANA_CHECK_SET_TYPE (EL::StatusCode);
-
+  
+  //xAOD::TEvent* event = wk()->xaodEvent();
+  
   return EL::StatusCode::SUCCESS;
 }
 
