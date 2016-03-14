@@ -12,7 +12,12 @@ setupATLAS  (if you are not working on lxplus have a look into the first link)
 -----------------------------
 1.Setup the Analysis Release
 -----------------------------
+mkdir PFlowAnaPackage
+cd PFlowAnaPackage
 lsetup 'rcsetup Base,2.3.45' (update the Analysis Base when needed)
+git clone https://github.com/reginamoles/PFlowAna.git
+or
+git clone git@github.com:reginamoles/PFlowAna.git
 rc find_packages
 rc compile
 
@@ -22,15 +27,28 @@ rc compile
 setupATLAS
 lsetup rcsetup (in your working directory which contains the RootCoreBin)
 
+-----------------------------------
+3.Running
+-----------------------------------
+Running the job from a compiled application is useful to identify problems.
+The directory PFlowAna/util/ has been created with an executable source testRun.cxx
+
+You have to change the directory where the files are:
+export DataFiles=/afs/cern.ch/user/m/moles/workspace/MC/AOD/
+In testRun.cxx:
+SH::DiskListLocal list("$DataFiles/JZ3/user.moles.147913.Pythia8_AU2CT10_jetjet_JZ3W.recon.AOD.e3099_s2832_r7617_AOD.67276209/");
+
+Execute the compiled steering macro by doing: testRun NameDir
+
 ----------------------------------
-3.Checking out extra packages
+4.Checking out extra packages
 ----------------------------------
 To see the package tags in the release: rc version
 To change to a different tag in the release: rc checkout_pkg <new path>
 You have to find_packages and compile after each change
 
 ----------------------------------------------
-4.How to update to a newer Analysis Release
+5.How to update to a newer Analysis Release
 ----------------------------------------------
 Unsetup the last Analysis Release: lsetup 'rcsetup -u'
 Update to newer version:
@@ -40,14 +58,14 @@ rc clean
 rc compile
 
 -----------------------
-5.PFlowAna Structure
+6.PFlowAna Structure
 -----------------------
 CMT directory: contains the makefile (to be modify if you include dependencies from other packages)
 PFlowAna directory: C++ header files must stay
 Root directory: C++ source files must stay. It also holds the LinkDef.h file that ROOT uses to build dictionaries.
 
 ---------------
-6.EventLoop
+7.EventLoop
 ---------------  
 EventLoop is used for looping over events. It is a package maintained and suported by the ASG group (this group will help you debug your EventLoop code, add extra features, etc.)
 * New classes used for your package have to be added to the MyAnalysis/Root/LinkDef.h file.  
@@ -57,7 +75,7 @@ EventLoop is used for looping over events. It is a package maintained and suport
      - member initialize when the stering macro is executed --> variable
 
 -----------------------
-7.Package dependencies 
+8.Package dependencies 
 -----------------------
 Foe any new package:
     1.Update the package dependencies in Makefile.RootCore
@@ -65,10 +83,3 @@ Foe any new package:
 
 - xAODRootAccess package:include important classes, among others the xAOD::TEvent class used to read and write information from the xAOD and the xAOD::Init class to handle any xAOD access.
 
-
---------------------
-8.Testing code
---------------------
-Running the job from a compiled application is useful to identify problems.
-The directory PFlowAna/util/ has been created with an executable source testRun.cxx
-Execute the compiled steering macro by doing:  testRun submitDir
