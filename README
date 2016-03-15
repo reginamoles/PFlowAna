@@ -18,6 +18,12 @@ lsetup 'rcsetup Base,2.3.45' (update the Analysis Base when needed)
 git clone https://github.com/reginamoles/PFlowAna.git
 or
 git clone git@github.com:reginamoles/PFlowAna.git
+
+(you also need the xAODCalCellInfo package to prevent conflics open a new terminal to checkout the package)
+asetup 20.1.4.8
+export SVNROOT=svn+ssh://svn.cern.ch/reps/atlas-mhodgkin
+cmt co -r xAODCalCellInfo-00-00-06 mhodgkin/xAODCalCellInfo
+
 rc find_packages
 rc compile
 
