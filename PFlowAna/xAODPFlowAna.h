@@ -3,6 +3,8 @@
 
 #include <EventLoop/Algorithm.h>
 
+#include "xAODRootAccess/TEvent.h"
+
 class xAODPFlowAna : public EL::Algorithm
 {
   // put your configuration variables here as public variables.
@@ -17,11 +19,12 @@ public:
   // node (done by the //!)
 public:
 
+  xAOD::TEvent *m_event;//!
   int m_eventCounter; //!
   // Tree *myTree; //!
   // TH1 *myHist; //!
 
-
+  
 
   // this is a standard constructor
   xAODPFlowAna ();
