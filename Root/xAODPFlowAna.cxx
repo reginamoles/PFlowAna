@@ -3,16 +3,17 @@
 
 // Infrastructure include(s):
 #include "xAODRootAccess/Init.h"
-#include "xAODRootAccess/TEvent.h"
+//#include "xAODRootAccess/TEvent.h"
 
 #include <EventLoop/Job.h>
 #include <EventLoop/StatusCode.h>
 #include <EventLoop/Worker.h>
 #include <PFlowAna/xAODPFlowAna.h>
+#include <PFlowAna/xAODPFlowAnaEDM.h>
 
 // EDM includes:
-#include "xAODEventInfo/EventInfo.h"
-#include "xAODJet/JetContainer.h"
+//#include "xAODEventInfo/EventInfo.h"
+//#include "xAODJet/JetContainer.h"
 
 // this is needed to distribute the algorithm to the workers
 ClassImp(xAODPFlowAna)
@@ -99,11 +100,10 @@ EL::StatusCode xAODPFlowAna :: initialize ()
 
   ANA_CHECK_SET_TYPE (EL::StatusCode);
 
+  m_event = wk()->xaodEvent();
 
-  xAOD::TEvent* event = wk()->xaodEvent(); // you should have already added this as described before
-  
   // Print the number of events in our xAOD
-  Info("initialize()", "Number of events = %lli", event->getEntries() );
+  Info("initialize()", "Number of events = %lli", m_event->getEntries() );
   
 
   m_eventCounter = 0;//Count number of events
@@ -122,9 +122,7 @@ EL::StatusCode xAODPFlowAna :: execute ()
   
   //called once, before the first event is executed 
   ANA_CHECK_SET_TYPE (EL::StatusCode);
-  xAOD::TEvent* event = wk()->xaodEvent();
- 
-  
+    
   if( (m_eventCounter % 100) ==0 ) Info("execute()", "Event number = %i", m_eventCounter );
   m_eventCounter++;
 
@@ -133,7 +131,7 @@ EL::StatusCode xAODPFlowAna :: execute ()
   // Event information
   //--------------------------- 
   const xAOD::EventInfo* eventInfo = 0;
-  ANA_CHECK(event->retrieve( eventInfo, "EventInfo"));  
+  ANA_CHECK(m_event->retrieve( eventInfo, "EventInfo"));  
   
   // check if the event is data or MC
   bool isMC = false;
@@ -146,14 +144,14 @@ EL::StatusCode xAODPFlowAna :: execute ()
   // Jet information
   //--------------------------- 
   
-  const xAOD::JetContainer* jets = 0;
+  m_jets = 0;
   
-  ANA_CHECK(event->retrieve( jets, "AntiKt4EMTopoJets" ));
-  Info("execute()", "  number of jets = %lu", jets->size());
+  ANA_CHECK(m_event->retrieve( m_jets, "AntiKt4EMTopoJets" ));
+  Info("execute()", "  number of jets = %lu", m_jets->size());
   
   // loop over the jets in the container
-  xAOD::JetContainer::const_iterator jet_itr = jets->begin();
-  xAOD::JetContainer::const_iterator jet_end = jets->end();
+  xAOD::JetContainer::const_iterator jet_itr = m_jets->begin();
+  xAOD::JetContainer::const_iterator jet_end = m_jets->end();
   for( ; jet_itr != jet_end; ++jet_itr ) {
     Info("execute()", "  jet pt = %.2f GeV", ((*jet_itr)->pt() * 0.001)); // just to print out something
   } // end for loop over jets
@@ -189,8 +187,6 @@ EL::StatusCode xAODPFlowAna :: finalize ()
   // finalize(): called once, after the final event has completed 
   
   ANA_CHECK_SET_TYPE (EL::StatusCode);
-  
-  //xAOD::TEvent* event = wk()->xaodEvent();
   
   return EL::StatusCode::SUCCESS;
 }
