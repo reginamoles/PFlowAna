@@ -22,25 +22,25 @@
 #include "xAODPFlow/PFOContainer.h"
 #include "xAODPFlow/PFO.h"
 //CalCellInfo include
-//#include "xAODCalCellInfo/CalCellInfo.h"
-//#include "xAODCalCellInfo/CalCellInfoContainer.h"
+#include "xAODCalCellInfo/CalCellInfo.h"
+#include "xAODCalCellInfo/CalCellInfoContainer.h"
 
 
 //----------------
 // EDM containers
 //----------------
-const xAOD::TruthParticleContainer* TruthParticles;
-const xAOD::TruthVertexContainer* TruthVertices;
-const xAOD::TrackParticleContainer* InDetTrackParticles;
+const xAOD::TruthParticleContainer* m_TruthParticles;
+const xAOD::TruthVertexContainer* m_TruthVertices;
+const xAOD::TrackParticleContainer* m_InDetTrackParticles;
 
-const xAOD::CaloClusterContainer* topocluster;
-const xAOD::PFOContainer* JetETMissChargedParticleFlowObjects;
-const xAOD::PFOContainer* JetETMissNeutralParticleFlowObjects;
+const xAOD::CaloClusterContainer* m_topocluster;
+const xAOD::PFOContainer* m_JetETMissChargedParticleFlowObjects;
+const xAOD::PFOContainer* m_JetETMissNeutralParticleFlowObjects;
 
-const xAOD::CaloClusterContainer* PFOcluster;
+const xAOD::CaloClusterContainer* m_PFOcluster;
 
-//const xAOD::CalCellInfoContainer* CalCellInfo_TopoCluster;
-//const xAOD::CalCellInfoContainer* CalCellInfo;
+const xAOD::CalCellInfoContainer* m_CalCellInfo_TopoCluster;
+const xAOD::CalCellInfoContainer* m_CalCellInfo;
 
 const xAOD::JetContainer* m_jets;
 
