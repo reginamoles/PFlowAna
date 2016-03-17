@@ -5,30 +5,20 @@
 
 #include "xAODRootAccess/TEvent.h"
 
+
 class xAODPFlowAna : public EL::Algorithm
 {
   // put your configuration variables here as public variables.
   // that way they can be set directly from CINT and python.
-public:
+ public:
   // float cutValue;
-
-
-
+  
+  
+  
   // variables that don't get filled at submission time should be
   // protected from being send from the submission node to the worker
   // node (done by the //!)
-public:
-
-  xAOD::TEvent *m_event;//!
-  int m_eventCounter; //!
-  // Tree *myTree; //!
-  // TH1 *myHist; //!
-
   
-
-  // this is a standard constructor
-  xAODPFlowAna ();
-
   // these are the functions inherited from Algorithm
   virtual EL::StatusCode setupJob (EL::Job& job);
   virtual EL::StatusCode fileExecute ();
@@ -39,6 +29,28 @@ public:
   virtual EL::StatusCode postExecute ();
   virtual EL::StatusCode finalize ();
   virtual EL::StatusCode histFinalize ();
+  xAODPFlowAna ();
+  
+ private:
+  
+  float GEV; //!
+  float PrintDebug;//!
+  
+  xAOD::TEvent *m_event;//!
+  int m_eventCounter; //!
+  
+  
+  // Tree *myTree; //!
+  // TH1 *myHist; //!
+
+  //Printing functions 
+  void PrintTruthInfo();
+  void PrintTrackInfo ();
+  void PrintPFOInfo();
+  void PrintClusterInfo();
+  void PrintCalCellInfo();
+
+public:
 
   // this is needed to distribute the algorithm to the workers
   ClassDef(xAODPFlowAna, 1);
