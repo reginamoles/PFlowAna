@@ -4,7 +4,8 @@
 #include <EventLoop/Algorithm.h>
 
 #include "xAODRootAccess/TEvent.h"
-
+#include "JetSelectorTools/JetCleaningTool.h"
+#include "xAODJet/JetContainer.h"
 
 class xAODPFlowAna : public EL::Algorithm
 {
@@ -30,6 +31,9 @@ class xAODPFlowAna : public EL::Algorithm
   virtual EL::StatusCode finalize ();
   virtual EL::StatusCode histFinalize ();
   xAODPFlowAna ();
+
+
+ 
   
  private:
   
@@ -39,6 +43,8 @@ class xAODPFlowAna : public EL::Algorithm
   xAOD::TEvent *m_event;//!
   int m_eventCounter; //!
   
+  JetCleaningTool *m_jetCleaning; //!  
+
   
   // Tree *myTree; //!
   // TH1 *myHist; //!
@@ -49,7 +55,14 @@ class xAODPFlowAna : public EL::Algorithm
   void PrintPFOInfo();
   void PrintClusterInfo();
   void PrintCalCellInfo();
-
+  void PrintJetCollections();
+  
+  //BadJetsScan
+  void BadJetsScan(const xAOD::Jet& jet);
+  void MatchJetCollections(const xAOD::JetContainer*, const xAOD::JetContainer* );
+  bool HasPFlowJetMatched(const xAOD::Jet& jet); //return a true is has been matched
+  int WhichPFlowJetMatched(const xAOD::Jet& jet); //return the index of the PFlowJet matched
+  
 public:
 
   // this is needed to distribute the algorithm to the workers

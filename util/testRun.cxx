@@ -23,9 +23,12 @@ int main( int argc, char* argv[] ) {
   // use SampleHandler to scan all of the subdirectories of a directory for particular MC single file:
   SH::SampleHandler sh;
   const char* inputFilePath = gSystem->ExpandPathName ("$DataFiles/JZ3/user.moles.147913.Pythia8_AU2CT10_jetjet_JZ3W.recon.AOD.e3099_s2832_r7617_AOD.67276209/");
-  SH::ScanDir().filePattern("user.moles.7760083.AOD._000049.pool.root").scan(sh,inputFilePath); //One indiviudual file
+  SH::ScanDir().filePattern("user.moles.7760083.AOD._000102.pool.root").scan(sh,inputFilePath); //One indiviudual file
   //SH::ScanDir().scan(sh,inputFilePath); //All files in the directory
-  
+
+  //SH::DiskListLocal list("./../../../../../workspace/MC/AOD/JZ3/user.moles.147913.Pythia8_AU2CT10_jetjet_JZ3W.recon.AOD.e3099_s2832_r7617_AOD.67276209/");
+  //SH::scanFiles(sh, list);
+
   
   // Set the name of the input TTree. It's always "CollectionTree"
   // for xAOD files.
@@ -37,7 +40,8 @@ int main( int argc, char* argv[] ) {
   // Create an EventLoop job:
   EL::Job job;
   job.sampleHandler( sh );
-  job.options()->setDouble (EL::Job::optMaxEvents, 10);
+  job.options()->setDouble (EL::Job::optSkipEvents, 100);
+  job.options()->setDouble (EL::Job::optMaxEvents, 20);
 
   // Add our analysis to the job:
   xAODPFlowAna* alg = new xAODPFlowAna();

@@ -15,8 +15,6 @@ void ATestRun (const std::string& submitDir)
   xAOD::Init().ignore();
 
   // create a new sample handler to describe the data files we use
-  SH::SampleHandler sh;
-
   // scan for datasets in the given directory
   // this works if you are on lxplus, otherwise you'd want to copy over files
   // to your local machine and use a local path.  if you do so, make sure
@@ -27,8 +25,13 @@ void ATestRun (const std::string& submitDir)
    // Construct the samples to run on:
   // use SampleHandler to scan all of the subdirectories of a directory for particular MC single file:
   SH::SampleHandler sh;
-  const char* inputFilePath = gSystem->ExpandPathName ("$DataFiles/JZ3/user.moles.147913.Pythia8_AU2CT10_jetjet_JZ3W.recon.AOD.e3099_s2832_r7617_AOD.67276209/");
-  SH::ScanDir().filePattern("user.moles.7760083.AOD._000049.pool.root").scan(sh,inputFilePath); //One indiviudual file
+
+  //SH::DiskListLocal list("./../../../../../workspace/MC/AOD/JZ3/user.moles.147913.Pythia8_AU2CT10_jetjet_JZ3W.recon.AOD.e3099_s2832_r7617_AOD.67276209/");
+  //SH::scanFiles(sh, list);
+
+  //export DataFiles=/afs/cern.ch/user/m/moles/workspace/MC/AOD/  
+  const char* inputFilePath = gSystem->ExpandPathName ("$DataFiles/SinglePions/mc15c_piplus/user.moles.mc15_13TeV.428001.ParticleGun_single_piplus_logE0p2to2000.recon.AOD.e3501_s2832_r8014_AOD/");
+  SH::ScanDir().filePattern("user.moles.8671065.AOD._000411.pool.root").scan(sh,inputFilePath); //One indiviudual file
   //SH::ScanDir().scan(sh,inputFilePath); //All files in the directory
 
   
@@ -44,7 +47,7 @@ void ATestRun (const std::string& submitDir)
   // this is the basic description of our job
   EL::Job job;
   job.sampleHandler (sh); // use SampleHandler in this job
-  job.options()->setDouble (EL::Job::optMaxEvents, 500); // for testing purposes, limit to run over the first 500 events only!
+  job.options()->setDouble (EL::Job::optMaxEvents, 10); // for testing purposes, limit to run over the first 500 events only!
 
   // add our algorithm to the job
   xAODPFlowAna *alg = new xAODPFlowAna;

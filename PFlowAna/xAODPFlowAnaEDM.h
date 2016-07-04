@@ -42,6 +42,7 @@ const xAOD::CaloClusterContainer* m_PFOcluster;
 const xAOD::CalCellInfoContainer* m_CalCellInfo_TopoCluster;
 const xAOD::CalCellInfoContainer* m_CalCellInfo;
 
-const xAOD::JetContainer* m_jets;
+const xAOD::JetContainer* m_Jets;
+const xAOD::JetContainer* m_PFlowJets;
 
 #endif
