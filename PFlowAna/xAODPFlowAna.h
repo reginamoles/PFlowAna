@@ -7,6 +7,22 @@
 #include "JetSelectorTools/JetCleaningTool.h"
 #include "xAODJet/JetContainer.h"
 
+
+#include "xAODTruth/TruthParticleContainer.h"
+#include "xAODTruth/TruthVertexContainer.h"
+#include "xAODTracking/TrackParticle.h"
+#include "xAODTracking/TrackParticleContainer.h"
+#include "xAODJet/JetContainer.h"
+#include "xAODCaloEvent/CaloCluster.h"
+#include "xAODCaloEvent/CaloClusterContainer.h"
+#include "xAODPFlow/PFOContainer.h"
+#include "xAODPFlow/PFO.h"
+#include "xAODCalCellInfo/CalCellInfo.h"
+#include "xAODCalCellInfo/CalCellInfoContainer.h"
+
+
+
+
 class xAODPFlowAna : public EL::Algorithm
 {
   // put your configuration variables here as public variables.
@@ -48,14 +64,7 @@ class xAODPFlowAna : public EL::Algorithm
   
   // Tree *myTree; //!
   // TH1 *myHist; //!
-
-  //Printing functions 
-  void PrintTruthInfo();
-  void PrintTrackInfo ();
-  void PrintPFOInfo();
-  void PrintClusterInfo();
-  void PrintCalCellInfo();
-  void PrintJetCollections();
+  
   
   //BadJetsScan
   void BadJetsScan(const xAOD::Jet& jet);
