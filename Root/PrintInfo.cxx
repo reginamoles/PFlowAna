@@ -204,12 +204,13 @@ void  PrintJetCollections (const xAOD::JetContainer* Jets, const xAOD::JetContai
   Info("", "--- Jet Collections ---");
   
   Info("PrintJetCollections", "Number of TopoJets = %lu", Jets->size());
-  if(true){
+  if(PrintDebug){
     xAOD::JetContainer::const_iterator Jets_itr = Jets->begin();
     xAOD::JetContainer::const_iterator Jets_end = Jets->end();
     for( ; Jets_itr != Jets_end; ++Jets_itr ) {
       int index = std::distance(Jets->begin(),Jets_itr);
-      Info("PrintJetCollections", "TopoJets E  = %.2f GeV  pt =  %.2f  eta = %.2f  phi = %.2f GeV",
+      Info("PrintJetCollections", "TopoJets  %d  E  = %.2f GeV  pt =  %.2f  eta = %.2f  phi = %.2f GeV",
+	   index,
 	   (*Jets_itr)->e()/GEV,
 	   (*Jets_itr)->pt()/GEV,
 	   (*Jets_itr)->eta(),
@@ -218,12 +219,13 @@ void  PrintJetCollections (const xAOD::JetContainer* Jets, const xAOD::JetContai
   }
 
   Info("PrintJetCollections", "Number of PFlowJets = %lu", PFlowJets->size());
-  if(true){
+  if(PrintDebug){
     xAOD::JetContainer::const_iterator PFlowJets_itr = PFlowJets->begin();
     xAOD::JetContainer::const_iterator PFlowJets_end = PFlowJets->end();
     for( ; PFlowJets_itr != PFlowJets_end; ++PFlowJets_itr ) {
 	int index = std::distance(PFlowJets->begin(),PFlowJets_itr);
-	Info("PrintJetCollections", "PFlowJets E  = %.2f GeV  pt =  %.2f  eta = %.2f  phi = %.2f GeV",
+	Info("PrintJetCollections", "PFlowJets  %d  E  = %.2f GeV  pt =  %.2f  eta = %.2f  phi = %.2f GeV",
+	     index, 
 	     (*PFlowJets_itr)->e()/GEV,
 	     (*PFlowJets_itr)->pt()/GEV,
 	     (*PFlowJets_itr)->eta(),

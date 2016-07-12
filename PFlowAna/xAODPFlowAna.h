@@ -47,8 +47,6 @@ class xAODPFlowAna : public EL::Algorithm
   virtual EL::StatusCode finalize ();
   virtual EL::StatusCode histFinalize ();
   xAODPFlowAna ();
-
-
  
   
  private:
@@ -60,14 +58,14 @@ class xAODPFlowAna : public EL::Algorithm
   int m_eventCounter; //!
   
   JetCleaningTool *m_jetCleaning; //!  
-
-  
   // Tree *myTree; //!
   // TH1 *myHist; //!
+
   
-  
-  //BadJetsScan
+  //Bad jet scan
   void BadJetsScan(const xAOD::Jet& jet);
+  
+  // JetMatching
   void MatchJetCollections(const xAOD::JetContainer*, const xAOD::JetContainer* );
   bool HasPFlowJetMatched(const xAOD::Jet& jet); //return a true is has been matched
   int WhichPFlowJetMatched(const xAOD::Jet& jet); //return the index of the PFlowJet matched

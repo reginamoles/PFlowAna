@@ -141,7 +141,6 @@ EL::StatusCode xAODPFlowAna :: execute ()
   m_eventCounter++;
 
  
-     
   //----------------------------
   // Event information
   //--------------------------- 
@@ -206,21 +205,19 @@ EL::StatusCode xAODPFlowAna :: execute ()
   //--------------------------- 
   m_Jets = 0;
   m_PFlowJets = 0;
-
-  //Cleaning
-  int numGoodJets = 0;
-  int numBadJets = 0;
-  
   ANA_CHECK(m_event->retrieve( m_Jets, "AntiKt4EMTopoJets" ));
   Info("execute()", "  number of jets = %lu", m_Jets->size());
   ANA_CHECK(m_event->retrieve( m_PFlowJets, "AntiKt4EMPFlowJets" ));
   Info("execute()", "  number of PFlow jets = %lu", m_PFlowJets->size());
   PrintJetCollections(m_Jets,m_PFlowJets, PrintDebug);
   
-  /*
-  //For cleaning Study
+   //Jet matching
   MatchJetCollections(m_Jets, m_PFlowJets);
-  
+
+ 
+  /*
+  //int numGoodJets = 0;
+  //int numBadJets = 0;
   // loop over the jets in the container
   xAOD::JetContainer::const_iterator jet_itr = m_Jets->begin();
   xAOD::JetContainer::const_iterator jet_end = m_Jets->end();
@@ -236,10 +233,11 @@ EL::StatusCode xAODPFlowAna :: execute ()
     if( !m_jetCleaning->accept( **jet_itr )) continue; //only keep good clean jets
     numGoodJets++;
     Info("execute()", " GOOD jet pt = %.2f GeV", ((*jet_itr)->pt()/GEV)); // just to print out something
-  }
-  
+    }
+    
   Info("execute()", "  number of jets = %lu numGoodJets = %i  numBadJets = %i", m_Jets->size(), numGoodJets, numBadJets);
   */
+  
   return EL::StatusCode::SUCCESS;
 }
 
@@ -313,87 +311,6 @@ void xAODPFlowAna :: BadJetsScan (const xAOD::Jet& jet) {
    
   return;
 }
-
-
-//Could we return vector< pair<int,int> >
-void xAODPFlowAna :: MatchJetCollections (const xAOD::JetContainer* TopoJet, const xAOD::JetContainer* PFlowJet) {
-  
-  Info("", "--- MatchJetCollections ---");
-  
-  // Matrix to store all DeltaR values
-
-  std::vector<std::vector<float> > matrix_DeltaR;
-  matrix_DeltaR.resize(TopoJet->size()); 
-  
-  xAOD::JetContainer::const_iterator topojet_itr = TopoJet->begin();
-  xAOD::JetContainer::const_iterator topojet_end = TopoJet->end();
-    
-  for(; topojet_itr != topojet_end; topojet_itr++){
-    int topojet_index = std::distance(TopoJet->begin(),topojet_itr);
-    matrix_DeltaR[topojet_index].resize(PFlowJet->size());
-
-    xAOD::JetContainer::const_iterator pflowjet_itr = PFlowJet->begin();
-    xAOD::JetContainer::const_iterator pflowjet_end = PFlowJet->end();
-
-    for(; pflowjet_itr != pflowjet_end; pflowjet_itr++){
-      int pflowjet_index = std::distance(PFlowJet->begin(),pflowjet_itr);
-      matrix_DeltaR[topojet_index][pflowjet_index] = ((*topojet_itr)->p4()).DeltaR((*pflowjet_itr)->p4());
-    }
-  }
-  
-  // Read Matrix
-  for(int i=0;i<TopoJet->size();i++){for(int j=0;j<PFlowJet->size();j++){std::cout<<"i: "<<i<<"  j: "<<j<<"  deltaR: "<<matrix_DeltaR[i][j]<<std::endl;}}
-
-  
-  double DeltaRCut = 0.3; 
-  std::pair<int,int> MatchedPair_pair;
-  std::vector< std::pair<int,int> > MatchedPair_vector;
-
-  for(int i = 0; i< TopoJet->size(); i++){
-    int topojet =999;
-    int pflowjet   =999;
-    float DeltaRMin = 999;
-    
-    for(int j=0; j<PFlowJet->size(); j++){
-      if( matrix_DeltaR[i][j] < DeltaRCut ){
-	DeltaRMin = matrix_DeltaR[i][j];
-	topojet = i;
-	pflowjet   = j;
-      }
-    }
-    
-    std::cout<<"DeltaRMin: "<<DeltaRMin<<"i: "<<topojet<<" j:"<<pflowjet<<std::endl;
-    
-    MatchedPair_pair.first = topojet;
-    MatchedPair_pair.second = pflowjet ;
-    MatchedPair_vector.push_back(MatchedPair_pair);
-    
-    //eliminate the colum  
-    for(int j=0; j<PFlowJet->size(); j++){
-      if(i == topojet) matrix_DeltaR[topojet][j] = 999; 
-      if(j == pflowjet) matrix_DeltaR[i][pflowjet] = 999; 
-    }
-    
-    for(int i=0;i<TopoJet->size();i++){for(int j=0;j<PFlowJet->size();j++){std::cout<<"i: "<<i<<"  j: "<<j<<"  deltaR: "<<matrix_DeltaR[i][j]<<std::endl;}}
-  }
-
-  return;
-}
-
-  
-  
- 
-bool xAODPFlowAna :: HasPFlowJetMatched (const xAOD::Jet& jet){
-
-  return true;
-  
-}
-
-int xAODPFlowAna :: WhichPFlowJetMatched(const xAOD::Jet& jet){
-
-  return 0;
-}
-
 
 
 

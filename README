@@ -89,3 +89,8 @@ Foe any new package:
 
 - xAODRootAccess package:include important classes, among others the xAOD::TEvent class used to read and write information from the xAOD and the xAOD::Init class to handle any xAOD access.
 
+
+------------------------------------------
+9. New branch in the git repository 
+   created for dataMC studies
+------------------------------------------
