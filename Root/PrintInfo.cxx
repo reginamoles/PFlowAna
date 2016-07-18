@@ -1,12 +1,12 @@
-#include "PFlowAna/PrintInfo.h"
+#include <PFlowAna/xAODPFlowAna.h>
 
 //////////////////////////
 // Print Information
 //////////////////////////
 
 
-void  PrintTruthInfo(const xAOD::TruthParticleContainer* tp,const xAOD::TruthVertexContainer* tv, bool PrintDebug){
-  //void xAODPFlowAna :: PrintTruthInfo(){
+void   xAODPFlowAna :: PrintTruthInfo(const xAOD::TruthParticleContainer* tp,const xAOD::TruthVertexContainer* tv, bool PrintDebug){
+
    
    Info("", "------------------- ");
    Info("", "   TruthParticles   ");
@@ -49,7 +49,7 @@ void  PrintTruthInfo(const xAOD::TruthParticleContainer* tp,const xAOD::TruthVer
   return;
 }
  
- void  PrintTrackInfo (const xAOD::TrackParticleContainer* idtrk, bool PrintDebug){
+ void   xAODPFlowAna :: PrintTrackInfo (const xAOD::TrackParticleContainer* idtrk, bool PrintDebug){
  
    Info("", "-------------------- ");
    Info("", " InDetTrackParticles ");
@@ -72,7 +72,7 @@ void  PrintTruthInfo(const xAOD::TruthParticleContainer* tp,const xAOD::TruthVer
  }
 
 
-void  PrintPFOInfo (const xAOD::PFOContainer* cpfo, const xAOD::PFOContainer* npfo, bool PrintDebug){
+void   xAODPFlowAna :: PrintPFOInfo (const xAOD::PFOContainer* cpfo, const xAOD::PFOContainer* npfo, bool PrintDebug){
 
    Info("", "----------------- ");
    Info("", " Charged PFO      ");
@@ -127,7 +127,7 @@ void  PrintPFOInfo (const xAOD::PFOContainer* cpfo, const xAOD::PFOContainer* np
   return;
 }
 
-void  PrintClusterInfo (const xAOD::CaloClusterContainer* CaloCluster, const xAOD::CaloClusterContainer* pfoCluster, bool PrintDebug){
+void   xAODPFlowAna :: PrintClusterInfo (const xAOD::CaloClusterContainer* CaloCluster, const xAOD::CaloClusterContainer* pfoCluster, bool PrintDebug){
   
   Info("", "----------------- ");
   Info("", " TopoClusters     ");
@@ -169,7 +169,7 @@ void  PrintClusterInfo (const xAOD::CaloClusterContainer* CaloCluster, const xAO
   return;
 }
 
-void  PrintCalCellInfo (const xAOD::CalCellInfoContainer* CalCellInfoTopoCl,  const xAOD::CalCellInfoContainer* CalCellInfo, bool PrintDebug) {
+void   xAODPFlowAna :: PrintCalCellInfo (const xAOD::CalCellInfoContainer* CalCellInfoTopoCl,  const xAOD::CalCellInfoContainer* CalCellInfo, bool PrintDebug) {
   
   Info("", "--------------------------- ");
   Info("", "  CalCellInfoTopoCluster    ");
@@ -199,17 +199,18 @@ void  PrintCalCellInfo (const xAOD::CalCellInfoContainer* CalCellInfoTopoCl,  co
 }
 
 
-void  PrintJetCollections (const xAOD::JetContainer* Jets, const xAOD::JetContainer* PFlowJets, bool PrintDebug) {
+void   xAODPFlowAna :: PrintJetCollections (const xAOD::JetContainer* Jets, const xAOD::JetContainer* PFlowJets, bool PrintDebug) {
   
   Info("", "--- Jet Collections ---");
   
   Info("PrintJetCollections", "Number of TopoJets = %lu", Jets->size());
-  if(true){
+  if(PrintDebug){
     xAOD::JetContainer::const_iterator Jets_itr = Jets->begin();
     xAOD::JetContainer::const_iterator Jets_end = Jets->end();
     for( ; Jets_itr != Jets_end; ++Jets_itr ) {
       int index = std::distance(Jets->begin(),Jets_itr);
-      Info("PrintJetCollections", "TopoJets E  = %.2f GeV  pt =  %.2f  eta = %.2f  phi = %.2f GeV",
+      Info("PrintJetCollections", "TopoJets %d E  = %.2f GeV  pt =  %.2f  eta = %.2f  phi = %.2f GeV",
+	   index,
 	   (*Jets_itr)->e()/GEV,
 	   (*Jets_itr)->pt()/GEV,
 	   (*Jets_itr)->eta(),
@@ -218,12 +219,13 @@ void  PrintJetCollections (const xAOD::JetContainer* Jets, const xAOD::JetContai
   }
 
   Info("PrintJetCollections", "Number of PFlowJets = %lu", PFlowJets->size());
-  if(true){
+  if(PrintDebug){
     xAOD::JetContainer::const_iterator PFlowJets_itr = PFlowJets->begin();
     xAOD::JetContainer::const_iterator PFlowJets_end = PFlowJets->end();
     for( ; PFlowJets_itr != PFlowJets_end; ++PFlowJets_itr ) {
 	int index = std::distance(PFlowJets->begin(),PFlowJets_itr);
-	Info("PrintJetCollections", "PFlowJets E  = %.2f GeV  pt =  %.2f  eta = %.2f  phi = %.2f GeV",
+	Info("PrintJetCollections", "PFlowJets  %d  E  = %.2f GeV  pt =  %.2f  eta = %.2f  phi = %.2f GeV",
+	     index,
 	     (*PFlowJets_itr)->e()/GEV,
 	     (*PFlowJets_itr)->pt()/GEV,
 	     (*PFlowJets_itr)->eta(),
