@@ -9,7 +9,6 @@
 #include <EventLoop/Worker.h>
 #include <PFlowAna/xAODPFlowAnaEDM.h>
 #include <PFlowAna/xAODPFlowAna.h>
-#include <PFlowAna/PrintInfo.h>
 
 #include <iostream>
 #include <vector>
@@ -104,13 +103,18 @@ EL::StatusCode xAODPFlowAna :: initialize ()
 
   m_event = wk()->xaodEvent();
   Info("initialize()", "Number of events = %lli", m_event->getEntries() );
+
+  m_store = new xAOD::TStore();
   
   m_eventCounter = 0; //Count number of events
-  PrintDebug = false; //Printing message criteria
+  PrintDebug = false; //Printing message criteria -->  Should be chosen from the ATestRun
   
   GEV = 1000.; //Units
   
-  //Initialize and configure the jet cleaning tool
+  //----------
+  // Tools
+  //----------
+  //Jet cleaning Tool initialized and configured
   m_jetCleaning = new JetCleaningTool("JetCleaning");
   m_jetCleaning->msg().setLevel( MSG::DEBUG ); 
   ANA_CHECK(m_jetCleaning->setProperty( "CutLevel", "LooseBad"));
@@ -118,6 +122,57 @@ EL::StatusCode xAODPFlowAna :: initialize ()
   ANA_CHECK(m_jetCleaning->initialize());
 
   
+  // JetCalibration tool for EMTopo jets 
+  const std::string name = "akt4EMTopoCalibrationTool";
+  TString jetAlgo = "AntiKt4EMTopo";  
+  TString config = "JES_MC15cRecommendation_May2016.config"; 
+  TString calibSeq = "JetArea_Residual_Origin_EtaJES_GSC_Insitu"; 
+  bool isData = true; 
+  
+  m_akt4EMTopoCalibrationTool = new JetCalibrationTool(name);
+  ANA_CHECK(m_akt4EMTopoCalibrationTool->setProperty("JetCollection",jetAlgo.Data()));
+  ANA_CHECK(m_akt4EMTopoCalibrationTool->setProperty("ConfigFile",config.Data()));
+  ANA_CHECK(m_akt4EMTopoCalibrationTool->setProperty("CalibSequence",calibSeq.Data()));
+  ANA_CHECK(m_akt4EMTopoCalibrationTool->setProperty("IsData",isData));
+  // Initialize the tool
+  ANA_CHECK( m_akt4EMTopoCalibrationTool->initializeTool(name));
+  
+  /*
+  // JetCalibration tool for PFlow jets 
+  const std::string name = "JetCalibration_PFlow"; //string describing the current thread, for logging
+  TString jetAlgo_PFlow = AntiKt4EMTopo;  //String describing your jet collection, for example AntiKt4EMTopo or AntiKt4LCTopo (see below)
+  TString config_PFlow = ; //Path to global config used to initialize the tool (see below)
+  TString calibSeq_PFlow = ; //String describing the calibration sequence to apply (see below)
+  bool isData = ; //bool describing if the events are data or from simulation
+  
+  m_jetCalibration_PFlow = new JetCalibrationTool(name);
+  ANA_CHECK(m_jetCalibration_PFlow->setProperty("JetCollection",jetAlgo.Data()));
+  ANA_CHECK(m_jetCalibration_PFlow->setProperty("ConfigFile",config.Data()));
+  ANA_CHECK(m_jetCalibration_PFlow->setProperty("CalibSequence",calibSeq.Data()));
+  ANA_CHECK(m_jetCalibration_PFlow->setProperty("IsData",isData));
+  // Initialize the tool
+  ANA_CHECK(m_jetCalibration->initializeTool(name));
+  */
+
+  
+  // Configure the JERTool.
+  m_JERTool = new JERTool("JERTool");
+  //jerTool.msg()->setLevel(MSG::DEBUG);
+  ANA_CHECK( m_JERTool->setProperty("PlotFileName", "JetResolution/Prerec2015_xCalib_2012JER_ReducedTo9NP_Plots_v2.root") );
+  ANA_CHECK( m_JERTool->setProperty("CollectionName", "AntiKt4EMTopoJets") );
+  ANA_CHECK( m_JERTool->initialize() );
+
+  
+  // Configure the JERSmearingTool
+  m_SmearTool = new  JERSmearingTool("JERSmearingTool");
+  //smearTool.msg()->setLevel(MSG::DEBUG);
+  ToolHandle<IJERTool> jerHandle(m_JERTool->name());
+  ANA_CHECK( m_SmearTool->setProperty("JERTool", jerHandle) );
+  ANA_CHECK( m_SmearTool->setProperty("ApplyNominalSmearing", false) );
+  ANA_CHECK( m_SmearTool->setProperty("isMC", true) );
+  ANA_CHECK( m_SmearTool->setProperty("SystematicMode", "Full") );
+  ANA_CHECK( m_SmearTool->initialize() );
+    
  return EL::StatusCode::SUCCESS;
 }
 
@@ -157,15 +212,27 @@ EL::StatusCode xAODPFlowAna :: execute ()
    
   if( isMC ) { EvtWeight = eventInfo->mcEventWeight();}
   Info("execute()", "Event number = %llu  Event weight = %.2f  isMC = %s",eventInfo->eventNumber(), EvtWeight, (isMC ? "true" : "false"));
-  
-  //---------------------------
-  // Truth particles & vertices
-  //---------------------------
-  m_TruthParticles = 0;
-  ANA_CHECK(m_event->retrieve( m_TruthParticles,"TruthParticles"));
-  m_TruthVertices = 0;
-  ANA_CHECK(m_event->retrieve(m_TruthVertices,"TruthVertices"));
-  PrintTruthInfo(m_TruthParticles, m_TruthVertices, PrintDebug);
+
+
+  if( isMC ){
+    //---------------------------
+    // Truth particles & vertices
+    //---------------------------
+    m_TruthParticles = 0;
+    ANA_CHECK(m_event->retrieve( m_TruthParticles,"TruthParticles"));
+    m_TruthVertices = 0;
+    ANA_CHECK(m_event->retrieve(m_TruthVertices,"TruthVertices"));
+    PrintTruthInfo(m_TruthParticles, m_TruthVertices, PrintDebug);
+    
+    //---------------------------
+    // CalCellInfo_TopoCluster
+    //---------------------------
+    m_CalCellInfo_TopoCluster = 0;
+    ANA_CHECK(m_event->retrieve(m_CalCellInfo_TopoCluster, "CalCellInfo_TopoCluster"));
+    m_CalCellInfo = 0; //CalCellInfo PFO
+    ANA_CHECK(m_event->retrieve(m_CalCellInfo, "CalCellInfo"));
+    PrintCalCellInfo(m_CalCellInfo_TopoCluster,m_CalCellInfo, PrintDebug);
+  }
 
   //---------------------------
   // Track Collection
@@ -192,33 +259,96 @@ EL::StatusCode xAODPFlowAna :: execute ()
   ANA_CHECK(m_event->retrieve( m_PFOcluster, "PFOClusters_JetETMiss"));
   PrintClusterInfo(m_topocluster,m_PFOcluster, PrintDebug);
   
-  //---------------------------
-  // CalCellInfo_TopoCluster
-  //---------------------------
-  m_CalCellInfo_TopoCluster = 0;
-  ANA_CHECK(m_event->retrieve(m_CalCellInfo_TopoCluster, "CalCellInfo_TopoCluster"));
-  m_CalCellInfo = 0; //CalCellInfo PFO
-  ANA_CHECK(m_event->retrieve(m_CalCellInfo, "CalCellInfo"));
-  PrintCalCellInfo(m_CalCellInfo_TopoCluster,m_CalCellInfo, PrintDebug);
-
   //----------------------------
   // Jet information
   //--------------------------- 
   m_Jets = 0;
   m_PFlowJets = 0;
+  ANA_CHECK(m_event->retrieve( m_Jets, "AntiKt4EMTopoJets" ));
+  Info("execute()", "  number of jets = %lu", m_Jets->size());
+  ANA_CHECK(m_event->retrieve( m_PFlowJets, "AntiKt4EMPFlowJets" ));
+  Info("execute()", "  number of PFlow jets = %lu", m_PFlowJets->size());
+  PrintJetCollections(m_Jets,m_PFlowJets, true);
+
+
+  //---------------------------
+  // GRL 
+  //--------------------------- 
+  //Code to be added
+
+  //------------------------------
+  // Trigger (Efficiency and SF)
+  //------------------------------
+  
+  //--------------------
+  // Pileup Reweighting 
+  //--------------------
+  //Code to be added
+  
+  //---------------------------
+  // Tools for Jets
+  //--------------------------- 
+  //the order for the tools has to be checked!
+
+  int numGoodJets = 0;
+
+  // Create the new container and its auxiliary store to store the good and calibrated jets .
+  xAOD::JetContainer* m_akt4CalibEMTopo = new xAOD::JetContainer();
+  xAOD::AuxContainerBase* m_akt4CalibEMTopoAux = new xAOD::AuxContainerBase();
+  m_akt4CalibEMTopo->setStore( m_akt4CalibEMTopoAux ); //< Connect the two
+  
+
+  xAOD::JetContainer::const_iterator jet_itr =  m_Jets->begin();
+  xAOD::JetContainer::const_iterator jet_end =  m_Jets->end();
+  for( ; jet_itr != jet_end; ++jet_itr ) {
+
+    Info("Execute () ", "Jet before calibration E = %.2f GeV  pt = %.2f GeV eta = %.2f  phi =  %.2f",
+	 (*jet_itr)->e()/GEV,(*jet_itr)->pt()/GEV, (*jet_itr)->eta(), (*jet_itr)->phi());
+    
+    //Cleaning TOOL
+    //Should we remove the whole event or only the jet? Top analyses remove the whole event.
+    if( !m_jetCleaning->accept( **jet_itr )) continue; //only keep good clean jets
+    numGoodJets++;
+
+    // //Calibration Tool (Jet Calibration)
+    xAOD::Jet* jet = new xAOD::Jet();
+    m_akt4EMTopoCalibrationTool->calibratedCopy(**jet_itr,jet); //make a calibrated copy, assuming a copy hasn't been made already, alternative is:
+    m_akt4CalibEMTopo->push_back(jet); // jet acquires the m_akt4CalibEMTopo auxstore
+
+    Info("Execute () ", "Jet after Calibration E = %.10f GeV  pt = %.10f GeV eta = %.2f  phi =  %.2f",
+     	 jet->e()/GEV, jet->pt()/GEV, jet->eta(), jet->phi());
+    
+    //JER Tool (Jet Energy Resolution)
+    double resMC = m_JERTool->getRelResolutionMC(jet);
+    double resData = m_JERTool->getRelResolutionData(jet);
+
+    Info("Execute () ","resMC = %.10f  resData = %.10f ", resMC, resData);
+	 
+    ANA_CHECK(m_SmearTool->applyCorrection(*jet));
+    //virtual CP::CorrectionCode applyCorrection(xAOD::Jet& jet);
+
+    Info("Execute () ", "Jet after Smearing E = %.10f GeV  pt = %.10f GeV eta = %.2f  phi =  %.2f",
+	 jet->e()/GEV, jet->pt()/GEV, jet->eta(), jet->phi());
+    
+
+    //Jet Vertex Tagger (JVT)
+
+  
+    
+  }
+  
+ 
+  
+
+  
+  /*
+  //For cleaning Study
 
   //Cleaning
   int numGoodJets = 0;
   int numBadJets = 0;
   
-  ANA_CHECK(m_event->retrieve( m_Jets, "AntiKt4EMTopoJets" ));
-  Info("execute()", "  number of jets = %lu", m_Jets->size());
-  ANA_CHECK(m_event->retrieve( m_PFlowJets, "AntiKt4EMPFlowJets" ));
-  Info("execute()", "  number of PFlow jets = %lu", m_PFlowJets->size());
-  PrintJetCollections(m_Jets,m_PFlowJets, PrintDebug);
-  
-  /*
-  //For cleaning Study
+
   MatchJetCollections(m_Jets, m_PFlowJets);
   
   // loop over the jets in the container
@@ -240,6 +370,17 @@ EL::StatusCode xAODPFlowAna :: execute ()
   
   Info("execute()", "  number of jets = %lu numGoodJets = %i  numBadJets = %i", m_Jets->size(), numGoodJets, numBadJets);
   */
+
+
+
+  ////////////////////////
+  // Clear copy containers
+  ////////////////////////
+  // Deep copies. Clearing containers deletes contents including AuxStore.
+  //if(m_akt4CalibEMTopo) m_akt4CalibEMTopo->clear();
+  //m_store->clear();
+  
+    
   return EL::StatusCode::SUCCESS;
 }
 
@@ -269,15 +410,28 @@ EL::StatusCode xAODPFlowAna :: finalize ()
  
   // finalize(): called once, after the final event has completed 
   
-  ANA_CHECK_SET_TYPE (EL::StatusCode);
-
-
-
+  ANA_CHECK_SET_TYPE(EL::StatusCode);
+  
+  //Remove the jet tool if it has been created
   if( m_jetCleaning ) {
     delete m_jetCleaning;
     m_jetCleaning = 0;
   }
 
+  if( m_akt4EMTopoCalibrationTool ) {
+    delete m_akt4EMTopoCalibrationTool;
+    m_akt4EMTopoCalibrationTool = 0;
+  }
+
+  if( m_JERTool && m_SmearTool ) {
+    delete m_JERTool;
+    m_JERTool = 0;
+    delete m_SmearTool;
+    m_SmearTool = 0;
+    
+  }
+  
+  
   return EL::StatusCode::SUCCESS;
 }
 
@@ -299,6 +453,9 @@ EL::StatusCode xAODPFlowAna :: histFinalize ()
 }
 
 
+
+
+
 void xAODPFlowAna :: BadJetsScan (const xAOD::Jet& jet) {
   
   Info("", "--- Bad Jets Scanning ---");
@@ -313,87 +470,6 @@ void xAODPFlowAna :: BadJetsScan (const xAOD::Jet& jet) {
    
   return;
 }
-
-
-//Could we return vector< pair<int,int> >
-void xAODPFlowAna :: MatchJetCollections (const xAOD::JetContainer* TopoJet, const xAOD::JetContainer* PFlowJet) {
-  
-  Info("", "--- MatchJetCollections ---");
-  
-  // Matrix to store all DeltaR values
-
-  std::vector<std::vector<float> > matrix_DeltaR;
-  matrix_DeltaR.resize(TopoJet->size()); 
-  
-  xAOD::JetContainer::const_iterator topojet_itr = TopoJet->begin();
-  xAOD::JetContainer::const_iterator topojet_end = TopoJet->end();
-    
-  for(; topojet_itr != topojet_end; topojet_itr++){
-    int topojet_index = std::distance(TopoJet->begin(),topojet_itr);
-    matrix_DeltaR[topojet_index].resize(PFlowJet->size());
-
-    xAOD::JetContainer::const_iterator pflowjet_itr = PFlowJet->begin();
-    xAOD::JetContainer::const_iterator pflowjet_end = PFlowJet->end();
-
-    for(; pflowjet_itr != pflowjet_end; pflowjet_itr++){
-      int pflowjet_index = std::distance(PFlowJet->begin(),pflowjet_itr);
-      matrix_DeltaR[topojet_index][pflowjet_index] = ((*topojet_itr)->p4()).DeltaR((*pflowjet_itr)->p4());
-    }
-  }
-  
-  // Read Matrix
-  for(int i=0;i<TopoJet->size();i++){for(int j=0;j<PFlowJet->size();j++){std::cout<<"i: "<<i<<"  j: "<<j<<"  deltaR: "<<matrix_DeltaR[i][j]<<std::endl;}}
-
-  
-  double DeltaRCut = 0.3; 
-  std::pair<int,int> MatchedPair_pair;
-  std::vector< std::pair<int,int> > MatchedPair_vector;
-
-  for(int i = 0; i< TopoJet->size(); i++){
-    int topojet =999;
-    int pflowjet   =999;
-    float DeltaRMin = 999;
-    
-    for(int j=0; j<PFlowJet->size(); j++){
-      if( matrix_DeltaR[i][j] < DeltaRCut ){
-	DeltaRMin = matrix_DeltaR[i][j];
-	topojet = i;
-	pflowjet   = j;
-      }
-    }
-    
-    std::cout<<"DeltaRMin: "<<DeltaRMin<<"i: "<<topojet<<" j:"<<pflowjet<<std::endl;
-    
-    MatchedPair_pair.first = topojet;
-    MatchedPair_pair.second = pflowjet ;
-    MatchedPair_vector.push_back(MatchedPair_pair);
-    
-    //eliminate the colum  
-    for(int j=0; j<PFlowJet->size(); j++){
-      if(i == topojet) matrix_DeltaR[topojet][j] = 999; 
-      if(j == pflowjet) matrix_DeltaR[i][pflowjet] = 999; 
-    }
-    
-    for(int i=0;i<TopoJet->size();i++){for(int j=0;j<PFlowJet->size();j++){std::cout<<"i: "<<i<<"  j: "<<j<<"  deltaR: "<<matrix_DeltaR[i][j]<<std::endl;}}
-  }
-
-  return;
-}
-
-  
-  
- 
-bool xAODPFlowAna :: HasPFlowJetMatched (const xAOD::Jet& jet){
-
-  return true;
-  
-}
-
-int xAODPFlowAna :: WhichPFlowJetMatched(const xAOD::Jet& jet){
-
-  return 0;
-}
-
 
 
 
