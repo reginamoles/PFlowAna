@@ -59,8 +59,28 @@ EL::StatusCode xAODPFlowAna :: histInitialize ()
 {
   // Here you do everything that needs to be done at the very
   // beginning on each worker node, e.g. create histograms and output
-  // trees.  This method gets called before any input files are
-  // connected.  
+  // trees.This method gets called before any input files are
+  // connected.
+
+  // ** Subtraction Histograms **
+  std::cout<<"m_DijetSubtraction = "<<m_DijetSubtraction<<std::endl;
+  if(m_DijetSubtraction){
+    double TurnOffBins[20]={500.,631.,794.,1000.,1259.,1585.,1995.,2512.,3162.,3981.,5012.,6310.,7943.,10000.,12589.,15849.,19953.,25119.,31623.,40000.};
+    double TurnOffBins2[26]={-5.0,-4.0,-3.0,-2.5,-2.0,-1.5,-1.0,-0.5,0.0,0.5,1.0,1.5,2.0,2.5,3.0,4.0,5.0,6.0,7.0,8.0,10.,12.,14.,16.,20.,25.};
+    hTurnOff_Entries_vs_Pull_eta_00_04_hist = new TH2D("hTurnOff_Entries_vs_Pull_eta_00_04_hist","hTurnOff_Entries_vs_Pull_eta_00_04_hist",19,TurnOffBins,25,TurnOffBins2);
+    wk()->addOutput (hTurnOff_Entries_vs_Pull_eta_00_04_hist);
+    hTurnOff_CalHitsOverPt_eta_00_04_hist = new TH2D ("hTurnOff_CalHitsOverPt_eta_00_04_hist","hTurnOff_CalHitsOverPt_eta_00_04_hist",19,TurnOffBins,40,-0.5,1.5);
+    wk()->addOutput (hTurnOff_CalHitsOverPt_eta_00_04_hist);
+    hTurnOff_CalHitsRemainingOverPt_vs_Pull_eta_00_04_hist =
+      new TProfile2D("hTurnOff_CalHitsRemainingOverPt_vs_Pull_eta_00_04_hist","hTurnOff_CalHitsRemainingOverPt_vs_Pull_eta_00_04_hist",19,TurnOffBins,25,TurnOffBins2,"S");
+    wk()->addOutput (hTurnOff_CalHitsRemainingOverPt_vs_Pull_eta_00_04_hist);
+  }
+  
+
+
+  
+  
+  
   return EL::StatusCode::SUCCESS;
 }
 
@@ -105,10 +125,16 @@ EL::StatusCode xAODPFlowAna :: initialize ()
   Info("initialize()", "Number of events = %lli", m_event->getEntries() );
 
   m_store = new xAOD::TStore();
-  
+
+  // Variable initialization
   m_eventCounter = 0; //Count number of events
   PrintDebug = false; //Printing message criteria -->  Should be chosen from the ATestRun
+
+  // Ranges from histograms
+
+
   
+  // Conversion factors
   GEV = 1000.; //Units
   
   //----------
@@ -204,14 +230,14 @@ EL::StatusCode xAODPFlowAna :: execute ()
   
   // check if the event is data or MC
   bool isMC = false;
-  double EvtWeight = 1.0;
+  m_EvtWeight = 1.0;
   
   if( eventInfo->eventType( xAOD::EventInfo::IS_SIMULATION ) )
     isMC = true; 
    
-  if( isMC ) { EvtWeight = eventInfo->mcEventWeight();}
-  Info("execute()", "Event number = %llu  Event weight = %.2f  isMC = %s",eventInfo->eventNumber(), EvtWeight, (isMC ? "true" : "false"));
-
+  if( isMC ) { m_EvtWeight = eventInfo->mcEventWeight();}
+  Info("execute()", "Event number = %llu  Run Number =  %d  Event weight = %.2f  isMC = %s",eventInfo->eventNumber(), eventInfo->runNumber(), m_EvtWeight, (isMC ? "true" : "false"));
+  
 
   if( isMC ){
     //---------------------------
@@ -283,7 +309,11 @@ EL::StatusCode xAODPFlowAna :: execute ()
   // Pileup Reweighting 
   //--------------------
   //Code to be added
-  
+
+  //-------------------------
+  // Tool for muons
+  //-------------------------
+
   //---------------------------
   // Tools for Jets
   //--------------------------- 
@@ -328,42 +358,43 @@ EL::StatusCode xAODPFlowAna :: execute ()
 
     Info("Execute () ", "Jet after Smearing E = %.10f GeV  pt = %.10f GeV eta = %.2f  phi =  %.2f",
 	 jet->e()/GEV, jet->pt()/GEV, jet->eta(), jet->phi());
-    
-
-    //Jet Vertex Tagger (JVT)
-
-  
-    
+       
   }
   
- 
+
+  // Zmumu selection
+
+
+  //---------------------
+  // Performance studies
+  //----------------------
+  
+  if(m_SinglePionLowPerformanceStudies || m_DijetLowPerformance || m_DijetSubtraction){
+    resize_tpVectors(m_TruthParticles);
+    resize_PFOVectors(m_JetETMissChargedParticleFlowObjects);
+    fill_PFOVectors(m_JetETMissChargedParticleFlowObjects);
+    //truth particle selection
+    tp_Selection(m_TruthParticles,m_JetETMissChargedParticleFlowObjects);
+    //associate calibration hits to truth particles
+    ComputeCalibHitsPerParticle(m_CalCellInfo_TopoCluster,m_CalCellInfo,m_TruthParticles);
+    //subtraction code
+    SubtractionPerf(m_JetETMissChargedParticleFlowObjects,m_topocluster, m_TruthParticles); 
+  }
   
 
-
   /*
-  //For cleaning Study
-
-  //Cleaning
-  int numGoodJets = 0;
-  int numBadJets = 0;
-  
-
->>>>>>> origin/master
-  MatchJetCollections(m_Jets, m_PFlowJets);
-
- 
-  /*
-  //int numGoodJets = 0;
-  //int numBadJets = 0;
-  // loop over the jets in the container
-  xAOD::JetContainer::const_iterator jet_itr = m_Jets->begin();
-  xAOD::JetContainer::const_iterator jet_end = m_Jets->end();
-  for( ; jet_itr != jet_end; ++jet_itr ) {
-
+    MatchJetCollections(m_Jets, m_PFlowJets); 
+    //int numGoodJets = 0;
+    //int numBadJets = 0;
+    // loop over the jets in the container
+    xAOD::JetContainer::const_iterator jet_itr = m_Jets->begin();
+    xAOD::JetContainer::const_iterator jet_end = m_Jets->end();
+    for( ; jet_itr != jet_end; ++jet_itr ) {
+    
     // Bad Jets
     if(!m_jetCleaning->accept( **jet_itr )) {
-      BadJetsScan(**jet_itr);
-      numBadJets++;
+    BadJetsScan(**jet_itr);
+    numBadJets++;
     }
     
     // Good jets 
@@ -372,20 +403,28 @@ EL::StatusCode xAODPFlowAna :: execute ()
     Info("execute()", " GOOD jet pt = %.2f GeV", ((*jet_itr)->pt()/GEV)); // just to print out something
     }
     
-  Info("execute()", "  number of jets = %lu numGoodJets = %i  numBadJets = %i", m_Jets->size(), numGoodJets, numBadJets);
+    Info("execute()", "  number of jets = %lu numGoodJets = %i  numBadJets = %i", m_Jets->size(), numGoodJets, numBadJets);
   */
 
 
-
-
-  ////////////////////////
+  
+  
+  
+  
+  ///////////////////////
   // Clear copy containers
   ////////////////////////
   // Deep copies. Clearing containers deletes contents including AuxStore.
   //if(m_akt4CalibEMTopo) m_akt4CalibEMTopo->clear();
   //m_store->clear();
-  
-    
+
+
+  ///////////////////////
+  // Clear vectors
+  ////////////////////////
+  clear_PerformanceVectors();
+
+
   return EL::StatusCode::SUCCESS;
 }
 
