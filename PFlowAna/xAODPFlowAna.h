@@ -17,6 +17,22 @@
 #include "xAODCalCellInfo/CalCellInfo.h"
 #include "xAODCalCellInfo/CalCellInfoContainer.h"
 
+// ROOT include(s)
+#include <TH1.h>
+#include <TH2.h>
+#include <TH3.h>
+#include <TFile.h>
+#include <TProfile2D.h>
+
+
+//STL includes
+#include <string>
+#include <fstream>
+#include <iostream>
+#include <cstring>
+#include <vector>
+#include <map>
+#include <vector>
 
 
 class xAODPFlowAna : public EL::Algorithm
@@ -49,16 +65,24 @@ class xAODPFlowAna : public EL::Algorithm
   
   float GEV; //!
 
+  //Analyses (To be moved to a config tool)
+  //Example: https://svnweb.cern.ch/trac/atlasperf/browser/CombPerf/JetETMiss/Run2/Jet/Calibration/JetCalibrationTools/MC/DeriveGSC/trunk/Root/GSC_analysis.cxx
+  bool m_SinglePionLowPerformanceStudies = false;//!
+  bool m_DijetLowPerformance = false;//!
+  bool m_DijetSubtraction = true;//!
+  bool m_Zmumu = false;//!
+
   
   xAOD::TEvent *m_event;//!
   int m_eventCounter; //!
 
+  double m_EvtWeight; //!
   // Tree *myTree; //!
   // TH1 *myHist; //!
 
 
   //----------------------------------
-  //  Printing varaibles and functions
+  //  Printing varibles and functions
   //----------------------------------
   float PrintDebug;//!
   
@@ -68,7 +92,73 @@ class xAODPFlowAna : public EL::Algorithm
   void PrintClusterInfo(const xAOD::CaloClusterContainer*, const xAOD::CaloClusterContainer*, bool);
   void PrintCalCellInfo(const xAOD::CalCellInfoContainer* , const xAOD::CalCellInfoContainer*, bool);
   void PrintJetCollections(const xAOD::JetContainer*, const xAOD::JetContainer*, bool);
+
+
+  //---------------------------------
+  //  Histograms
+  //--------------------------------
+  //Subtraction studies
+  TH2D *hTurnOff_CalHitsOverPt_eta_00_04_hist;//!
+  TProfile2D *hTurnOff_CalHitsRemainingOverPt_vs_Pull_eta_00_04_hist;//!
+  TH2D *hTurnOff_Entries_vs_Pull_eta_00_04_hist;//!
+
+  //Low performance studies
+  void PerformanceHistos(); //SinglePions performance
   
+  //----------------------------
+  // Performance studies
+  //----------------------------
+  void resize_tpVectors(const xAOD::TruthParticleContainer*);
+  void resize_PFOVectors(const xAOD::PFOContainer*);
+  void fill_PFOVectors(const xAOD::PFOContainer*);  
+  void tp_Selection(const xAOD::TruthParticleContainer* ,const xAOD::PFOContainer*);
+  void ComputeCalibHitsPerParticle(const xAOD::CalCellInfoContainer* ,const xAOD::CalCellInfoContainer*, const xAOD::TruthParticleContainer*);
+  void SubtractionPerf(const xAOD::PFOContainer*,const xAOD::CaloClusterContainer*, const xAOD::TruthParticleContainer*);
+  void clear_PerformanceVectors();
+  
+
+  
+  //------------------------------------------------------
+  // Performance studies: vectors to store the selection
+  //-------------------------------------------------------
+  std::vector<float> _pfo_Pt;//!
+  //Layer of first interaction
+  std::vector<int> _pfo_LFI;//!
+  //The expected E/p value of the pth charged object
+  std::vector<float> _pfo_iniEoPexp;//!
+  //The expected width of E/p value of the pth charged object
+  std::vector<float> _pfo_inisigmaEoPexp;//!
+  //Topocluster energy at em scale
+  std::vector<float> _topocluster_em_E;//!
+  
+  //Charge shower subtraction vectors (from Chris code):
+  //This is 1 if there is a charged eflow object associated with that mc particle
+  std::vector<int> _mc_hasEflowTrack;//! 
+  //The index of the eflow charged object associated with the ith mc particle.
+   std::vector<int> _mc_hasEflowTrackIndex;//! 
+   //The sum of all calibration hits in topoclusters for the ith mc particle
+   std::vector<float> _mc_trueE;//! 
+  //The sum of all calibration hits in neutral eflow objects for the ith mc particle
+   std::vector<float> _mc_trueEafter;//!  
+   //This is 1 if there is a cluster matched to the CPFO
+   std::vector<int> _pfo_hasClusterMatched;//!
+   //The index of the cluster matched to the pth charged eflow object
+   std::vector<int> _clMatchedEflow;//!
+   //The sum of cluster energies in a cone of radius 0.1 around the qth charged eflow object
+   std::vector<float> _clMatchedEflowEcone10;//!
+   //The sum of cluster energies in a cone of radius 0.15 around the qth charged eflow object
+   std::vector<float> _clMatchedEflowEcone15;//! 
+   //The index of the truth jet the mc particle belongs to
+   std::vector<int> _mc_LinkedToTruthJets;//!  
+
+
+
+
+
+
+  
+
+
   
   //BadJetsScan
   void BadJetsScan(const xAOD::Jet& jet);
