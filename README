@@ -94,3 +94,17 @@ Foe any new package:
 9. New branch in the git repository 
    created for dataMC studies
 ------------------------------------------
+To merge master changes to my branch:
+
+* git checkout branch (move to the branch)
+* git merge origin/master
+* solve the conflicts
+* git commit -am 'Conflicts resolved'
+* git push 
+
+https://help.github.com/articles/resolving-a-merge-conflict-from-the-command-line/
+https://git-scm.com/book/en/v2/Git-Branching-Basic-Branching-and-Merging
+http://stackoverflow.com/questions/5827944/git-error-on-commit-after-merge-fatal-cannot-do-a-partial-commit-during-a-mer
+
+
+
