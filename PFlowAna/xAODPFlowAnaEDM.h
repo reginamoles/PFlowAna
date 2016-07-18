@@ -25,6 +25,17 @@
 #include "xAODCalCellInfo/CalCellInfo.h"
 #include "xAODCalCellInfo/CalCellInfoContainer.h"
 
+//Create deep and shallow copies
+#include "xAODJet/JetAuxContainer.h"
+#include "xAODCore/ShallowCopy.h"
+
+//--------------------
+// CP Tools includes
+//--------------------
+#include "JetSelectorTools/JetCleaningTool.h"
+#include "JetCalibTools/JetCalibrationTool.h"
+#include "JetResolution/JERTool.h"
+#include "JetResolution/JERSmearingTool.h"
 
 //----------------
 // EDM containers
@@ -44,5 +55,23 @@ const xAOD::CalCellInfoContainer* m_CalCellInfo;
 
 const xAOD::JetContainer* m_Jets;
 const xAOD::JetContainer* m_PFlowJets;
+
+// Transient object store. Needed for the CP tools.
+xAOD::TStore* m_store;
+
+
+
+//----------------
+// CP Tools
+//----------------
+JetCleaningTool *m_jetCleaning; 
+JetCalibrationTool* m_akt4EMTopoCalibrationTool;
+JetCalibrationTool* m_akt4EMPFlowCalibrationTool;
+
+JERTool *m_JERTool; 
+JERSmearingTool *m_SmearTool; 
+
+
+
 
 #endif
