@@ -45,7 +45,7 @@ int main( int argc, char* argv[] ) {
   EL::Job job;
   job.sampleHandler( sh );
   job.options()->setDouble (EL::Job::optSkipEvents, 0);
-  job.options()->setDouble (EL::Job::optMaxEvents, 1);
+  job.options()->setDouble (EL::Job::optMaxEvents, 10);
 
   // Add our analysis to the job:
   xAODPFlowAna* alg = new xAODPFlowAna();

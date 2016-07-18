@@ -4,9 +4,6 @@
 #include <EventLoop/Algorithm.h>
 
 #include "xAODRootAccess/TEvent.h"
-#include "JetSelectorTools/JetCleaningTool.h"
-#include "xAODJet/JetContainer.h"
-
 
 #include "xAODTruth/TruthParticleContainer.h"
 #include "xAODTruth/TruthVertexContainer.h"
@@ -19,7 +16,6 @@
 #include "xAODPFlow/PFO.h"
 #include "xAODCalCellInfo/CalCellInfo.h"
 #include "xAODCalCellInfo/CalCellInfoContainer.h"
-
 
 
 
@@ -52,23 +48,35 @@ class xAODPFlowAna : public EL::Algorithm
  private:
   
   float GEV; //!
-  float PrintDebug;//!
+
   
   xAOD::TEvent *m_event;//!
   int m_eventCounter; //!
-  
-  JetCleaningTool *m_jetCleaning; //!  
+
   // Tree *myTree; //!
   // TH1 *myHist; //!
 
+
+  //----------------------------------
+  //  Printing varaibles and functions
+  //----------------------------------
+  float PrintDebug;//!
   
-  //Bad jet scan
+  void PrintTruthInfo(const xAOD::TruthParticleContainer*,const xAOD::TruthVertexContainer*, bool);
+  void PrintTrackInfo (const xAOD::TrackParticleContainer*, bool);
+  void PrintPFOInfo(const xAOD::PFOContainer*, const xAOD::PFOContainer*, bool);
+  void PrintClusterInfo(const xAOD::CaloClusterContainer*, const xAOD::CaloClusterContainer*, bool);
+  void PrintCalCellInfo(const xAOD::CalCellInfoContainer* , const xAOD::CalCellInfoContainer*, bool);
+  void PrintJetCollections(const xAOD::JetContainer*, const xAOD::JetContainer*, bool);
+  
+  
+  //BadJetsScan
   void BadJetsScan(const xAOD::Jet& jet);
-  
-  // JetMatching
-  void MatchJetCollections(const xAOD::JetContainer*, const xAOD::JetContainer* );
+  void MatchJetCollections(const xAOD::JetContainer*, const xAOD::JetContainer*);
   bool HasPFlowJetMatched(const xAOD::Jet& jet); //return a true is has been matched
-  int WhichPFlowJetMatched(const xAOD::Jet& jet); //return the index of the PFlowJet matched
+  int  WhichPFlowJetMatched(const xAOD::Jet& jet); //return the index of the PFlowJet matched
+
+
   
 public:
 
