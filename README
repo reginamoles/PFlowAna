@@ -14,7 +14,7 @@ setupATLAS  (if you are not working on lxplus have a look into the first link)
 -----------------------------
 mkdir PFlowAnaPackage
 cd PFlowAnaPackage
-lsetup 'rcsetup Base,2.3.45' (update the Analysis Base when needed)
+lsetup 'rcsetup Base,2.4.15' (update the Analysis Base when needed) --> MC15c 20.7 analyses
 git clone https://github.com/reginamoles/PFlowAna.git
 or
 git clone git@github.com:reginamoles/PFlowAna.git
