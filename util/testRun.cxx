@@ -48,7 +48,7 @@ int main( int argc, char* argv[] ) {
   job.options()->setDouble (EL::Job::optMaxEvents, 10);
 
   // Add our analysis to the job:
-  xAODPFlowAna* alg = new xAODPFlowAna(false);
+  xAODPFlowAna* alg = new xAODPFlowAna(false, false, true, false);
   job.algsAdd( alg );
 
   // Run the job using the local/direct driver:

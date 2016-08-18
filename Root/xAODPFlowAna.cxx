@@ -29,14 +29,18 @@ xAODPFlowAna :: xAODPFlowAna ()
   // called on both the submission and the worker node.  Most of your
   // initialization code will go into histInitialize() and
   // initialize().
+  std::cout << "Another constructor should be called!" << std::endl;
+  assert(0);
 }
 
 
-xAODPFlowAna :: xAODPFlowAna (bool SinglePionLowPerformanceStudies)
+xAODPFlowAna :: xAODPFlowAna (bool SinglePionLowPerformanceStudies, bool DijetLowPerformance, bool DijetSubtraction, bool Zmumu)
 {
-
   m_SinglePionLowPerformanceStudies = SinglePionLowPerformanceStudies;
-  
+  m_DijetLowPerformance = DijetLowPerformance;
+  m_DijetSubtraction = DijetSubtraction;
+  m_Zmumu = Zmumu;
+
 }
 
 
@@ -377,7 +381,6 @@ EL::StatusCode xAODPFlowAna :: execute ()
   //----------------------
   
   if(m_SinglePionLowPerformanceStudies || m_DijetLowPerformance || m_DijetSubtraction){
-    std::cout<<"HOLA CARACOLA"<<std::endl;
     resize_tpVectors(m_TruthParticles);
     resize_PFOVectors(m_JetETMissChargedParticleFlowObjects);
     fill_PFOVectors(m_JetETMissChargedParticleFlowObjects);
