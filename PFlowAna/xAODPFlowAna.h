@@ -59,7 +59,7 @@ class xAODPFlowAna : public EL::Algorithm
   virtual EL::StatusCode finalize ();
   virtual EL::StatusCode histFinalize ();
   xAODPFlowAna ();
- 
+  xAODPFlowAna (bool SinglePionLowPerformanceStudies);
   
  private:
   
@@ -67,9 +67,9 @@ class xAODPFlowAna : public EL::Algorithm
 
   //Analyses (To be moved to a config tool)
   //Example: https://svnweb.cern.ch/trac/atlasperf/browser/CombPerf/JetETMiss/Run2/Jet/Calibration/JetCalibrationTools/MC/DeriveGSC/trunk/Root/GSC_analysis.cxx
-  bool m_SinglePionLowPerformanceStudies = false;//!
+  bool m_SinglePionLowPerformanceStudies; 
   bool m_DijetLowPerformance = false;//!
-  bool m_DijetSubtraction = true;//!
+  bool m_DijetSubtraction = false;//!
   bool m_Zmumu = false;//!
 
   

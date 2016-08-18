@@ -32,6 +32,13 @@ xAODPFlowAna :: xAODPFlowAna ()
 }
 
 
+xAODPFlowAna :: xAODPFlowAna (bool SinglePionLowPerformanceStudies)
+{
+
+  m_SinglePionLowPerformanceStudies = SinglePionLowPerformanceStudies;
+  
+}
+
 
 EL::StatusCode xAODPFlowAna :: setupJob (EL::Job& job)
 {
@@ -370,6 +377,7 @@ EL::StatusCode xAODPFlowAna :: execute ()
   //----------------------
   
   if(m_SinglePionLowPerformanceStudies || m_DijetLowPerformance || m_DijetSubtraction){
+    std::cout<<"HOLA CARACOLA"<<std::endl;
     resize_tpVectors(m_TruthParticles);
     resize_PFOVectors(m_JetETMissChargedParticleFlowObjects);
     fill_PFOVectors(m_JetETMissChargedParticleFlowObjects);
