@@ -51,9 +51,9 @@ void xAODPFlowAna :: fill_PFOVectors(const xAOD::PFOContainer* JetETMissChargedP
     
     int cpfo_index = std::distance(JetETMissChargedParticleFlowObjects->begin(),cpfo_itr);
     _pfo_Pt.at(cpfo_index) = (*cpfo_itr)->pt();
-    _pfo_iniEoPexp.at(cpfo_index) = (*cpfo_itr)->auxdata< float >("eflowRec_tracksExpectedEnergyDeposit");
-    _pfo_inisigmaEoPexp.at(cpfo_index) = (*cpfo_itr)->auxdata< float >("eflowRec_tracksExpectedEnergyDepositVariance");
-    _pfo_LFI.at(cpfo_index) = (*cpfo_itr)->auxdata< int >("eflowRec_FirstIntLayer");
+    _pfo_iniEoPexp.at(cpfo_index) = (*cpfo_itr)->auxdata< float >("EExpect");
+    _pfo_inisigmaEoPexp.at(cpfo_index) = (*cpfo_itr)->auxdata< float >("varEExpect");
+    _pfo_LFI.at(cpfo_index) = (*cpfo_itr)->auxdata< int >("FirstIntLayer");
 
     //Not clear if this is the correct way to match clusters!
     const xAOD::CaloCluster* matchedCluster = (*cpfo_itr)->cluster(0);
