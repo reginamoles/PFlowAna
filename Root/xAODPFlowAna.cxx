@@ -29,6 +29,8 @@ xAODPFlowAna :: xAODPFlowAna ()
   // called on both the submission and the worker node.  Most of your
   // initialization code will go into histInitialize() and
   // initialize().
+  std::cout << "Another constructor should be called!" << std::endl;
+  assert(0);
 }
 
 
