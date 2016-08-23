@@ -5,79 +5,78 @@
 //////////////////////////
 
 
-void   xAODPFlowAna :: PrintTruthInfo(const xAOD::TruthParticleContainer* tp,const xAOD::TruthVertexContainer* tv, bool PrintDebug){
-
-   
-   Info("", "------------------- ");
-   Info("", "   TruthParticles   ");
-   Info("", "------------------- ");
-      
-   Info("PrintTruthInfo", "Number of truth particles = %lu",tp->size());
-   if(PrintDebug){
-     xAOD::TruthParticleContainer::const_iterator tp_itr = tp->begin();
-     xAOD::TruthParticleContainer::const_iterator tp_end = tp->end();
-     for( ; tp_itr != tp_end; ++tp_itr ) {
-       int tp_index = std::distance(tp->begin(),tp_itr);
-       Info("PrintTruthParticlesInfo () ", "Truth Particle index = %d barcode = %i E = %.2f GeV  pt = %.2f GeV eta = %.2f  phi =  %.2f",
-   	    tp_index,
-   	    (*tp_itr)->barcode(),
-   	    (*tp_itr)->e()/GEV,
-   	    (*tp_itr)->pt()/GEV,
-   	    (*tp_itr)->eta(),
-   	    (*tp_itr)->phi());
-       
-       // const xAOD::TruthVertex*  prodVtx =  (*tp_itr)->prodVtx();
-       // if(prodVtx) Info("PrintTruthParticlesInfo", "Vtx (x,y,z) = (%.2f,%.2f,%.2f)",
-       // 			prodVtx->x(),
-       // 			prodVtx->y(),
-       // 			prodVtx->z());
-       // else Info("PrintTruthParticlesInfo", "No Vtx for mc particle");
-     }
-   }
-
-   Info("", "------------------- ");
-   Info("", "   TruthVertex      ");
-   Info("", "------------------- ");
+void xAODPFlowAna :: PrintTruthInfo(const xAOD::TruthParticleContainer* tp,const xAOD::TruthVertexContainer* tv, bool PrintDebug){
   
-   Info("PrintTruthInfo", "Truth PV Vertex size = %lu ",tv->size());
-   if(PrintDebug){
-   Info("PrintTruthInfo", " Truth PV Vertex information (x,y,z) = (%.2lf,%.2lf,%.2lf)",
-   	tv->at(0)->x(),
-   	tv->at(0)->y(),
-   	tv->at(0)->z());
-   }
+  Info("", "------------------- ");
+  Info("", "   TruthParticles   ");
+  Info("", "------------------- ");
+  
+  Info("PrintTruthInfo", "Number of truth particles = %lu",tp->size());
+  if(PrintDebug){
+    xAOD::TruthParticleContainer::const_iterator tp_itr = tp->begin();
+    xAOD::TruthParticleContainer::const_iterator tp_end = tp->end();
+    for( ; tp_itr != tp_end; ++tp_itr ) {
+      int tp_index = std::distance(tp->begin(),tp_itr);
+      Info("PrintTruthParticlesInfo () ", "Truth Particle index = %d barcode = %i E = %.2f GeV  pt = %.2f GeV eta = %.2f  phi =  %.2f",
+	   tp_index,
+	   (*tp_itr)->barcode(),
+	   (*tp_itr)->e()/GEV,
+	   (*tp_itr)->pt()/GEV,
+	   (*tp_itr)->eta(),
+	   (*tp_itr)->phi());
+      
+      // const xAOD::TruthVertex*  prodVtx =  (*tp_itr)->prodVtx();
+      // if(prodVtx) Info("PrintTruthParticlesInfo", "Vtx (x,y,z) = (%.2f,%.2f,%.2f)",
+      // 			prodVtx->x(),
+      // 			prodVtx->y(),
+      // 			prodVtx->z());
+      // else Info("PrintTruthParticlesInfo", "No Vtx for mc particle");
+    }
+  }
+  
+  Info("", "------------------- ");
+  Info("", "   TruthVertex      ");
+  Info("", "------------------- ");
+  
+  Info("PrintTruthInfo", "Truth PV Vertex size = %lu ",tv->size());
+  if(PrintDebug){
+    Info("PrintTruthInfo", " Truth PV Vertex information (x,y,z) = (%.2lf,%.2lf,%.2lf)",
+	 tv->at(0)->x(),
+	 tv->at(0)->y(),
+	 tv->at(0)->z());
+  }
   return;
 }
- 
- void   xAODPFlowAna :: PrintTrackInfo (const xAOD::TrackParticleContainer* idtrk, bool PrintDebug){
- 
-   Info("", "-------------------- ");
-   Info("", " InDetTrackParticles ");
-   Info("", "-------------------- ");
-   
-   Info("PrintTrackInfo", "Number of InDetTrackParticles = %lu",idtrk->size());
-   if(PrintDebug){
-     xAOD::TrackParticleContainer::const_iterator idtrk_itr = idtrk->begin();
-     xAOD::TrackParticleContainer::const_iterator idtrk_end = idtrk->end();
-     for( ; idtrk_itr != idtrk_end; ++idtrk_itr ) {
-       Info("PrintTrackInfo", "InDetTrackParticles charge = %f  E  = %.2f GeV  pt = %.2f GeV  eta = %.2f  phi = %.2f ",
-	    (*idtrk_itr)->charge(),
-	    (*idtrk_itr)->e()/GEV,
-	    (*idtrk_itr)->pt()/GEV,
-	    (*idtrk_itr)->eta(),
-	    (*idtrk_itr)->phi());
-     }
-   }
-   return;
- }
+
+void   xAODPFlowAna :: PrintTrackInfo (const xAOD::TrackParticleContainer* idtrk, bool PrintDebug){
+  
+  Info("", "-------------------- ");
+  Info("", " InDetTrackParticles ");
+  Info("", "-------------------- ");
+  
+  Info("PrintTrackInfo", "Number of InDetTrackParticles = %lu",idtrk->size());
+  if(PrintDebug){
+    xAOD::TrackParticleContainer::const_iterator idtrk_itr = idtrk->begin();
+    xAOD::TrackParticleContainer::const_iterator idtrk_end = idtrk->end();
+    for( ; idtrk_itr != idtrk_end; ++idtrk_itr ) {
+      Info("PrintTrackInfo", "InDetTrackParticles charge = %f  E  = %.2f GeV  pt = %.2f GeV  eta = %.2f  phi = %.2f ",
+	   (*idtrk_itr)->charge(),
+	   (*idtrk_itr)->e()/GEV,
+	   (*idtrk_itr)->pt()/GEV,
+	   (*idtrk_itr)->eta(),
+	   (*idtrk_itr)->phi());
+    }
+  }
+  return;
+}
 
 
 void   xAODPFlowAna :: PrintPFOInfo (const xAOD::PFOContainer* cpfo, const xAOD::PFOContainer* npfo, bool PrintDebug){
-
-   Info("", "----------------- ");
-   Info("", " Charged PFO      ");
-   Info("", "----------------- ");
-   
+  
+  Info("", "----------------- ");
+  Info("", " Charged PFO      ");
+  Info("", "----------------- ");
+  
   Info("PrintPFOInfo", "Number of ChargedParticleFlowObjects = %lu",cpfo->size());
   if(PrintDebug){
     xAOD::PFOContainer::const_iterator cpfo_itr = cpfo->begin();
@@ -98,7 +97,7 @@ void   xAODPFlowAna :: PrintPFOInfo (const xAOD::PFOContainer* cpfo, const xAOD:
       else Info("PrintPFOInfo", "No cluster matched to the cPFO");
     }
   }
-
+  
   Info("", "----------------- ");
   Info("", " Neutral PFO      ");
   Info("", "----------------- ");
@@ -133,22 +132,22 @@ void   xAODPFlowAna :: PrintClusterInfo (const xAOD::CaloClusterContainer* CaloC
   Info("", " TopoClusters     ");
   Info("", "----------------- ");
 
- Info("execute()", "Number of TopoClusters = %lu",CaloCluster->size());
- if(PrintDebug){
-   xAOD::CaloClusterContainer::const_iterator CaloCluster_itr = CaloCluster->begin();
-   xAOD::CaloClusterContainer::const_iterator CaloCluster_end = CaloCluster->end();
-   for( ; CaloCluster_itr != CaloCluster_end; ++CaloCluster_itr  ) {
-     int CaloCluster_index = std::distance(CaloCluster->begin(),CaloCluster_itr);
-     Info("PrintTopoClusterInfo", "CaloClusterContainer %d E_em = %.2f GeV E_cal = %.2f GeV  pt  = %.2f GeV eta = %.2f  phi =  %.2f",
-	  CaloCluster_index,
-	  (*CaloCluster_itr)->rawE()/GEV,
-	 (*CaloCluster_itr)->calE()/GEV,
-	  (*CaloCluster_itr)->pt()/GEV,
-	  (*CaloCluster_itr)->eta(),
-	  (*CaloCluster_itr)->phi()); 
-   }
- }
- Info("", "----------------- ");
+  Info("execute()", "Number of TopoClusters = %lu",CaloCluster->size());
+  if(PrintDebug){
+    xAOD::CaloClusterContainer::const_iterator CaloCluster_itr = CaloCluster->begin();
+    xAOD::CaloClusterContainer::const_iterator CaloCluster_end = CaloCluster->end();
+    for( ; CaloCluster_itr != CaloCluster_end; ++CaloCluster_itr  ) {
+      int CaloCluster_index = std::distance(CaloCluster->begin(),CaloCluster_itr);
+      Info("PrintTopoClusterInfo", "CaloClusterContainer %d E_em = %.2f GeV E_cal = %.2f GeV  pt  = %.2f GeV eta = %.2f  phi =  %.2f",
+	   CaloCluster_index,
+	   (*CaloCluster_itr)->rawE()/GEV,
+	   (*CaloCluster_itr)->calE()/GEV,
+	   (*CaloCluster_itr)->pt()/GEV,
+	   (*CaloCluster_itr)->eta(),
+	   (*CaloCluster_itr)->phi()); 
+    }
+  }
+  Info("", "----------------- ");
   Info("", "  PFOCluster      ");
   Info("", "----------------- ");
   
@@ -174,7 +173,7 @@ void   xAODPFlowAna :: PrintCalCellInfo (const xAOD::CalCellInfoContainer* CalCe
   Info("", "--------------------------- ");
   Info("", "  CalCellInfoTopoCluster    ");
   Info("", "--------------------------- ");
-   
+  
   Info("PrintCalCellInfo", "Number of CalCellInfo_TopoCluster = %lu",CalCellInfoTopoCl->size());
   if(PrintDebug){
     xAOD::CalCellInfoContainer::const_iterator CalCellInfoTopoCl_itr = CalCellInfoTopoCl->begin();
@@ -192,7 +191,7 @@ void   xAODPFlowAna :: PrintCalCellInfo (const xAOD::CalCellInfoContainer* CalCe
 	   (*CalCellInfoTopoCl_itr)->nonEMEnergy()/GEV);
     }
   }
-
+  
   Info("PrintCalCellInfo", "Number of CalCellInfo = %lu", CalCellInfo->size());
   
   return;
@@ -217,7 +216,7 @@ void   xAODPFlowAna :: PrintJetCollections (const xAOD::JetContainer* Jets, cons
 	   (*Jets_itr)->phi());
     }
   }
-
+  
   Info("PrintJetCollections", "Number of PFlowJets = %lu", PFlowJets->size());
   if(PrintDebug){
     xAOD::JetContainer::const_iterator PFlowJets_itr = PFlowJets->begin();
@@ -235,4 +234,4 @@ void   xAODPFlowAna :: PrintJetCollections (const xAOD::JetContainer* Jets, cons
   
   return;
 }
-  
+

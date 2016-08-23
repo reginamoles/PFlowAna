@@ -9,6 +9,7 @@
 #include "xAODTruth/TruthVertexContainer.h"
 #include "xAODTracking/TrackParticle.h"
 #include "xAODTracking/TrackParticleContainer.h"
+#include "xAODTracking/TrackParticlexAODHelpers.h"
 #include "xAODJet/JetContainer.h"
 #include "xAODCaloEvent/CaloCluster.h"
 #include "xAODCaloEvent/CaloClusterContainer.h"
@@ -16,6 +17,8 @@
 #include "xAODPFlow/PFO.h"
 #include "xAODCalCellInfo/CalCellInfo.h"
 #include "xAODCalCellInfo/CalCellInfoContainer.h"
+#include "xAODEgamma/ElectronContainer.h"
+#include "xAODMuon/MuonContainer.h"
 
 // ROOT include(s)
 #include <TH1.h>
@@ -35,13 +38,13 @@
 #include <vector>
 
 
+
 class xAODPFlowAna : public EL::Algorithm
 {
   // put your configuration variables here as public variables.
   // that way they can be set directly from CINT and python.
  public:
   // float cutValue;
-  
   
   
   // variables that don't get filled at submission time should be
@@ -60,18 +63,23 @@ class xAODPFlowAna : public EL::Algorithm
   virtual EL::StatusCode histFinalize ();
   xAODPFlowAna ();
  
+
   
  private:
   
   float GEV; //!
-
-  //Analyses (To be moved to a config tool)
+  
+  //Ranges define in histInitialize
+  std::vector<float> _ptRange;//!
+  std::vector<float> _etaRange;//!
+  
+  /* WIP: create a config file to select of this options */
   //Example: https://svnweb.cern.ch/trac/atlasperf/browser/CombPerf/JetETMiss/Run2/Jet/Calibration/JetCalibrationTools/MC/DeriveGSC/trunk/Root/GSC_analysis.cxx
-  bool m_SinglePionLowPerformanceStudies = false;//!
+  bool m_SinglePionLowPerformanceStudies = true;//!
   bool m_DijetLowPerformance = false;//!
-  bool m_DijetSubtraction = true;//!
-  bool m_Zmumu = false;//!
-
+  bool m_DijetSubtraction = false;//!
+  bool m_Zmumu = true;//!
+  
   
   xAOD::TEvent *m_event;//!
   int m_eventCounter; //!
@@ -81,6 +89,17 @@ class xAODPFlowAna : public EL::Algorithm
   // TH1 *myHist; //!
 
 
+  //CutFlow variables (worik in progress)
+  int m_select; //!
+  int m_trigger; //!
+  int m_number; //!
+  int m_jvt; //!
+  int m_angle; //!
+  int m_nojetsafterfilter; //!
+  int m_jetpt; //!
+
+
+  
   //----------------------------------
   //  Printing varibles and functions
   //----------------------------------
@@ -94,36 +113,54 @@ class xAODPFlowAna : public EL::Algorithm
   void PrintJetCollections(const xAOD::JetContainer*, const xAOD::JetContainer*, bool);
 
 
+  //----------------------------------
+  //  Utils functions
+  //----------------------------------
+  void EnsurePhiInMinusPiToPi(double& );
+  double deltaPhi(double , double );
+    
+  //----------------------------
+  // Performance studies functions
+  //----------------------------
+  void resize_tpVectors(const xAOD::TruthParticleContainer*);
+  void resize_PFOVectors(const xAOD::PFOContainer*);
+  void initialise_PFOVectors(int, int, int);
+  void fill_PFOVectors(const xAOD::PFOContainer*);  
+  void tp_Selection(const xAOD::TruthParticleContainer* ,const xAOD::PFOContainer*);
+  void ComputeCalibHitsPerParticle(const xAOD::CalCellInfoContainer* ,const xAOD::CalCellInfoContainer*, const xAOD::TruthParticleContainer*);
+  void ComputeCalibHitsPerCluster(const xAOD::CalCellInfoContainer*, const xAOD::CaloClusterContainer*, int);
+  void Calculate_Efficiency_Purity(const xAOD::TruthParticleContainer*,int,const xAOD::CaloClusterContainer*);
+  void SubtractionPerf(const xAOD::PFOContainer*,const xAOD::CaloClusterContainer*, const xAOD::TruthParticleContainer*);
+
+  void clear_PerformanceVectors();
+
+  void PerformanceHistos(); //SinglePions performance --> WIP
+  
   //---------------------------------
-  //  Histograms
+  //  Create and fill Histograms
   //--------------------------------
   //Subtraction studies
   TH2D *hTurnOff_CalHitsOverPt_eta_00_04_hist;//!
   TProfile2D *hTurnOff_CalHitsRemainingOverPt_vs_Pull_eta_00_04_hist;//!
   TH2D *hTurnOff_Entries_vs_Pull_eta_00_04_hist;//!
 
+  void bookH1DHistogram(std::string, int, float, float);
+  
   //Low performance studies
-  void PerformanceHistos(); //SinglePions performance
-  
-  //----------------------------
-  // Performance studies
-  //----------------------------
-  void resize_tpVectors(const xAOD::TruthParticleContainer*);
-  void resize_PFOVectors(const xAOD::PFOContainer*);
-  void fill_PFOVectors(const xAOD::PFOContainer*);  
-  void tp_Selection(const xAOD::TruthParticleContainer* ,const xAOD::PFOContainer*);
-  void ComputeCalibHitsPerParticle(const xAOD::CalCellInfoContainer* ,const xAOD::CalCellInfoContainer*, const xAOD::TruthParticleContainer*);
-  void SubtractionPerf(const xAOD::PFOContainer*,const xAOD::CaloClusterContainer*, const xAOD::TruthParticleContainer*);
-  void clear_PerformanceVectors();
-  
-
+  std::map<std::string, TH1D*> m_H1Dict;//!
+  void bookH1DPerformanceHistogram(std::string, std::string, std::vector<float>, std::vector<float>, int, float, float);
+ 
+  TH1F *_R0;//!
+  TH1F *_1MinusChargedR;//!
+  void fill_RPlus_R0(const xAOD::TruthParticleContainer*);
+                     
   
   //------------------------------------------------------
   // Performance studies: vectors to store the selection
   //-------------------------------------------------------
   std::vector<float> _pfo_Pt;//!
   //Layer of first interaction
-  std::vector<int> _pfo_LFI;//!
+  std::vector<int> _pfo_LFI;//!  
   //The expected E/p value of the pth charged object
   std::vector<float> _pfo_iniEoPexp;//!
   //The expected width of E/p value of the pth charged object
@@ -136,14 +173,30 @@ class xAODPFlowAna : public EL::Algorithm
   std::vector<int> _mc_hasEflowTrack;//! 
   //The index of the eflow charged object associated with the ith mc particle.
    std::vector<int> _mc_hasEflowTrackIndex;//! 
-   //The sum of all calibration hits in topoclusters for the ith mc particle
-   std::vector<float> _mc_trueE;//! 
-  //The sum of all calibration hits in neutral eflow objects for the ith mc particle
-   std::vector<float> _mc_trueEafter;//!  
+  
    //This is 1 if there is a cluster matched to the CPFO
-   std::vector<int> _pfo_hasClusterMatched;//!
+   std::vector<int> _pfo_hasClusterMatched;//!   
+   std::vector<int> _pfo_hasClusterMatched_Index;//!   
+   std::vector<float> _pfo_hasClusterMatched_Eta;//!   
+   std::vector<float> _pfo_hasClusterMatched_Phi;//!   
+   std::vector<float> _pfo_hasClusterMatched_E;//!   
    //The index of the cluster matched to the pth charged eflow object
    std::vector<int> _clMatchedEflow;//!
+
+
+   std::vector<int> _CalCellInfo_index;//!                   // tell us cell info associated to which mc particle 
+   std::vector<double> _CalHitEPerPar; //!                  //calibration hit energy per particle
+   std::vector<double> _CalHitEPerParAfterSubtraction; //! //calibration hit energy per particle
+   std::vector<double> _CalHitEPerClusFromOnePart;//!       //calibration energy per cluster from a certain particle
+   std::vector<double> _CalHitEPerClusFromAllPart;//!       //calibration energy per cluster from a certain particle
+
+
+   //The sum of all calibration hits in topoclusters for the ith mc particle
+   //std::vector<float> _mc_trueE;//! 
+   //The sum of all calibration hits in neutral eflow objects for the ith mc particle
+   //std::vector<float> _mc_trueEafter;//!  
+   
+   
    //The sum of cluster energies in a cone of radius 0.1 around the qth charged eflow object
    std::vector<float> _clMatchedEflowEcone10;//!
    //The sum of cluster energies in a cone of radius 0.15 around the qth charged eflow object
@@ -151,21 +204,18 @@ class xAODPFlowAna : public EL::Algorithm
    //The index of the truth jet the mc particle belongs to
    std::vector<int> _mc_LinkedToTruthJets;//!  
 
-
-
-
-
-
   
 
-
+   /* WIP: Jet matching tool */
   
   //BadJetsScan
-  void BadJetsScan(const xAOD::Jet& jet);
+  void BadJetsScan(const xAOD::Jet&);
   void MatchJetCollections(const xAOD::JetContainer*, const xAOD::JetContainer*);
-  bool HasPFlowJetMatched(const xAOD::Jet& jet); //return a true is has been matched
-  int  WhichPFlowJetMatched(const xAOD::Jet& jet); //return the index of the PFlowJet matched
-
+  bool HasPFlowJetMatched(const xAOD::Jet&); //return a true is has been matched
+  int  WhichPFlowJetMatched(const xAOD::Jet&); //return the index of the PFlowJet matched
+  //Zmumu
+  bool ZmumuSelection(const xAOD::ElectronContainer*,const xAOD::MuonContainer*); //return a trueif event pass the selection
+  void JetRecoil_Zmumu(const xAOD::ElectronContainer*, const xAOD::MuonContainer*, const xAOD::JetContainer*);
 
   
 public:

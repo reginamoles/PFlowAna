@@ -26,12 +26,13 @@ int main( int argc, char* argv[] ) {
   //const char* inputFilePath = gSystem->ExpandPathName ("$DataFiles/JZ3/user.moles.147913.Pythia8_AU2CT10_jetjet_JZ3W.recon.AOD.e3099_s2832_r7617_AOD.67276209/");
   //SH::ScanDir().filePattern("user.moles.7760083.AOD._000102.pool.root").scan(sh,inputFilePath); //One indiviudual file
   //SH::ScanDir().scan(sh,inputFilePath); //All files in the directory
-  //SinglePions
-  const char* inputFilePath = gSystem->ExpandPathName ("$DataFiles/SinglePions/mc15c_piplus/user.moles.mc15_13TeV.428001.ParticleGun_single_piplus_logE0p2to2000.recon.AOD.e3501_s2832_r8014_AOD/");
-  SH::ScanDir().filePattern("user.moles.8671065.AOD._000411.pool.root").scan(sh,inputFilePath); //One indiviudual file
 
-  //SH::DiskListLocal list("./../../../../../workspace/MC/AOD/JZ3/user.moles.147913.Pythia8_AU2CT10_jetjet_JZ3W.recon.AOD.e3099_s2832_r7617_AOD.67276209/");
-  //SH::scanFiles(sh, list);
+  //SinglePions
+  //const char* inputFilePath = gSystem->ExpandPathName ("$DataFiles/SinglePions/mc15c_piplus/user.moles.mc15_13TeV.428001.ParticleGun_single_piplus_logE0p2to2000.recon.AOD.e3501_s2832_r8014_AOD/");
+  //SH::ScanDir().filePattern("user.moles.8671065.AOD._000411.pool.root").scan(sh,inputFilePath); //One indiviudual file
+
+  SH::DiskListLocal list("./../../../test/run/AOD3/");
+  SH::scanFiles(sh, list);
 
   
   // Set the name of the input TTree. It's always "CollectionTree"
@@ -45,7 +46,7 @@ int main( int argc, char* argv[] ) {
   EL::Job job;
   job.sampleHandler( sh );
   job.options()->setDouble (EL::Job::optSkipEvents, 0);
-  job.options()->setDouble (EL::Job::optMaxEvents, 10);
+  job.options()->setDouble (EL::Job::optMaxEvents, 100);
 
   // Add our analysis to the job:
   xAODPFlowAna* alg = new xAODPFlowAna();
