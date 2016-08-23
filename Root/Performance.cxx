@@ -319,9 +319,9 @@ void xAODPFlowAna::Calculate_Efficiency_Purity(const xAOD::TruthParticleContaine
 
           bool inRegion[2] = {false, false};
 
-          if (iptbin == _ptRange.size() - 1 && _mc_hasEflowTrackPt.at(i_mcPart) > _ptRange.at(iptbin)) {
+          if (iptbin == _ptRange.size() - 1 && _mc_hasEflowTrackPt.at(i_mcPart) / GEV > _ptRange.at(iptbin)) {
             inRegion[0] = true;
-          } else if (_mc_hasEflowTrackPt.at(i_mcPart) > _ptRange.at(iptbin) && _mc_hasEflowTrackPt.at(i_mcPart) <= _ptRange.at(iptbin + 1)) {
+          } else if (_mc_hasEflowTrackPt.at(i_mcPart) / GEV > _ptRange.at(iptbin) && _mc_hasEflowTrackPt.at(i_mcPart) / GEV <= _ptRange.at(iptbin + 1)) {
             inRegion[0] = true;
           }
 
