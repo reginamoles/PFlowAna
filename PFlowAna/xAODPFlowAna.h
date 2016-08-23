@@ -217,8 +217,8 @@ class xAODPFlowAna : public EL::Algorithm
   //Zmumu
   bool ZmumuSelection(const xAOD::ElectronContainer*,const xAOD::MuonContainer*); //return a trueif event pass the selection
   void JetRecoil_Zmumu(const xAOD::ElectronContainer*, const xAOD::MuonContainer*, const xAOD::JetContainer*);
+  std::string histName(unsigned i_pt, unsigned i_eta, const std::string& name, const std::string& matchScheme, std::vector<float>& PtRange, std::vector<float>& EtaRange);
 
-  
 public:
 
   // this is needed to distribute the algorithm to the workers

@@ -311,22 +311,38 @@ void xAODPFlowAna::Calculate_Efficiency_Purity(const xAOD::TruthParticleContaine
       // Fill efficiency & putity for cluster matched to histograms
       double max_eff = *max_element(v_Efficiency.begin(), v_Efficiency.end());
       double i_max_eff = distance(v_Efficiency.begin(), max_element(v_Efficiency.begin(), v_Efficiency.end()));
-      if(_mc_hasEflowTrackPt.at(i_mcPart)>1000 && _mc_hasEflowTrackPt.at(i_mcPart)<=2000){
-        if(fabs(_mc_hasEflowTrackEtaAtLayer.at(i_mcPart))<=1){
 
-          for(std::map<std::string, TH1D*>::iterator i=m_H1Dict.begin(); i!=m_H1Dict.end();++i) {
-            std::cout<<"zhangrui "<<i->first<<std::endl;
+      _mc_hasEflowTrackEtaAtLayer.at(i_mcPart) = (*tp_itr)->eta();
+
+      for (unsigned iptbin = 0; iptbin < _ptRange.size(); ++iptbin) {
+        for (unsigned ietabin = 0; ietabin < _etaRange.size(); ++ietabin) {
+
+          bool inRegion[2] = {false, false};
+
+          if (iptbin == _ptRange.size() - 1 && _mc_hasEflowTrackPt.at(i_mcPart) > _ptRange.at(iptbin)) {
+            inRegion[0] = true;
+          } else if (_mc_hasEflowTrackPt.at(i_mcPart) > _ptRange.at(iptbin) && _mc_hasEflowTrackPt.at(i_mcPart) <= _ptRange.at(iptbin + 1)) {
+            inRegion[0] = true;
           }
-//          _eff_Lead_1_2GeV_eta1->Fill(max_eff);
-//          if(v_Efficiency.at(i_max_eff)>0.5){_pur_Lead_1_2GeV_eta1->Fill(v_Purity.at(i_max_eff));}  //Purity for those clusters with eff>50%
+
+          if (fabs(_mc_hasEflowTrackEtaAtLayer.at(i_mcPart)) > _etaRange.at(ietabin) && ietabin == _etaRange.size() - 1) {
+            inRegion[1] = true;
+          } else if (fabs(_mc_hasEflowTrackEtaAtLayer.at(i_mcPart)) > _etaRange.at(ietabin) && fabs(_mc_hasEflowTrackEtaAtLayer.at(i_mcPart)) <= _etaRange.at(ietabin + 1)) {
+            inRegion[1] = true;
+          }
+
+          if (inRegion[0] && inRegion[1]) {
+            std::string complete_name = histName(iptbin, ietabin, "Eff", "", _ptRange, _etaRange);
+            m_H1Dict[complete_name]->Fill(max_eff);
+            if (v_Efficiency.at(i_max_eff) > 0.5) {
+              std::string complete_name = histName(iptbin, ietabin, "Pur", "", _ptRange, _etaRange);
+              m_H1Dict[complete_name]->Fill(v_Purity.at(i_max_eff));
+            }  //Purity for those clusters with eff>50%
+
+          }
+
         }
-
       }
-
-
-
-
-
     }
   }
   return;
@@ -582,7 +598,6 @@ void xAODPFlowAna :: SubtractionPerf(const xAOD::PFOContainer* JetETMissChargedP
 	if (std::fabs((*tp_itr)->eta())>0.0 && std::fabs((*tp_itr)->eta())<0.4){
 	  // std::cout<<" std::fabs((*tp_itr)->eta())>0.0 && std::fabs((*tp_itr)->eta())<0.4 "<<std::endl;
 	  // std::cout<<"_mc_trueE[i]="<<_mc_trueE[i]<<" ((*tp_itr)->pt()*cosh((*tp_itr)->eta()))="<<((*tp_itr)->pt()*cosh((*tp_itr)->eta()))<< "Ratio="<<_mc_trueE[i]/((*tp_itr)->pt()*cosh((*tp_itr)->eta()))<<std::endl;
-	  std::cout<<"_CalHitEPerPar[i]"<<_CalHitEPerPar[i]<<std::endl;
 	  hTurnOff_CalHitsOverPt_eta_00_04_hist->Fill((*tp_itr)->pt(), _CalHitEPerPar[i]/((*tp_itr)->pt()*cosh((*tp_itr)->eta())),m_EvtWeight);
 	  
 	  if (_pfo_hasClusterMatched[_mc_hasEflowTrackIndex[i]]==1 && _pfo_LFI[_mc_hasEflowTrackIndex[i]]!=999){

@@ -76,7 +76,23 @@ void xAODPFlowAna :: bookH1DHistogram(std::string name, int n_bins, float x_low,
   wk()->addOutput (m_H1Dict[name]);
   return; 
 }
-  
+
+std::string xAODPFlowAna::histName(unsigned i_pt, unsigned i_eta, const std::string& name, const std::string& matchScheme, std::vector<float>& PtRange,
+                                   std::vector<float>& EtaRange) {
+
+  std::string complete_name = "WrongName";
+  if (i_pt != PtRange.size()-1 && i_eta != EtaRange.size()-1) {
+    complete_name = (name + matchScheme + "_" + std::to_string((int) (PtRange.at(i_pt))) + "_" + std::to_string((int) (PtRange.at(i_pt+1))) + "GeV__eta"
+                     + std::to_string((int) ((10 * EtaRange.at(i_eta)))) + "_" + std::to_string((int) ((10 * EtaRange.at(i_eta+1))))).c_str();
+  }
+  else {
+    complete_name = (name + matchScheme + "_" + std::to_string((int) (PtRange.at(i_pt))) + "GeV__eta"
+                      + std::to_string((int) ((10 * EtaRange.at(i_eta)))) ).c_str();
+  }
+
+
+  return complete_name;
+}
 
 void xAODPFlowAna :: bookH1DPerformanceHistogram(std::string name, std::string matchScheme, std::vector<float> PtRange, std::vector<float> EtaRange, int n_bins, float x_low, float x_up)
 {
@@ -84,16 +100,9 @@ void xAODPFlowAna :: bookH1DPerformanceHistogram(std::string name, std::string m
 
    for (unsigned i_pt = 0; i_pt<PtRange.size(); i_pt++){
     for (unsigned i_eta =0; i_eta<EtaRange.size(); i_eta++){
-      std::string complete_name = "WrongName";
       
-      if (i_pt==0 && i_eta==0) complete_name = (name + matchScheme + "_"+ std::to_string((int)PtRange.at(i_pt))  + "GeV_eta"+ std::to_string((int)(10*EtaRange.at(i_eta)))).c_str();
-      if (i_pt==0 && i_eta!=0) complete_name = (name + matchScheme + "_"+ std::to_string((int)PtRange.at(i_pt))  + "GeV_eta"+ std::to_string((int)(10*EtaRange.at(i_eta-1))) + "_"+
-						std::to_string((int)(10*EtaRange.at(i_eta)))).c_str();
-      if (i_pt!=0 && i_eta==0) complete_name = (name + matchScheme +  "_"+ std::to_string((int)PtRange.at(i_pt-1))+ "_"+std::to_string((int)PtRange.at(i_pt)) + "GeV_eta"+
-					       std::to_string((int)(10*EtaRange.at(i_eta)))).c_str();
-      if (i_pt!=0 && i_eta!=0) complete_name = (name + matchScheme +  "_"+ std::to_string((int)PtRange.at(i_pt-1))+ "_"+std::to_string((int)PtRange.at(i_pt)) + "GeV_eta"+
-					       std::to_string((int)(10*EtaRange.at(i_eta-1)))+"_"+std::to_string((int)(10*EtaRange.at(i_eta)))).c_str();
-      
+      std::string complete_name = histName(i_pt, i_eta, name, matchScheme, PtRange, EtaRange);
+
       TH1D* h1 = new TH1D(complete_name.c_str(), complete_name.c_str(),n_bins, x_low, x_up);
       h1->Sumw2();
       m_H1Dict[complete_name] = h1;
@@ -114,14 +123,14 @@ EL::StatusCode xAODPFlowAna :: histInitialize ()
 
   //Options form the histograms - to the config file
   std::string _matchScheme = (std::string) "_EM2";
-  bool m_UseNarrowPtRange = false;
+  bool m_UseNarrowPtRange = true;
   bool m_UseNarrowEtaRange = true;
   
-  if (m_UseNarrowPtRange) _ptRange= {2, 5, 10};
-  else _ptRange = {2, 5, 10, 20, 40, 60, 80, 100, 150, 200, 500, 1000};
+  if (m_UseNarrowPtRange) _ptRange= {0, 2, 5, 10, 20};
+  else _ptRange = {0, 2, 5, 10, 20, 40, 60, 80, 100, 150, 200, 500, 1000};
   
-  if (m_UseNarrowEtaRange) _etaRange= {1, 2, 2.5};
-  else _etaRange= {0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 2.0, 2.5};
+  if (m_UseNarrowEtaRange) _etaRange= {0, 1, 2, 2.5};
+  else _etaRange= {0.0, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 2.0, 2.5};
 
   
   // _ptRange= {"_0_2GeV","_2_5GeV","_5_10GeV","_10_20GeV","_20_40GeV","_40_60GeV","_60_2GeV","_2_5GeV","_5_10GeV","_0_2GeV","_2_5GeV","_5_10GeV" };
