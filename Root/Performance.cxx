@@ -22,9 +22,11 @@ void xAODPFlowAna :: resize_tpVectors(const xAOD::TruthParticleContainer* TruthP
 
   Info("resize_tpVectors () ", "In resize_tpVectors...");
   //Vectors for storing true information
-  _mc_hasEflowTrack.resize(TruthParticles->size()); 
+  _mc_hasEflowTrack.resize(TruthParticles->size());
   _mc_hasEflowTrackIndex.resize(TruthParticles->size());
-   
+  _mc_hasEflowTrackP.resize(TruthParticles->size());
+  _mc_hasEflowTrackPt.resize(TruthParticles->size());
+  _mc_hasEflowTrackEtaAtLayer.resize(TruthParticles->size());
   return;
 }
 
@@ -83,9 +85,9 @@ void xAODPFlowAna :: fill_PFOVectors(const xAOD::PFOContainer* JetETMissChargedP
     
     cpfo_index = std::distance(JetETMissChargedParticleFlowObjects->begin(),cpfo_itr);
     _pfo_Pt.at(cpfo_index) = (*cpfo_itr)->pt();
-    _pfo_iniEoPexp.at(cpfo_index) = (*cpfo_itr)->auxdata< float >("EExpect");
-    _pfo_inisigmaEoPexp.at(cpfo_index) = (*cpfo_itr)->auxdata< float >("varEExpect");
-    _pfo_LFI.at(cpfo_index) = (*cpfo_itr)->auxdata< int >("FirstIntLayer");
+    _pfo_iniEoPexp.at(cpfo_index) = (*cpfo_itr)->auxdata< float >("eflowRec_tracksExpectedEnergyDeposit"); //EExpect
+    _pfo_inisigmaEoPexp.at(cpfo_index) = (*cpfo_itr)->auxdata< float >("eflowRec_tracksExpectedEnergyDepositVariance"); //varEExpect
+    _pfo_LFI.at(cpfo_index) = (*cpfo_itr)->auxdata< int >("eflowRec_FirstIntLayer"); //FirstIntLayer
 
     //Not clear if this is the correct way to match clusters!
     const xAOD::CaloCluster* matchedCluster = (*cpfo_itr)->cluster(0);
@@ -160,7 +162,8 @@ void xAODPFlowAna :: tp_Selection(const xAOD::TruthParticleContainer* TruthParti
 	    
 	    _mc_hasEflowTrack.at(tp_index) = 1; //=1 indicates that we have a eflowTrack matched to the mc particle
 	    _mc_hasEflowTrackIndex.at(tp_index) = cpfo_index; //say us which eflowObject corresponds for each mc particle (not association = 0)
-	    //std::cout<<" Has eflow track associated "<<std::endl;
+      _mc_hasEflowTrackP.at(tp_index) = fabs(1. / ptrk->qOverP());
+      _mc_hasEflowTrackPt.at(tp_index) =  (*cpfo_itr)->pt();
 	  }
 	}
       } 
@@ -271,44 +274,64 @@ void xAODPFlowAna :: fill_RPlus_R0(const xAOD::TruthParticleContainer* TruthPart
 }
 
 // Efficiency & putity for cluster matched
-void xAODPFlowAna :: Calculate_Efficiency_Purity(const xAOD::TruthParticleContainer* TruthParticles, int _n_clusters, const xAOD::CaloClusterContainer* topocluster){
-  /*
+void xAODPFlowAna::Calculate_Efficiency_Purity(const xAOD::TruthParticleContainer* TruthParticles, int _n_clusters, const xAOD::CaloClusterContainer* topocluster) {
   xAOD::TruthParticleContainer::const_iterator tp_itr = TruthParticles->begin();
   xAOD::TruthParticleContainer::const_iterator tp_end = TruthParticles->end();
-  for( ; tp_itr != tp_end; ++tp_itr ) {
-    int i_mcPart = std::distance( TruthParticles->begin(),tp_itr);
-    
-    if (_mc_hasEflowTrack.at(i_mcPart)==1){
-      //We rerequire at least 15% of the energy of the true particle
-      if(_CalHitEPerPart.at(i_mcPart)/((*tp_itr)->pt()*cosh((*tp_itr)->eta())))>0.15){
+
+  for (; tp_itr != tp_end; ++tp_itr) {
+    int i_mcPart = std::distance(TruthParticles->begin(), tp_itr);
+
+    //We rerequire at least 15% of the energy of the true particle
+    if(_mc_hasEflowTrack.at(i_mcPart) == 1 && (_CalHitEPerPar.at(i_mcPart)/((*tp_itr)->pt()*cosh((*tp_itr)->eta())))>0.15) {
       std::vector<double> v_Efficiency(_n_clusters);
       std::vector<double> v_Purity(_n_clusters);
-      
+
       xAOD::CaloClusterContainer::const_iterator CaloCluster_itr = topocluster->begin();
       xAOD::CaloClusterContainer::const_iterator CaloCluster_end = topocluster->end();
-      for( ; CaloCluster_itr != CaloCluster_end; ++CaloCluster_itr  ) {
-	int i_clus = std::distance(topocluster->begin(),CaloCluster_itr);
-	
-	if (_CalHitEPerPart.at(i_mcPart) != 0){
-	  float Eff = _CalHitEPerClusFromOnePart.at(i_clus*_n_mcParticles+i_mcPart)/_CalHitEPerPart.at(i_mcPart);
-	  v_Efficiency.at(i_clus) = Eff;
-	}
-	else {v_Efficiency.at(i_clus) = -999;}
-	
-	Info("fill_Eff_LeadCluster", " v_Efficicency.at(%i)  = %.3f ",i_clus,v_Efficiency.at(i_clus));
-	
-        if (_CalHitEPerClusFromAllPart.at(i_clus) !=0){
-	  float Pur = _CalHitEPerClusFromOnePart.at(i_clus*_n_mcParticles+i_mcPart)/_CalHitEPerClusFromAllPart.at(i_clus);
-	  v_Purity.at(i_clus) = Pur;
-	}
-	else {v_Purity.at(i_clus) =-999;}
-	
-	Info("fill_Eff_LeadCluster", " v_PURITY.at(%i)  = %.3f ",i_clus,v_Purity.at(i_clus));
-      }//end loop over cluster
+      for(; CaloCluster_itr != CaloCluster_end; ++CaloCluster_itr ) {
+        int i_clus = std::distance(topocluster->begin(),CaloCluster_itr);
+
+        if (_CalHitEPerPar.at(i_mcPart) != 0) {
+          float Eff = _CalHitEPerClusFromOnePart.at(i_clus*TruthParticles->size()+i_mcPart)/_CalHitEPerPar.at(i_mcPart);
+          v_Efficiency.at(i_clus) = Eff;
+        }
+        else {v_Efficiency.at(i_clus) = -999;}
+
+        Info("fill_Eff_LeadCluster", " v_Efficicency.at(%i)  = %.3f ",i_clus,v_Efficiency.at(i_clus));
+
+        if (_CalHitEPerClusFromAllPart.at(i_clus) !=0) {
+          float Pur = _CalHitEPerClusFromOnePart.at(i_clus*TruthParticles->size()+i_mcPart)/_CalHitEPerClusFromAllPart.at(i_clus);
+          v_Purity.at(i_clus) = Pur;
+        }
+        else {v_Purity.at(i_clus) =-999;}
+
+        Info("fill_Eff_LeadCluster", " v_PURITY.at(%i)  = %.3f ",i_clus,v_Purity.at(i_clus));
+      }  //end loop over cluster
+
+      // Fill efficiency & putity for cluster matched to histograms
+      double max_eff = *max_element(v_Efficiency.begin(), v_Efficiency.end());
+      double i_max_eff = distance(v_Efficiency.begin(), max_element(v_Efficiency.begin(), v_Efficiency.end()));
+      if(_mc_hasEflowTrackPt.at(i_mcPart)>1000 && _mc_hasEflowTrackPt.at(i_mcPart)<=2000){
+        if(fabs(_mc_hasEflowTrackEtaAtLayer.at(i_mcPart))<=1){
+
+          for(std::map<std::string, TH1D*>::iterator i=m_H1Dict.begin(); i!=m_H1Dict.end();++i) {
+            std::cout<<"zhangrui "<<i->first<<std::endl;
+          }
+//          _eff_Lead_1_2GeV_eta1->Fill(max_eff);
+//          if(v_Efficiency.at(i_max_eff)>0.5){_pur_Lead_1_2GeV_eta1->Fill(v_Purity.at(i_max_eff));}  //Purity for those clusters with eff>50%
+        }
+
+      }
+
+
+
+
+
     }
-    }*/
+  }
   return;
 }
+
 
 /*
       
@@ -595,6 +618,9 @@ void xAODPFlowAna :: clear_PerformanceVectors(){
   //tpVectors
   _mc_hasEflowTrack.clear();
   _mc_hasEflowTrackIndex.clear();
+  _mc_hasEflowTrackP.clear();
+  _mc_hasEflowTrackPt.clear();
+  _mc_hasEflowTrackEtaAtLayer.clear();
 
   //PFOVectors
   _pfo_Pt.clear();

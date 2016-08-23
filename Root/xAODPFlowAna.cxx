@@ -96,8 +96,8 @@ void xAODPFlowAna :: bookH1DPerformanceHistogram(std::string name, std::string m
       
       TH1D* h1 = new TH1D(complete_name.c_str(), complete_name.c_str(),n_bins, x_low, x_up);
       h1->Sumw2();
-      m_H1Dict[name] = h1;
-      wk()->addOutput (m_H1Dict[name]);
+      m_H1Dict[complete_name] = h1;
+      wk()->addOutput (m_H1Dict[complete_name]);
     }
   }
   return ;
@@ -818,7 +818,6 @@ EL::StatusCode xAODPFlowAna :: execute ()
   // Clear vectors
   ////////////////////////
   clear_PerformanceVectors();
-
 
   return EL::StatusCode::SUCCESS;
 }

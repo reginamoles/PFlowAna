@@ -170,7 +170,13 @@ class xAODPFlowAna : public EL::Algorithm
   //This is 1 if there is a charged eflow object associated with that mc particle
   std::vector<int> _mc_hasEflowTrack;//! 
   //The index of the eflow charged object associated with the ith mc particle.
-   std::vector<int> _mc_hasEflowTrackIndex;//! 
+   std::vector<int> _mc_hasEflowTrackIndex;//!
+
+   std::vector<float> _mc_hasEflowTrackP;    //!
+   std::vector<float> _mc_hasEflowTrackPt;    //!
+   std::vector<float> _mc_hasEflowTrackEtaAtLayer;    //!
+   std::vector<double> _CalHitEPerClusFromOnePart; //!   //calibration energy per cluster from a certain particle
+   std::vector<double> _CalHitEPerClusFromAllPart; //!   //calibration energy per cluster from all particles
   
    //This is 1 if there is a cluster matched to the CPFO
    std::vector<int> _pfo_hasClusterMatched;//!   
@@ -181,12 +187,9 @@ class xAODPFlowAna : public EL::Algorithm
    //The index of the cluster matched to the pth charged eflow object
    std::vector<int> _clMatchedEflow;//!
 
-
    std::vector<int> _CalCellInfo_index;//!                   // tell us cell info associated to which mc particle 
    std::vector<double> _CalHitEPerPar; //!                  //calibration hit energy per particle
    std::vector<double> _CalHitEPerParAfterSubtraction; //! //calibration hit energy per particle
-   std::vector<double> _CalHitEPerClusFromOnePart;//!       //calibration energy per cluster from a certain particle
-   std::vector<double> _CalHitEPerClusFromAllPart;//!       //calibration energy per cluster from a certain particle
 
 
    //The sum of all calibration hits in topoclusters for the ith mc particle
