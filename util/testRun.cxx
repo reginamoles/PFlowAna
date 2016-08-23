@@ -28,11 +28,11 @@ int main( int argc, char* argv[] ) {
   //SH::ScanDir().scan(sh,inputFilePath); //All files in the directory
 
   //SinglePions
-  //const char* inputFilePath = gSystem->ExpandPathName ("$DataFiles/SinglePions/mc15c_piplus/user.moles.mc15_13TeV.428001.ParticleGun_single_piplus_logE0p2to2000.recon.AOD.e3501_s2832_r8014_AOD/");
-  //SH::ScanDir().filePattern("user.moles.8671065.AOD._000411.pool.root").scan(sh,inputFilePath); //One indiviudual file
+  const char* inputFilePath = gSystem->ExpandPathName ("$DataFiles/SinglePions/mc15c_piplus/user.moles.mc15_13TeV.428001.ParticleGun_single_piplus_logE0p2to2000.recon.AOD.e3501_s2832_r8014_AOD/");
+  SH::ScanDir().filePattern("user.moles.8671065.AOD._000411.pool.root").scan(sh,inputFilePath); //One indiviudual file
 
-  SH::DiskListLocal list("./../../../test/run/AOD3/");
-  SH::scanFiles(sh, list);
+  //SH::DiskListLocal list("./../../../test/run/AOD3/");
+  //SH::scanFiles(sh, list);
 
   
   // Set the name of the input TTree. It's always "CollectionTree"
