@@ -62,7 +62,9 @@ class xAODPFlowAna : public EL::Algorithm
   virtual EL::StatusCode finalize ();
   virtual EL::StatusCode histFinalize ();
   xAODPFlowAna ();
-  xAODPFlowAna (bool SinglePionLowPerformanceStudies, bool DijetLowPerformance, bool DijetSubtraction, bool Zmumu);
+  xAODPFlowAna (bool SinglePionLowPerformanceStudies, bool DijetLowPerformance, bool DijetSubtraction, bool Zmumu, std::string matchScheme, bool UseNarrowPtRange, bool UseNarrowEtaRange, bool PrintDebug);
+
+
   
  private:
   
@@ -78,6 +80,11 @@ class xAODPFlowAna : public EL::Algorithm
   bool m_DijetLowPerformance;
   bool m_DijetSubtraction;
   bool m_Zmumu;
+  std::string m_matchScheme;
+  bool m_UseNarrowPtRange;
+  bool m_UseNarrowEtaRange;
+  bool m_PrintDebug; 
+  
 
   xAOD::TEvent *m_event;//!
   int m_eventCounter; //!
@@ -106,10 +113,12 @@ class xAODPFlowAna : public EL::Algorithm
   void PrintTruthInfo(const xAOD::TruthParticleContainer*,const xAOD::TruthVertexContainer*, bool);
   void PrintTrackInfo (const xAOD::TrackParticleContainer*, bool);
   void PrintPFOInfo(const xAOD::PFOContainer*, const xAOD::PFOContainer*, bool);
-  void PrintClusterInfo(const xAOD::CaloClusterContainer*, const xAOD::CaloClusterContainer*, bool);
+  void PrintClusterInfo(const xAOD::CaloClusterContainer*, bool);
+  void PrintPFOClusterInfo(const xAOD::CaloClusterContainer*, bool);
   void PrintCalCellInfo(const xAOD::CalCellInfoContainer* , const xAOD::CalCellInfoContainer*, bool);
-  void PrintJetCollections(const xAOD::JetContainer*, const xAOD::JetContainer*, bool);
-
+  void PrintJetCollectionInfo(const xAOD::JetContainer*, const xAOD::JetContainer*, bool);
+  void PrintElectronInfo(const xAOD::ElectronContainer*, bool);
+  void PrintMuonInfo(const xAOD::MuonContainer*, bool);
 
   //----------------------------------
   //  Utils functions
