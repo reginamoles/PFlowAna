@@ -544,7 +544,7 @@ EL::StatusCode xAODPFlowAna :: execute ()
   m_Electrons = 0;
   ANA_CHECK(m_event->retrieve(m_Electrons, "Electrons") );
   Info("execute()", "  number of electrons = %lu", m_Electrons->size());
-  PrintElectronInfo(m_Electrons, m_PrintDebug);
+  PrintElectronInfo(m_Electrons, true);
   
   //***Do we need the forward electrons?
 
@@ -555,7 +555,7 @@ EL::StatusCode xAODPFlowAna :: execute ()
   m_Muons = 0;
   ANA_CHECK(m_event->retrieve( m_Muons, "Muons" ));
   Info("execute()", "  number of muons = %lu", m_Muons->size());
-  PrintMuonInfo(m_Muons, m_PrintDebug);
+  PrintMuonInfo(m_Muons, true);
 
   //---------------------------
   // GRL 
@@ -761,9 +761,9 @@ EL::StatusCode xAODPFlowAna :: execute ()
   //---------------------------
   // Zmumu selection
   //---------------------------
-  //if (ZmumuSelection()){
+  if (ZmumuSelection(goodElectrons, goodMuons)){
     //Perform the analysis
-  //}
+  }
   
 
   
