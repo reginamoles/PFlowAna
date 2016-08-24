@@ -34,14 +34,19 @@ xAODPFlowAna :: xAODPFlowAna ()
 }
 
 
-xAODPFlowAna :: xAODPFlowAna (bool SinglePionLowPerformanceStudies, bool DijetLowPerformance, bool DijetSubtraction, bool Zmumu)
+xAODPFlowAna :: xAODPFlowAna (bool SinglePionLowPerformanceStudies, bool DijetLowPerformance, bool DijetSubtraction, bool Zmumu, std::string matchScheme, bool UseNarrowPtRange, bool UseNarrowEtaRange, bool PrintDebug)
 {
   m_SinglePionLowPerformanceStudies = SinglePionLowPerformanceStudies;
   m_DijetLowPerformance = DijetLowPerformance;
   m_DijetSubtraction = DijetSubtraction;
   m_Zmumu = Zmumu;
-
+  
+  m_matchScheme = matchScheme;
+  m_UseNarrowPtRange = UseNarrowPtRange;
+  m_UseNarrowEtaRange = UseNarrowEtaRange;
+  m_PrintDebug = PrintDebug; 
 }
+
 
 
 EL::StatusCode xAODPFlowAna :: setupJob (EL::Job& job)
@@ -89,10 +94,9 @@ std::string xAODPFlowAna::histName(unsigned i_pt, unsigned i_eta, const std::str
     complete_name = (name + matchScheme + "_" + std::to_string((int) (PtRange.at(i_pt))) + "GeV__eta"
                       + std::to_string((int) ((10 * EtaRange.at(i_eta)))) ).c_str();
   }
-
-
   return complete_name;
 }
+
 
 void xAODPFlowAna :: bookH1DPerformanceHistogram(std::string name, std::string matchScheme, std::vector<float> PtRange, std::vector<float> EtaRange, int n_bins, float x_low, float x_up)
 {
@@ -119,23 +123,16 @@ EL::StatusCode xAODPFlowAna :: histInitialize ()
   // beginning on each worker node, e.g. create histograms and output
   // trees.This method gets called before any input files are
   // connected.
-
-
-  //Options form the histograms - to the config file
-  std::string _matchScheme = (std::string) "_EM2";
-  bool m_UseNarrowPtRange = true;
-  bool m_UseNarrowEtaRange = true;
   
+  // Binning selected (pt range in GeV)
   if (m_UseNarrowPtRange) _ptRange= {0, 2, 5, 10, 20};
   else _ptRange = {0, 2, 5, 10, 20, 40, 60, 80, 100, 150, 200, 500, 1000};
   
   if (m_UseNarrowEtaRange) _etaRange= {0, 1, 2, 2.5};
   else _etaRange= {0.0, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 2.0, 2.5};
-
   
-  // _ptRange= {"_0_2GeV","_2_5GeV","_5_10GeV","_10_20GeV","_20_40GeV","_40_60GeV","_60_2GeV","_2_5GeV","_5_10GeV","_0_2GeV","_2_5GeV","_5_10GeV" };
-  //  std::vector<std::string> _etaRange= {"","_eta06","_eta08","_eta1","_eta12","_eta14","_eta16","_eta2","_eta25"};
   
+  /* WIP: a directory structure has to be created to store the histograms */
   //====================================
   // DiJet subtraction
   //====================================
@@ -152,98 +149,100 @@ EL::StatusCode xAODPFlowAna :: histInitialize ()
     wk()->addOutput (hTurnOff_CalHitsRemainingOverPt_vs_Pull_eta_00_04_hist);
   }
 
-  /* WIP: a directory structure has to be created to store the histograms */
-  
-  //====================================
-  // Track cluster matching histograms
-  //====================================
-  int n_bins = 100; float x_low = 0.; float x_up = 10.;
-  bookH1DPerformanceHistogram("dR",_matchScheme, _ptRange, _etaRange, n_bins, x_low, x_up);
-  
-  //====================================
-  // Eficiency and purity
-  //====================================
-  int n_effbins = 20; float eff_low = 0; float eff_up = 1.0001;
-  bookH1DPerformanceHistogram("Eff","",_ptRange, _etaRange, n_effbins, eff_low, eff_up);
-  bookH1DPerformanceHistogram("Pur","",_ptRange, _etaRange, n_effbins, eff_low, eff_up);
-
-  //====================================
-  // Cluster with 90% of energy
-  //====================================
-  int nClusBin = 8; float nClus_low = 0.5; float nClus_up = 8.5;
-  bookH1DPerformanceHistogram("NClus_09","",_ptRange, _etaRange, nClusBin, nClus_low, nClus_up);
-
-  //====================================
-  // Difference Ecl-Eexp/sigma(Eexp)                                                                                         
-  //====================================
-  int EResol_bin = 8; float EResol_low = -5; float EResol_up = 5;
-  bookH1DPerformanceHistogram("DeltaE","",_ptRange, _etaRange, EResol_bin, EResol_low, EResol_up);
-  bookH1DPerformanceHistogram("DeltaE_07","",_ptRange, _etaRange, EResol_bin, EResol_low, EResol_up); 
-
-  //====================================
-  // R0 and R+
-  //====================================
-  _R0= new TH1F("_R0","_R0", 100, 0, 1); wk()->addOutput(_R0);
-  _1MinusChargedR= new TH1F("_1MinusChargedR","_1MinusChargedR", 100, 0, 1); wk()->addOutput(_1MinusChargedR);
-
-  //====================================
-  // DeltaR (using PFOCluster)
-  //====================================
-  // Not clear if it is preperly done
-  int ClusMatch_bin = 8; float ClusMatch_low = -5; float ClusMatch_up = 5;
-  bookH1DPerformanceHistogram("MatchedClus","",_ptRange, _etaRange, ClusMatch_bin, ClusMatch_low, ClusMatch_up);
-  
-  //==============================================
-  // HistsQuality histograms (from the old code)
-  //==============================================
-  //ALSO 1-->2 studies
-  //==============================================
-  // Extrapolator Histograms (from the old code)
-  //==============================================
-
-
-  //==============================================
-  // Zmumu code
-  //==============================================
-  //Binning and edges to be checked with the PFlow paper
-  int pt_bin = 20; float pt_low = 0; float pt_up = 400;
-  int E_bin = 70; float E_low = -100; float E_up = 600;
-  int eta_bin = 50; float eta_low = -5; float eta_up = 5;
-  int phi_bin = 40; float phi_low = -4; float phi_up = 4;
-  
-  //histograms for testing (to be removed after checks!)
-  bookH1DHistogram("h_jetPtdirty", pt_bin, pt_low, pt_up);
-  bookH1DHistogram("h_jetEdirty", E_bin, E_low, E_up);
-  bookH1DHistogram("h_jetEtadirty", eta_bin, eta_low, eta_up);
-  bookH1DHistogram("h_jetPhidirty", phi_bin, phi_low, phi_up);
-
-  bookH1DHistogram("h_jetPtcorr", pt_bin, pt_low, pt_up);
-  bookH1DHistogram("h_jetEcorr", E_bin, E_low, E_up);
-  bookH1DHistogram("h_jetEtacorr", eta_bin, eta_low, eta_up);
-  bookH1DHistogram("h_jetPhicorr", phi_bin, phi_low, phi_up);
-
-  //Counters
-  bookH1DHistogram("h_jetcount", 20,0,20);
-  bookH1DHistogram("h_jetcount", 3,1,4);
-
-  //FInal histograms
-  //Muon histograms
-  bookH1DHistogram("h_muonPt", pt_bin, pt_low, pt_up);
-  bookH1DHistogram("h_muonE", E_bin, E_low, E_up);
-  bookH1DHistogram("h_muonM", 20, 0, 100); //Is this a proper range? 
-  bookH1DHistogram("h_muonEta", eta_bin, eta_low, eta_up);
-  bookH1DHistogram("h_muonPhi", phi_bin, phi_low, phi_up);
-
-  //Z distributions
-  bookH1DHistogram("h_ZPt", pt_bin, pt_low, pt_up);
-  bookH1DHistogram("h_ZE", E_bin, E_low, E_up);
-  bookH1DHistogram("h_ZM", 20, 30, 180); //Is this a proper range? 
-  bookH1DHistogram("h_ZEta", eta_bin, eta_low, eta_up);
-  bookH1DHistogram("h_ZPhi", phi_bin, phi_low, phi_up);
-  //Z+jet system
-  bookH1DHistogram("h_ZPt_to_JetPt", 20, 0, 5);
-  bookH1DHistogram("h_ZPt_to_JetPt_sum", 20, 0, 5);
+ 
+  if(m_SinglePionLowPerformanceStudies || m_DijetLowPerformance){
+    //====================================
+    // Track cluster matching histograms
+    //====================================
+    int n_bins = 100; float x_low = 0.; float x_up = 10.;
+    bookH1DPerformanceHistogram("dR",m_matchScheme, _ptRange, _etaRange, n_bins, x_low, x_up);
     
+    //====================================
+    // Eficiency and purity
+    //====================================
+    int n_effbins = 20; float eff_low = 0; float eff_up = 1.0001;
+    bookH1DPerformanceHistogram("Eff","",_ptRange, _etaRange, n_effbins, eff_low, eff_up);
+    bookH1DPerformanceHistogram("Pur","",_ptRange, _etaRange, n_effbins, eff_low, eff_up);
+    
+    //====================================
+    // Cluster with 90% of energy
+    //====================================
+    int nClusBin = 8; float nClus_low = 0.5; float nClus_up = 8.5;
+    bookH1DPerformanceHistogram("NClus_09","",_ptRange, _etaRange, nClusBin, nClus_low, nClus_up);
+    
+    //====================================
+    // Difference Ecl-Eexp/sigma(Eexp)                                                                                         
+    //====================================
+    int EResol_bin = 8; float EResol_low = -5; float EResol_up = 5;
+    bookH1DPerformanceHistogram("DeltaE","",_ptRange, _etaRange, EResol_bin, EResol_low, EResol_up);
+    bookH1DPerformanceHistogram("DeltaE_07","",_ptRange, _etaRange, EResol_bin, EResol_low, EResol_up); 
+    
+    //====================================
+    // R0 and R+
+    //====================================
+    _R0= new TH1F("_R0","_R0", 100, 0, 1); wk()->addOutput(_R0);
+    _1MinusChargedR= new TH1F("_1MinusChargedR","_1MinusChargedR", 100, 0, 1); wk()->addOutput(_1MinusChargedR);
+    
+    //====================================
+    // DeltaR (using PFOCluster)
+    //====================================
+    // Not clear if it is preperly done
+    int ClusMatch_bin = 8; float ClusMatch_low = -5; float ClusMatch_up = 5;
+    bookH1DPerformanceHistogram("MatchedClus","",_ptRange, _etaRange, ClusMatch_bin, ClusMatch_low, ClusMatch_up);
+    
+    //==============================================
+    // HistsQuality histograms (from the old code)
+    //==============================================
+    //ALSO 1-->2 studies
+    //==============================================
+    // Extrapolator Histograms (from the old code)
+    //==============================================
+  }
+
+  if(m_Zmumu){
+    //==============================================
+    // Zmumu code
+    //==============================================
+    //Binning and edges to be checked with the PFlow paper
+    int pt_bin = 20; float pt_low = 0; float pt_up = 400;
+    int E_bin = 70; float E_low = -100; float E_up = 600;
+    int eta_bin = 50; float eta_low = -5; float eta_up = 5;
+    int phi_bin = 40; float phi_low = -4; float phi_up = 4;
+    
+    //histograms for testing (to be removed after checks!)
+    bookH1DHistogram("h_jetPtdirty", pt_bin, pt_low, pt_up);
+    bookH1DHistogram("h_jetEdirty", E_bin, E_low, E_up);
+    bookH1DHistogram("h_jetEtadirty", eta_bin, eta_low, eta_up);
+    bookH1DHistogram("h_jetPhidirty", phi_bin, phi_low, phi_up);
+    
+    bookH1DHistogram("h_jetPtcorr", pt_bin, pt_low, pt_up);
+    bookH1DHistogram("h_jetEcorr", E_bin, E_low, E_up);
+    bookH1DHistogram("h_jetEtacorr", eta_bin, eta_low, eta_up);
+    bookH1DHistogram("h_jetPhicorr", phi_bin, phi_low, phi_up);
+    
+    //Counters
+    bookH1DHistogram("h_jetcount", 20,0,20);
+    bookH1DHistogram("h_jetcount", 3,1,4);
+    
+    //Final histograms
+    //Muon histograms
+    bookH1DHistogram("h_muonPt", pt_bin, pt_low, pt_up);
+    bookH1DHistogram("h_muonE", E_bin, E_low, E_up);
+    bookH1DHistogram("h_muonM", 20, 0, 100); //Is this a proper range? 
+    bookH1DHistogram("h_muonEta", eta_bin, eta_low, eta_up);
+    bookH1DHistogram("h_muonPhi", phi_bin, phi_low, phi_up);
+    
+    //Z distributions
+    bookH1DHistogram("h_ZPt", pt_bin, pt_low, pt_up);
+    bookH1DHistogram("h_ZE", E_bin, E_low, E_up);
+    bookH1DHistogram("h_ZM", 20, 30, 180); //Is this a proper range? 
+    bookH1DHistogram("h_ZEta", eta_bin, eta_low, eta_up);
+    bookH1DHistogram("h_ZPhi", phi_bin, phi_low, phi_up);
+    //Z+jet system
+    bookH1DHistogram("h_ZPt_to_JetPt", 20, 0, 5);
+    bookH1DHistogram("h_ZPt_to_JetPt_sum", 20, 0, 5);
+  }
+
   return EL::StatusCode::SUCCESS;
 }
 
@@ -291,8 +290,6 @@ EL::StatusCode xAODPFlowAna :: initialize ()
 
   // Variable initialization
   m_eventCounter = 0; //Count number of events
-  // Printing
-  PrintDebug = false; //Printing message criteria -->  Should be chosen from the ATestRun  
   
   // Conversion factors
   GEV = 1000.; //Units
@@ -486,24 +483,27 @@ EL::StatusCode xAODPFlowAna :: execute ()
     ANA_CHECK(m_event->retrieve( m_TruthParticles,"TruthParticles"));
     m_TruthVertices = 0;
     ANA_CHECK(m_event->retrieve(m_TruthVertices,"TruthVertices"));
-    PrintTruthInfo(m_TruthParticles, m_TruthVertices, PrintDebug);
+    PrintTruthInfo(m_TruthParticles, m_TruthVertices, m_PrintDebug);
+
     
     //---------------------------
     // CalCellInfo_TopoCluster
     //---------------------------
     m_CalCellInfo_TopoCluster = 0;
-    ANA_CHECK(m_event->retrieve(m_CalCellInfo_TopoCluster, "CalCellInfo_TopoCluster"));
-    m_CalCellInfo = 0; //CalCellInfo PFO
-    ANA_CHECK(m_event->retrieve(m_CalCellInfo, "CalCellInfo"));
-    PrintCalCellInfo(m_CalCellInfo_TopoCluster,m_CalCellInfo, PrintDebug);
+    if(m_SinglePionLowPerformanceStudies || m_DijetLowPerformance || m_DijetSubtraction){
+      ANA_CHECK(m_event->retrieve(m_CalCellInfo_TopoCluster, "CalCellInfo_TopoCluster"));
+      m_CalCellInfo = 0; //CalCellInfo PFO
+      ANA_CHECK(m_event->retrieve(m_CalCellInfo, "CalCellInfo"));
+      PrintCalCellInfo(m_CalCellInfo_TopoCluster,m_CalCellInfo, m_PrintDebug);
+    }
   }
-
+  
   //---------------------------
   // Track Collection
   //---------------------------
   m_InDetTrackParticles  = 0;
   ANA_CHECK(m_event->retrieve( m_InDetTrackParticles ,"InDetTrackParticles"));
-  PrintTrackInfo(m_InDetTrackParticles,PrintDebug);
+  PrintTrackInfo(m_InDetTrackParticles,m_PrintDebug);
   
   //---------------------------
   // cPFO and nPFO
@@ -512,17 +512,21 @@ EL::StatusCode xAODPFlowAna :: execute ()
   ANA_CHECK(m_event->retrieve( m_JetETMissChargedParticleFlowObjects ,"JetETMissChargedParticleFlowObjects"));
   m_JetETMissNeutralParticleFlowObjects = 0;
   ANA_CHECK(m_event->retrieve(m_JetETMissNeutralParticleFlowObjects,"JetETMissNeutralParticleFlowObjects"));
-  PrintPFOInfo( m_JetETMissChargedParticleFlowObjects,m_JetETMissNeutralParticleFlowObjects, PrintDebug);
+  PrintPFOInfo( m_JetETMissChargedParticleFlowObjects,m_JetETMissNeutralParticleFlowObjects, m_PrintDebug);
 
   //---------------------------
   // EMTopoCluster and PFO cluster
   //---------------------------
   m_topocluster = 0;
   ANA_CHECK(m_event->retrieve( m_topocluster, "CaloCalTopoClusters"));
+  PrintClusterInfo(m_topocluster, m_PrintDebug);
   m_PFOcluster = 0;
-//  ANA_CHECK(m_event->retrieve( m_PFOcluster, "PFOClusters_JetETMiss"));
-//  PrintClusterInfo(m_topocluster,m_PFOcluster, PrintDebug);
+  if(m_SinglePionLowPerformanceStudies || m_DijetLowPerformance || m_DijetSubtraction) {
+    ANA_CHECK(m_event->retrieve( m_PFOcluster, "PFOClusters_JetETMiss"));
+    PrintPFOClusterInfo(m_PFOcluster, m_PrintDebug);
+  }
   
+
   //----------------------------
   // Jet information
   //--------------------------- 
@@ -532,25 +536,26 @@ EL::StatusCode xAODPFlowAna :: execute ()
   Info("execute()", "  number of jets = %lu", m_Jets->size());
   ANA_CHECK(m_event->retrieve( m_PFlowJets, "AntiKt4EMPFlowJets" ));
   Info("execute()", "  number of PFlow jets = %lu", m_PFlowJets->size());
-  PrintJetCollections(m_Jets,m_PFlowJets, true);
+  PrintJetCollectionInfo(m_Jets,m_PFlowJets, m_PrintDebug);
 
   //----------------------------
-  // Electrons (**Print options)
+  // Electrons 
   //--------------------------- 
   m_Electrons = 0;
   ANA_CHECK(m_event->retrieve(m_Electrons, "Electrons") );
   Info("execute()", "  number of electrons = %lu", m_Electrons->size());
+  PrintElectronInfo(m_Electrons, m_PrintDebug);
   
   //***Do we need the forward electrons?
 
   
   //---------------------------
-  // Muons (**Print options)
+  // Muons 
   //--------------------------- 
   m_Muons = 0;
   ANA_CHECK(m_event->retrieve( m_Muons, "Muons" ));
   Info("execute()", "  number of muons = %lu", m_Muons->size());
-  
+  PrintMuonInfo(m_Muons, m_PrintDebug);
 
   //---------------------------
   // GRL 
