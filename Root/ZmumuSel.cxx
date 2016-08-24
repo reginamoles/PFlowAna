@@ -6,44 +6,46 @@
 
 bool xAODPFlowAna :: ZmumuSelection(const xAOD::ElectronContainer* goodElectrons,const xAOD::MuonContainer* goodMuons){
   
-  // Info("", "------------------- ");
-  // Info("", "   Zmumu selection   ");
-  // Info("", "------------------- ");
+  Info("", "------------------- ");
+  Info("", "   Zmumu selection   ");
+  Info("", "------------------- ");
   
-  // if (goodElectrons->size()!=0) return false;
-  // if (goodMuons->size()!=2) return false;
-  // if (goodMuons->at(0)->charge() * (goodMuons->at(1)->charge())!=-1) return false;
-  // if ((goodMuons->at(0)->pt()/GEV) < 25 || (goodMuons->at(1)->pt()/GEV)<25) return false;
-  // if (goodMuons->at(0)->eta() < 2.4 || (goodMuons->at(1)->eta())<2.4) return false;
+  if (goodElectrons->size()!=0) return false;
+  std::cout<<"no electrons"<<std::endl;
+  if (goodMuons->size()!=2) return false;
+  std::cout<<"two muons"<<std::endl;
+  if (goodMuons->at(0)->charge() * (goodMuons->at(1)->charge())!=-1) return false;
+  std::cout<<"two muons with opposite charge"<<std::endl;
+  if ((goodMuons->at(0)->pt()/GEV) < 25 || (goodMuons->at(1)->pt()/GEV)<25) return false;
+  std::cout<<"two muons with pt>25 GeV"<<std::endl;
+  if (goodMuons->at(0)->eta() > 2.4 || (goodMuons->at(1)->eta()) > 2.4) return false;
+  std::cout<<"two muons central eta"<<std::endl;
+  
+  // Z TLorentzVector
+  TLorentzVector Z = (goodMuons->at(0)->p4()+goodMuons->at(1)->p4());
+  Info("Z boson candidate", "Z E = %.2f GeV  pt  = %.2f GeV eta = %.2f  phi =  %.2f",Z.E(), Z.Pt(), Z.Eta(), Z.Phi());
 
-  // // Z TLorentzVector
-  // TLorentzVector Z = goodMuons->at(0)->p4()+goodMuons->at(1)->p4();
-  // if (Z.m()<55 || Z.m()>135) return false; //Mass widow - to be checked by Christian
-  // if (Z.pt/GeV < 30) return false;
+  if (Z.M()/GEV<55 || Z.M()/GEV>135) return false; //Mass widow - to be checked by Christian
+  if (Z.Pt()/GEV < 30) return false;
 
-  // //Fill histograms
-  // for(int t = 0; t < 2; t++){
-  //   h_muonpt->Fill((goodMuons->at(t)->pt())*0.001);
-  //   h_muoneta->Fill(goodMuons->at(t)->eta());
-  //   h_muonphi->Fill(goodMuons->at(t)->phi());
-  //   h_muone->Fill((goodMuons->at(t)->e())*0.001);
-  //   h_muonm->Fill((goodMuons->at(t)->m())*0.001);
-  // }
+  // *WIP* Move the histograms to another function: FillZmumuHistograms();
   
-  // h_Zpt->Fill(((goodMuons->at(0)->p4())+(goodMuons->at(1)->p4())).Pt()*0.001);
-  // h_Zeta->Fill(((goodMuons->at(0)->p4())+(goodMuons->at(1)->p4())).Eta());
-  // h_Zphi->Fill(((goodMuons->at(0)->p4())+(goodMuons->at(1)->p4())).Phi());
-  // h_Ze->Fill(((goodMuons->at(0)->p4())+(goodMuons->at(1)->p4())).E()*0.001);
-  // h_Zm->Fill(((goodMuons->at(0)->p4())+(goodMuons->at(1)->p4())).M()*0.001);
-    
+  for(int t = 0; t < 2; t++){
+    m_H1Dict["h_muonPt"]->Fill((goodMuons->at(t)->pt())/GEV);
+    m_H1Dict["h_muonE"]->Fill((goodMuons->at(t)->e())/GEV);
+    m_H1Dict["h_muonM"]->Fill((goodMuons->at(t)->m())/GEV);
+    m_H1Dict["h_muonEta"]->Fill(goodMuons->at(t)->eta());
+    m_H1Dict["h_muonPhi"]->Fill(goodMuons->at(t)->phi());
+  }
   
+  m_H1Dict["h_ZPt"]->Fill(((goodMuons->at(0)->p4())+(goodMuons->at(1)->p4())).Pt()/GEV);
+  m_H1Dict["h_ZE"]->Fill(((goodMuons->at(0)->p4())+(goodMuons->at(1)->p4())).E()/GEV);
+  m_H1Dict["h_ZM"]->Fill(((goodMuons->at(0)->p4())+(goodMuons->at(1)->p4())).M()/GEV);
+  m_H1Dict["h_ZEta"]->Fill(((goodMuons->at(0)->p4())+(goodMuons->at(1)->p4())).Eta());
+  m_H1Dict["h_ZPhi"]->Fill(((goodMuons->at(0)->p4())+(goodMuons->at(1)->p4())).Phi());
+
   return true;
 }
-
-//((goodMuons->at(0)->pt()/GEV + goodMuons->at(1)->pt()/GEV))>=30) &&
-//((((goodMuons->at(0)->p4()/GEV) + (goodMuons->at(1)->p4())).M()/GEV)>=(65)) &&
-//((((goodMuons->at(0)->p4()) + (goodMuons->at(1)->p4())).M())<=(115000.)) ){					
-
 
 void xAODPFlowAna :: JetRecoil_Zmumu(const xAOD::ElectronContainer* goodElectrons,const xAOD::MuonContainer* goodMuons, const xAOD::JetContainer* goodJets){
   
