@@ -142,6 +142,13 @@ class xAODPFlowAna : public EL::Algorithm
   void clear_PerformanceVectors();
 
   void PerformanceHistos(); //SinglePions performance --> WIP
+
+  //----------------------------
+  // Zmumu studies
+  //----------------------------
+  bool ZmumuSelection(const xAOD::ElectronContainer*,const xAOD::MuonContainer*); //return a true if event pass the selection
+  void JetRecoil_Zmumu(const xAOD::MuonContainer*, const xAOD::JetContainer*);
+  void FillZmumuHistograms(const xAOD::MuonContainer*);
   
   //---------------------------------
   //  Create and fill Histograms
@@ -156,11 +163,11 @@ class xAODPFlowAna : public EL::Algorithm
   //Low performance studies
   std::map<std::string, TH1D*> m_H1Dict;//!
   void bookH1DPerformanceHistogram(std::string, std::string, std::vector<float>, std::vector<float>, int, float, float);
- 
+
+  //R0 R+ studies
   TH1F *_R0;//!
   TH1F *_1MinusChargedR;//!
   void fill_RPlus_R0(const xAOD::TruthParticleContainer*);
-                     
   
   //------------------------------------------------------
   // Performance studies: vectors to store the selection
@@ -223,9 +230,8 @@ class xAODPFlowAna : public EL::Algorithm
   void MatchJetCollections(const xAOD::JetContainer*, const xAOD::JetContainer*);
   bool HasPFlowJetMatched(const xAOD::Jet&); //return a true is has been matched
   int  WhichPFlowJetMatched(const xAOD::Jet&); //return the index of the PFlowJet matched
-  //Zmumu
-  bool ZmumuSelection(const xAOD::ElectronContainer*,const xAOD::MuonContainer*); //return a trueif event pass the selection
-  void JetRecoil_Zmumu(const xAOD::ElectronContainer*, const xAOD::MuonContainer*, const xAOD::JetContainer*);
+ 
+  
   std::string histName(unsigned i_pt, unsigned i_eta, const std::string& name, const std::string& matchScheme, std::vector<float>& PtRange, std::vector<float>& EtaRange);
 
 public:
