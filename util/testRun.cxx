@@ -55,7 +55,7 @@ int main( int argc, char* argv[] ) {
   EL::Job job;
   job.sampleHandler( sh );
   job.options()->setDouble (EL::Job::optSkipEvents, 0);
-  job.options()->setDouble (EL::Job::optMaxEvents, 100);
+  job.options()->setDouble (EL::Job::optMaxEvents, -1);
   
   // Chose here your config options:
   bool SinglePionLowPerformanceStudies = false;
