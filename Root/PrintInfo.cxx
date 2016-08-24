@@ -126,7 +126,7 @@ void   xAODPFlowAna :: PrintPFOInfo (const xAOD::PFOContainer* cpfo, const xAOD:
   return;
 }
 
-void   xAODPFlowAna :: PrintClusterInfo (const xAOD::CaloClusterContainer* CaloCluster, const xAOD::CaloClusterContainer* pfoCluster, bool PrintDebug){
+void   xAODPFlowAna :: PrintClusterInfo (const xAOD::CaloClusterContainer* CaloCluster, bool PrintDebug){
   
   Info("", "----------------- ");
   Info("", " TopoClusters     ");
@@ -147,6 +147,12 @@ void   xAODPFlowAna :: PrintClusterInfo (const xAOD::CaloClusterContainer* CaloC
 	   (*CaloCluster_itr)->phi()); 
     }
   }
+  return;
+}
+
+
+void   xAODPFlowAna :: PrintPFOClusterInfo (const xAOD::CaloClusterContainer* pfoCluster, bool PrintDebug){
+  
   Info("", "----------------- ");
   Info("", "  PFOCluster      ");
   Info("", "----------------- ");
@@ -198,7 +204,7 @@ void   xAODPFlowAna :: PrintCalCellInfo (const xAOD::CalCellInfoContainer* CalCe
 }
 
 
-void   xAODPFlowAna :: PrintJetCollections (const xAOD::JetContainer* Jets, const xAOD::JetContainer* PFlowJets, bool PrintDebug) {
+void   xAODPFlowAna :: PrintJetCollectionInfo (const xAOD::JetContainer* Jets, const xAOD::JetContainer* PFlowJets, bool PrintDebug) {
   
   Info("", "--- Jet Collections ---");
   
@@ -235,3 +241,49 @@ void   xAODPFlowAna :: PrintJetCollections (const xAOD::JetContainer* Jets, cons
   return;
 }
 
+
+
+void  xAODPFlowAna :: PrintElectronInfo(const xAOD::ElectronContainer* Electrons, bool PrintDebug){
+  
+  Info("", "--- Electron Information ---");
+  
+  Info("PrintElectronInfo", "Number of Electrons = %lu", Electrons->size());
+  if(PrintDebug){
+    xAOD::ElectronContainer::const_iterator el_itr = Electrons->begin();
+    xAOD::ElectronContainer::const_iterator el_end = Electrons->end();
+    for( ; el_itr != el_end; ++el_itr ) {
+      int index = std::distance(Electrons->begin(),el_itr);
+      Info("PrintElectronCollection", "Electron %d E  = %.2f GeV  pt =  %.2f  eta = %.2f  phi = %.2f GeV",
+	   index,
+	   (*el_itr)->e()/GEV,
+	   (*el_itr)->pt()/GEV,
+	   (*el_itr)->eta(),
+	   (*el_itr)->phi());
+    }
+  }
+  
+  return;
+}
+
+
+
+void  xAODPFlowAna :: PrintMuonInfo(const xAOD::MuonContainer* Muons, bool PrintDebug){
+  Info("", "--- Muon Information ---");
+  
+  Info("PrintMuonInfo", "Number of Muons = %lu", Muons->size());
+  if(PrintDebug){
+    xAOD::MuonContainer::const_iterator mu_itr = Muons->begin();
+    xAOD::MuonContainer::const_iterator mu_end = Muons->end();
+    for( ; mu_itr != mu_end; ++mu_itr ) {
+      int index = std::distance(Muons->begin(),mu_itr);
+      Info("PrintMuonCollection", "Muon %d E  = %.2f GeV  pt =  %.2f  eta = %.2f  phi = %.2f GeV",
+	   index,
+	   (*mu_itr)->e()/GEV,
+	   (*mu_itr)->pt()/GEV,
+	   (*mu_itr)->eta(),
+	   (*mu_itr)->phi());
+    }
+  }
+  
+  return;
+}
