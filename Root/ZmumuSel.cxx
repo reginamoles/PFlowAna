@@ -28,7 +28,14 @@ bool xAODPFlowAna :: ZmumuSelection(const xAOD::ElectronContainer* goodElectrons
   if (Z.M()/GEV<55 || Z.M()/GEV>135) return false; //Mass widow - to be checked by Christian
   if (Z.Pt()/GEV < 30) return false;
 
-  // *WIP* Move the histograms to another function: FillZmumuHistograms();
+  return true;
+}
+
+
+
+void xAODPFlowAna :: FillZmumuHistograms(const xAOD::MuonContainer* goodMuons){
+  
+  if (goodMuons->size()!=2)  Info("", "  ERROR: Something is wrong in the Zmumu selection!   ");
   
   for(int t = 0; t < 2; t++){
     m_H1Dict["h_muonPt"]->Fill((goodMuons->at(t)->pt())/GEV);
@@ -43,60 +50,29 @@ bool xAODPFlowAna :: ZmumuSelection(const xAOD::ElectronContainer* goodElectrons
   m_H1Dict["h_ZM"]->Fill(((goodMuons->at(0)->p4())+(goodMuons->at(1)->p4())).M()/GEV);
   m_H1Dict["h_ZEta"]->Fill(((goodMuons->at(0)->p4())+(goodMuons->at(1)->p4())).Eta());
   m_H1Dict["h_ZPhi"]->Fill(((goodMuons->at(0)->p4())+(goodMuons->at(1)->p4())).Phi());
-
-  return true;
-}
-
-void xAODPFlowAna :: JetRecoil_Zmumu(const xAOD::ElectronContainer* goodElectrons,const xAOD::MuonContainer* goodMuons, const xAOD::JetContainer* goodJets){
   
- //  // Loop for jets
-//   // Cut on pt > 40GeV
-//   // Find the leading jet, is it recoiling the Zmumu?  DeltaPhi > pi - 0.4
-//   // Is it 
-  
-//   TLorentzVector Z = goodMuons->at(0)->p4()+goodMuons->at(1)->p4();
-//   //Loop over jets
-//   for( ; jet_itr != jet_end; ++jet_itr ) {
-//     //Are the jets ordered by pt? 
-//     if(((jet->pt())*/GEV)<20)continue;
-//     if(fabs(deltaPhi((jet->phi()), ((goodMuons->at(0)->p4())+(goodMuons->at(1)->p4())).Phi())) > (M_PI - 0.4))continue;
-    
-// //     if((goodJets->size()!=0) && (numBadJets==0)){
-// //       int choice = 0;
-// //       double jetptsum = 0;
-// //       if((goodJets->size())>1){
-// // 	int m_size = 0;
-// // 	m_size = goodJets->size();
-// // 	for(int counter = 1; counter < m_size; counter ++){
-// // 	  jetptsum += goodJets->at(counter)->pt();
-// // 	  if ( ( goodJets->at(counter)->pt() ) > ( goodJets->at(choice)->pt()))choice = counter;
-// // 	}
-// //       }
-      
-// //       else jetptsum = goodJets->at(0)->pt(); 
-// //       Info("execute()", "Jet  %i has passed all the filters", choice + 1);
-// //       m_select++;
-
-
-
-// //       h_jetPtcorr->Fill( ( goodJets->at(choice)->pt()*0.001));
-// //       //Info("execute()", " jet eta = %.2f ", ((jet)->eta()));
-// //       h_jetEtacorr->Fill( ( goodJets->at(choice)->eta()));
-// //       //Info("execute()", " jet phi = %.2f ", ((jet)->phi()));
-// //       h_jetPhicorr->Fill( ( goodJets->at(choice)->phi()));
-// //       //Info("execute()", " jet m = %.2f ", ((jet)->m()));
-// //       h_jetMcorr->Fill( ( goodJets->at(choice)->m()));
-// //       //Info("execute()", "jet energy corrected = %.2f ", ((jet)->e()*0.001));
-// //     h_jetEcorr->Fill( ( goodJets->at(choice)->e()*0.001));
-    
-
-    
-// //     h_Zpt_to_Jetpt->Fill(( goodJets->at(choice)->pt())/(((goodMuons->at(0)->p4())+(goodMuons->at(1)->p4())).Pt()));
-// //     h_Zpt_to_Jetpt_sum->Fill(jetptsum/(((goodMuons->at(0)->p4())+(goodMuons->at(1)->p4())).Pt()));
-
   return; 
-    
+}
+  
+
+void xAODPFlowAna :: JetRecoil_Zmumu(const xAOD::MuonContainer* goodMuons, const xAOD::JetContainer* goodJets){
+  
+  TLorentzVector Z = goodMuons->at(0)->p4()+goodMuons->at(1)->p4();
+  //Loop over jets
+  int n_RecoilingJets = 0;
+  float SumPt_RecoilingJets = 0;
+
+  xAOD::JetContainer::const_iterator jet_itr = goodJets->begin();
+  xAOD::JetContainer::const_iterator jet_end = goodJets->end();
+  for( ; jet_itr != jet_end; ++jet_itr ) {
+    if( (*jet_itr)->pt()/GEV < 20 ) continue;
+    if( fabs(deltaPhi((*jet_itr)->phi(), Z.Phi())) > (M_PI - 0.4)) continue;
+    n_RecoilingJets++;
+    SumPt_RecoilingJets = SumPt_RecoilingJets + (*jet_itr)->pt();
+    if (n_RecoilingJets == 1)  m_H1Dict["h_ZPt_to_JetPt"]->Fill( (*jet_itr)->pt()/Z.Pt() );
+    else if (n_RecoilingJets > 1 )  m_H1Dict["h_ZPt_to_JetPt_sum"]->Fill(SumPt_RecoilingJets/Z.Pt());
+  }
+  
+  return; 
 }
 
-
- 
