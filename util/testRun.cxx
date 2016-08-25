@@ -6,7 +6,7 @@
 #include "EventLoop/DirectDriver.h"
 #include "SampleHandler/DiskListLocal.h"
 #include <TSystem.h>
-
+#include "EventLoopAlgs/DuplicateChecker.h"
 
 #include "PFlowAna/xAODPFlowAna.h"
 
@@ -55,7 +55,7 @@ int main( int argc, char* argv[] ) {
   EL::Job job;
   job.sampleHandler( sh );
   job.options()->setDouble (EL::Job::optSkipEvents, 0);
-  job.options()->setDouble (EL::Job::optMaxEvents, -1);
+  job.options()->setDouble (EL::Job::optMaxEvents, 10);
   
   // Chose here your config options:
   bool SinglePionLowPerformanceStudies = false;
@@ -67,6 +67,14 @@ int main( int argc, char* argv[] ) {
   bool UseNarrowEtaRange = true;
   bool PrintDebug = false; // Printing message criteria in PFlowAna 
 
+
+  //-------------------------
+  // Check duplicates
+  //-------------------------
+  EL::DuplicateChecker* duplicates = new EL::DuplicateChecker();
+  duplicates->setOutputTreeName ("duplicate_info");
+  job.algsAdd (duplicates);
+  
   
   xAODPFlowAna* alg = new xAODPFlowAna(SinglePionLowPerformanceStudies, DijetLowPerformance, DijetSubtraction, Zmumu, matchScheme, UseNarrowPtRange, UseNarrowEtaRange, PrintDebug);
   job.algsAdd( alg );
