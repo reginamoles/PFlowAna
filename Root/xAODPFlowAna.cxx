@@ -18,7 +18,6 @@
 #include <algorithm> //min_element
 
 
-
 // this is needed to distribute the algorithm to the workers
 ClassImp(xAODPFlowAna)
 
@@ -294,7 +293,7 @@ EL::StatusCode xAODPFlowAna :: initialize ()
   // Conversion factors
   GEV = 1000.; //Units
   
-  //Counters for Data-MC CutFlow (under construction)
+  // *WIP* Counters for Data-MC CutFlow (Christian)
   m_select = 0;
   m_trigger = 0;
   m_number = 0;
@@ -304,12 +303,22 @@ EL::StatusCode xAODPFlowAna :: initialize ()
   m_nojetsafterfilter = 0;
 
   
-  /* WIP: Should isData be initialized here foe the tool? */ 
-
+  /* WIP: Should isData be initialized here for the tool? */ 
   
   //----------
   // Tools
   //----------
+  //GRL *WIP* check which file has to be used
+  m_grl = new GoodRunsListSelectionTool("GoodRunsListSelectionTool");
+  //const char* GRLFilePath = "$ALRB_TutorialData/data15_13TeV.periodAllYear_DetStatus-v73-pro19-08_DQDefects-00-01-02_PHYS_StandardGRL_All_Good_25ns.xml";
+  const char* GRLFilePath = "/afs/cern.ch/user/a/atlasdqm/grlgen/All_Good/data15_13TeV.periodAllYear_DetStatus-v71-pro19-06_DQDefects-00-01-02_PHYS_StandardGRL_All_Good_25ns.xml";
+  const char* fullGRLFilePath = gSystem->ExpandPathName (GRLFilePath);
+  std::vector<std::string> vecStringGRL;
+  vecStringGRL.push_back(fullGRLFilePath);
+  ANA_CHECK(m_grl->setProperty( "GoodRunsListVec", vecStringGRL));
+  ANA_CHECK(m_grl->setProperty("PassThrough", false)); // if true (default) will ignore result of GRL and will just pass all events
+  ANA_CHECK(m_grl->initialize());
+
   //Jet cleaning Tool initialized and configured
   m_jetCleaning = new JetCleaningTool("JetCleaning");
   m_jetCleaning->msg().setLevel( MSG::DEBUG ); 
@@ -446,20 +455,32 @@ EL::StatusCode xAODPFlowAna :: execute ()
   //----------------------------
   // Event information
   //--------------------------- 
-  const xAOD::EventInfo* eventInfo = 0;
-  ANA_CHECK(m_event->retrieve( eventInfo, "EventInfo"));  
+  m_EventInfo = 0;
+  ANA_CHECK(m_event->retrieve( m_EventInfo, "EventInfo"));  
   
   // check if the event is data or MC
   bool isMC = false;
   m_EvtWeight = 1.0;
   
-  if( eventInfo->eventType( xAOD::EventInfo::IS_SIMULATION ) )
-    isMC = true; 
-   
-  if( isMC ) { m_EvtWeight = eventInfo->mcEventWeight();}
-  Info("execute()", "Event number = %llu  Run Number =  %d  Event weight = %.2f  isMC = %s",eventInfo->eventNumber(), eventInfo->runNumber(), m_EvtWeight, (isMC ? "true" : "false"));
+  if( m_EventInfo->eventType( xAOD::EventInfo::IS_SIMULATION ) ) isMC = true; 
+  
+  if( isMC ) { m_EvtWeight = m_EventInfo->mcEventWeight();}
+  Info("execute()", "Event number = %llu  Run Number =  %d  Event weight = %.2f  isMC = %s",m_EventInfo->eventNumber(), m_EventInfo->runNumber(), m_EvtWeight, (isMC ? "true" : "false"));
 
 
+  //--------------------------------------------------------------------------------------------------
+  // Event cleaning to be applied on data:
+  // Cuts defined to remove problematic luminosity blocks (~1 minute of data taking) based on the GRL
+  // and individual events that suffer from detector-level or reconstruction problems. 
+  //---------------------------------------------------------------------------------------------------
+
+  if(!isMC){ // it's data!
+    bool dataEventPasses = isGoodDataEvent (m_EventInfo, m_grl);
+    if(!dataEventPasses){
+      return EL::StatusCode::SUCCESS; // go to the next event
+    } 
+  }
+  
   //trigger tools: here the trigger chain is chosen
   auto chainGroup = m_trigDecisionTool->getChainGroup("HLT_mu20_iloose_L1MU15, HLT_mu50");
   std::map<std::string,int> triggerCounts;
@@ -557,10 +578,6 @@ EL::StatusCode xAODPFlowAna :: execute ()
   Info("execute()", "  number of muons = %lu", m_Muons->size());
   PrintMuonInfo(m_Muons, true);
 
-  //---------------------------
-  // GRL 
-  //--------------------------- 
-  //Code to be added
 
   //------------------------------
   // Trigger (Efficiency and SF)
@@ -762,7 +779,8 @@ EL::StatusCode xAODPFlowAna :: execute ()
   // Zmumu selection
   //---------------------------
   if (ZmumuSelection(goodElectrons, goodMuons)){
-    //Perform the analysis
+    FillZmumuHistograms(goodMuons);
+    JetRecoil_Zmumu(goodMuons, goodEMTopoJets);
   }
   
 
@@ -866,6 +884,11 @@ EL::StatusCode xAODPFlowAna :: finalize ()
   
   
   //Remove the jet tool if it has been created
+  if (m_grl) {
+    delete m_grl;
+    m_grl = 0;
+  }
+  
   if( m_jetCleaning ) {
     delete m_jetCleaning;
     m_jetCleaning = 0;
