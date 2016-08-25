@@ -5,6 +5,7 @@
 
 #include "xAODRootAccess/TEvent.h"
 
+#include "xAODEventInfo/EventInfo.h"
 #include "xAODTruth/TruthParticleContainer.h"
 #include "xAODTruth/TruthVertexContainer.h"
 #include "xAODTracking/TrackParticle.h"
@@ -19,6 +20,10 @@
 #include "xAODCalCellInfo/CalCellInfoContainer.h"
 #include "xAODEgamma/ElectronContainer.h"
 #include "xAODMuon/MuonContainer.h"
+
+// Duplicated events & GRL
+#include "GoodRunsLists/GoodRunsListSelectionTool.h"
+//#include "EventLoopAlgs/DuplicateChecker.h"
 
 // ROOT include(s)
 #include <TH1.h>
@@ -123,6 +128,7 @@ class xAODPFlowAna : public EL::Algorithm
   //----------------------------------
   //  Utils functions
   //----------------------------------
+  bool isGoodDataEvent (const xAOD::EventInfo*, GoodRunsListSelectionTool*);
   void EnsurePhiInMinusPiToPi(double& );
   double deltaPhi(double , double );
     
