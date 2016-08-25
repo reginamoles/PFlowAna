@@ -53,11 +53,17 @@
 #include "PATInterfaces/SystematicRegistry.h"
 #include "PATInterfaces/SystematicVariation.h" 
 #include "PATInterfaces/SystematicsUtil.h"
+//--------
+// GRL
+//-------
+#include "GoodRunsLists/GoodRunsListSelectionTool.h"
 
 
 //----------------
 // EDM containers
 //----------------
+
+const xAOD::EventInfo* m_EventInfo;
 const xAOD::TruthParticleContainer* m_TruthParticles;
 const xAOD::TruthVertexContainer* m_TruthVertices;
 const xAOD::TrackParticleContainer* m_InDetTrackParticles;
@@ -112,6 +118,8 @@ TrigConf::xAODConfigTool *m_trigConfigTool;
 //JVT
 CP::JetJvtEfficiency *m_jetsf; 
 
+//GRL
+GoodRunsListSelectionTool *m_grl;
 
 #endif
 
