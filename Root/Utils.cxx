@@ -1,8 +1,29 @@
 #include <PFlowAna/xAODPFlowAna.h>
+#include <TSystem.h>
 
 //////////////////////////
 // Utils
 //////////////////////////
+
+// Apply data event/lumi-block cleaning
+bool xAODPFlowAna :: isGoodDataEvent (const xAOD::EventInfo* eventInfo, GoodRunsListSelectionTool *m_grl){
+  
+  // assume the event is good, then do checks and change to false if fails any selections 
+  bool goodEvt = true;
+
+  // check for detector imperfections
+  if(   (eventInfo->errorState(xAOD::EventInfo::LAr)==xAOD::EventInfo::Error )  ||
+	(eventInfo->errorState(xAOD::EventInfo::Tile)==xAOD::EventInfo::Error ) ||
+	(eventInfo->errorState(xAOD::EventInfo::SCT)==xAOD::EventInfo::Error )  ||
+	(eventInfo->isEventFlagBitSet(xAOD::EventInfo::Core, 18) ) ){
+    goodEvt = false;
+  }
+  
+  if(!m_grl->passRunLB(*eventInfo)) goodEvt = false;
+
+  return goodEvt;
+}
+
 
 void xAODPFlowAna :: EnsurePhiInMinusPiToPi(double& phi) {
   phi = fmod(phi, (2*M_PI));
@@ -19,3 +40,4 @@ double xAODPFlowAna :: deltaPhi(double phi1, double phi2) {
   else if(dPhi<-M_PI) dPhi=2*M_PI+dPhi;
   return dPhi;
 }
+
