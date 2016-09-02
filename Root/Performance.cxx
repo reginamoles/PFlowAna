@@ -41,6 +41,41 @@ void xAODPFlowAna :: resize_PFOVectors(const xAOD::PFOContainer* JetETMissCharge
   _pfo_iniEoPexp.resize(JetETMissChargedParticleFlowObjects->size());
   _pfo_inisigmaEoPexp.resize(JetETMissChargedParticleFlowObjects->size());
   _pfo_LFI.resize(JetETMissChargedParticleFlowObjects->size());
+  _pfo_SubtractStatus.resize(JetETMissChargedParticleFlowObjects->size());
+  _pfo_EtaEMB1.resize(JetETMissChargedParticleFlowObjects->size());
+  _pfo_PhiEMB1.resize(JetETMissChargedParticleFlowObjects->size());
+  _pfo_EtaEME1.resize(JetETMissChargedParticleFlowObjects->size());
+  _pfo_PhiEME1.resize(JetETMissChargedParticleFlowObjects->size());
+  _pfo_EtaEMB2.resize(JetETMissChargedParticleFlowObjects->size());
+  _pfo_PhiEMB2.resize(JetETMissChargedParticleFlowObjects->size());
+  _pfo_EtaEME2.resize(JetETMissChargedParticleFlowObjects->size());
+  _pfo_PhiEME2.resize(JetETMissChargedParticleFlowObjects->size());
+  _pfo_EtaEMB3.resize(JetETMissChargedParticleFlowObjects->size());
+  _pfo_PhiEMB3.resize(JetETMissChargedParticleFlowObjects->size());
+  _pfo_EtaEME3.resize(JetETMissChargedParticleFlowObjects->size());
+  _pfo_PhiEME3.resize(JetETMissChargedParticleFlowObjects->size());
+  _pfo_EtaHEC1.resize(JetETMissChargedParticleFlowObjects->size());
+  _pfo_PhiHEC1.resize(JetETMissChargedParticleFlowObjects->size());
+  _pfo_EtaHEC2.resize(JetETMissChargedParticleFlowObjects->size());
+  _pfo_PhiHEC2.resize(JetETMissChargedParticleFlowObjects->size());
+  _pfo_EtaHEC3.resize(JetETMissChargedParticleFlowObjects->size());
+  _pfo_PhiHEC3.resize(JetETMissChargedParticleFlowObjects->size());
+  _pfo_EtaHEC4.resize(JetETMissChargedParticleFlowObjects->size());
+  _pfo_PhiHEC4.resize(JetETMissChargedParticleFlowObjects->size());
+  _pfo_EtaTile1.resize(JetETMissChargedParticleFlowObjects->size());
+  _pfo_PhiTile1.resize(JetETMissChargedParticleFlowObjects->size());
+  _pfo_EtaTile2.resize(JetETMissChargedParticleFlowObjects->size());
+  _pfo_PhiTile2.resize(JetETMissChargedParticleFlowObjects->size());
+  _pfo_EtaTile3.resize(JetETMissChargedParticleFlowObjects->size());
+  _pfo_PhiTile3.resize(JetETMissChargedParticleFlowObjects->size());
+  _pfo_EOP1.resize(JetETMissChargedParticleFlowObjects->size());
+  _pfo_EOPTotal.resize(JetETMissChargedParticleFlowObjects->size());
+  _pfo_NMatchedClusterInCellLevelSubtraction.resize(JetETMissChargedParticleFlowObjects->size());
+  _pfo_eMatchedCluster1.resize(JetETMissChargedParticleFlowObjects->size());
+  _pfo_eMatchedCluster2.resize(JetETMissChargedParticleFlowObjects->size());
+  _pfo_RpMatchedCluster1.resize(JetETMissChargedParticleFlowObjects->size());
+  _pfo_RpMatchedCluster2.resize(JetETMissChargedParticleFlowObjects->size());
+
   _clMatchedEflow.resize(JetETMissChargedParticleFlowObjects->size());  
   _clMatchedEflowEcone15.resize(JetETMissChargedParticleFlowObjects->size());
   
@@ -85,9 +120,43 @@ void xAODPFlowAna :: fill_PFOVectors(const xAOD::PFOContainer* JetETMissChargedP
     
     cpfo_index = std::distance(JetETMissChargedParticleFlowObjects->begin(),cpfo_itr);
     _pfo_Pt.at(cpfo_index) = (*cpfo_itr)->pt();
-    _pfo_iniEoPexp.at(cpfo_index) = (*cpfo_itr)->auxdata< float >("eflowRec_tracksExpectedEnergyDeposit"); //EExpect
-    _pfo_inisigmaEoPexp.at(cpfo_index) = (*cpfo_itr)->auxdata< float >("eflowRec_tracksExpectedEnergyDepositVariance"); //varEExpect
-    _pfo_LFI.at(cpfo_index) = (*cpfo_itr)->auxdata< int >("eflowRec_FirstIntLayer"); //FirstIntLayer
+    _pfo_iniEoPexp.at(cpfo_index) = (*cpfo_itr)->auxdata< float >("EExpect"); //eflowRec_tracksExpectedEnergyDeposit
+    _pfo_inisigmaEoPexp.at(cpfo_index) = (*cpfo_itr)->auxdata< float >("varEExpect"); //eflowRec_tracksExpectedEnergyDepositVariance
+    _pfo_LFI.at(cpfo_index) = (*cpfo_itr)->auxdata< int >("FirstIntLayer"); //eflowRec_FirstIntLayer
+    _pfo_SubtractStatus.at(cpfo_index) = (*cpfo_itr)->auxdata< int >("SubtractStatus");
+    _pfo_EtaEMB1.at(cpfo_index) = (*cpfo_itr)->auxdata< float >("EtaEMB1");
+    _pfo_PhiEMB1.at(cpfo_index) = (*cpfo_itr)->auxdata< float >("PhiEMB1");
+    _pfo_EtaEME1.at(cpfo_index) = (*cpfo_itr)->auxdata< float >("EtaEME1");
+    _pfo_PhiEME1.at(cpfo_index) = (*cpfo_itr)->auxdata< float >("PhiEME1");
+    _pfo_EtaEMB2.at(cpfo_index) = (*cpfo_itr)->auxdata< float >("EtaEMB2");
+    _pfo_PhiEMB2.at(cpfo_index) = (*cpfo_itr)->auxdata< float >("PhiEMB2");
+    _pfo_EtaEME2.at(cpfo_index) = (*cpfo_itr)->auxdata< float >("EtaEME2");
+    _pfo_PhiEME2.at(cpfo_index) = (*cpfo_itr)->auxdata< float >("PhiEME2");
+    _pfo_EtaEMB3.at(cpfo_index) = (*cpfo_itr)->auxdata< float >("EtaEMB3");
+    _pfo_PhiEMB3.at(cpfo_index) = (*cpfo_itr)->auxdata< float >("PhiEMB3");
+    _pfo_EtaEME3.at(cpfo_index) = (*cpfo_itr)->auxdata< float >("EtaEME3");
+    _pfo_PhiEME3.at(cpfo_index) = (*cpfo_itr)->auxdata< float >("PhiEME3");
+    _pfo_EtaHEC1.at(cpfo_index) = (*cpfo_itr)->auxdata< float >("EtaHEC1");
+    _pfo_PhiHEC1.at(cpfo_index) = (*cpfo_itr)->auxdata< float >("PhiHEC1");
+    _pfo_EtaHEC2.at(cpfo_index) = (*cpfo_itr)->auxdata< float >("EtaHEC2");
+    _pfo_PhiHEC2.at(cpfo_index) = (*cpfo_itr)->auxdata< float >("PhiHEC2");
+    _pfo_EtaHEC3.at(cpfo_index) = (*cpfo_itr)->auxdata< float >("EtaHEC3");
+    _pfo_PhiHEC3.at(cpfo_index) = (*cpfo_itr)->auxdata< float >("PhiHEC3");
+    _pfo_EtaHEC4.at(cpfo_index) = (*cpfo_itr)->auxdata< float >("EtaHEC4");
+    _pfo_PhiHEC4.at(cpfo_index) = (*cpfo_itr)->auxdata< float >("PhiHEC4");
+    _pfo_EtaTile1.at(cpfo_index) = (*cpfo_itr)->auxdata< float >("EtaTile1");
+    _pfo_PhiTile1.at(cpfo_index) = (*cpfo_itr)->auxdata< float >("PhiTile1");
+    _pfo_EtaTile2.at(cpfo_index) = (*cpfo_itr)->auxdata< float >("EtaTile2");
+    _pfo_PhiTile2.at(cpfo_index) = (*cpfo_itr)->auxdata< float >("PhiTile2");
+    _pfo_EtaTile3.at(cpfo_index) = (*cpfo_itr)->auxdata< float >("EtaTile3");
+    _pfo_PhiTile3.at(cpfo_index) = (*cpfo_itr)->auxdata< float >("PhiTile3");
+    _pfo_EOP1.at(cpfo_index) = (*cpfo_itr)->auxdata< float >("EOP1");
+    _pfo_EOPTotal.at(cpfo_index) = (*cpfo_itr)->auxdata< float >("EOPTotal");
+    _pfo_NMatchedClusterInCellLevelSubtraction.at(cpfo_index) = (*cpfo_itr)->auxdata< float >("NMatchedClusterInCellLevelSubtraction");
+    _pfo_eMatchedCluster1.at(cpfo_index) = (*cpfo_itr)->auxdata< float >("eMatchedCluster1");
+    _pfo_eMatchedCluster2.at(cpfo_index) = (*cpfo_itr)->auxdata< float >("eMatchedCluster2");
+    _pfo_RpMatchedCluster1.at(cpfo_index) = (*cpfo_itr)->auxdata< float >("RpMatchedCluster1");
+    _pfo_RpMatchedCluster2.at(cpfo_index) = (*cpfo_itr)->auxdata< float >("RpMatchedCluster2");
 
     //Not clear if this is the correct way to match clusters!
     const xAOD::CaloCluster* matchedCluster = (*cpfo_itr)->cluster(0);
@@ -642,6 +711,40 @@ void xAODPFlowAna :: clear_PerformanceVectors(){
   _pfo_iniEoPexp.clear();
   _pfo_inisigmaEoPexp.clear();
   _pfo_LFI.clear();
+  _pfo_SubtractStatus.clear();
+  _pfo_EtaEMB1.clear();
+  _pfo_PhiEMB1.clear();
+  _pfo_EtaEME1.clear();
+  _pfo_PhiEME1.clear();
+  _pfo_EtaEMB2.clear();
+  _pfo_PhiEMB2.clear();
+  _pfo_EtaEME2.clear();
+  _pfo_PhiEME2.clear();
+  _pfo_EtaEMB3.clear();
+  _pfo_PhiEMB3.clear();
+  _pfo_EtaEME3.clear();
+  _pfo_PhiEME3.clear();
+  _pfo_EtaHEC1.clear();
+  _pfo_PhiHEC1.clear();
+  _pfo_EtaHEC2.clear();
+  _pfo_PhiHEC2.clear();
+  _pfo_EtaHEC3.clear();
+  _pfo_PhiHEC3.clear();
+  _pfo_EtaHEC4.clear();
+  _pfo_PhiHEC4.clear();
+  _pfo_EtaTile1.clear();
+  _pfo_PhiTile1.clear();
+  _pfo_EtaTile2.clear();
+  _pfo_PhiTile2.clear();
+  _pfo_EtaTile3.clear();
+  _pfo_PhiTile3.clear();
+  _pfo_EOP1.clear();
+  _pfo_EOPTotal.clear();
+  _pfo_NMatchedClusterInCellLevelSubtraction.clear();
+  _pfo_eMatchedCluster1.clear();
+  _pfo_eMatchedCluster2.clear();
+  _pfo_RpMatchedCluster1.clear();
+  _pfo_RpMatchedCluster2.clear();
   _pfo_hasClusterMatched.clear();
   _pfo_hasClusterMatched_Index.clear();
   _pfo_hasClusterMatched_Eta.clear();

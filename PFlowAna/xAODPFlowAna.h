@@ -163,6 +163,75 @@ class xAODPFlowAna : public EL::Algorithm
   std::vector<float> _pfo_iniEoPexp;//!
   //The expected width of E/p value of the pth charged object
   std::vector<float> _pfo_inisigmaEoPexp;//!
+  //The subtract status of the pth charged object
+  std::vector<int> _pfo_SubtractStatus;//!
+  //The EtaEMB1 of extract of the pth charged object
+  std::vector<float> _pfo_EtaEMB1;//!
+  //The PhiEMB1 of extract of the pth charged object
+  std::vector<float> _pfo_PhiEMB1;//!
+  //The EtaEME1 of extract of the pth charged object
+  std::vector<float> _pfo_EtaEME1;//!
+  //The PhiEME1 of extract of the pth charged object
+  std::vector<float> _pfo_PhiEME1;//!
+  //The EtaEMB2 of extract of the pth charged object
+  std::vector<float> _pfo_EtaEMB2;//!
+  //The PhiEMB2 of extract of the pth charged object
+  std::vector<float> _pfo_PhiEMB2;//!
+  //The EtaEME2 of extract of the pth charged object
+  std::vector<float> _pfo_EtaEME2;//!
+  //The PhiEME2 of extract of the pth charged object
+  std::vector<float> _pfo_PhiEME2;//!
+  //The EtaEMB3 of extract of the pth charged object
+  std::vector<float> _pfo_EtaEMB3;//!
+  //The PhiEMB3 of extract of the pth charged object
+  std::vector<float> _pfo_PhiEMB3;//!
+  //The EtaEME3 of extract of the pth charged object
+  std::vector<float> _pfo_EtaEME3;//!
+  //The PhiEME3 of extract of the pth charged object
+  std::vector<float> _pfo_PhiEME3;//!
+  //The EtaHEC1 of extract of the pth charged object
+  std::vector<float> _pfo_EtaHEC1;//!
+  //The PhiHEC1 of extract of the pth charged object
+  std::vector<float> _pfo_PhiHEC1;//!
+  //The EtaHEC2 of extract of the pth charged object
+  std::vector<float> _pfo_EtaHEC2;//!
+  //The PhiHEC2 of extract of the pth charged object
+  std::vector<float> _pfo_PhiHEC2;//!
+  //The EtaHEC3 of extract of the pth charged object
+  std::vector<float> _pfo_EtaHEC3;//!
+  //The PhiHEC3 of extract of the pth charged object
+  std::vector<float> _pfo_PhiHEC3;//!
+  //The EtaHEC4 of extract of the pth charged object
+  std::vector<float> _pfo_EtaHEC4;//!
+  //The PhiHEC4 of extract of the pth charged object
+  std::vector<float> _pfo_PhiHEC4;//!
+  //The EtaTile1 of extract of the pth charged object
+  std::vector<float> _pfo_EtaTile1;//!
+  //The PhiTile1 of extract of the pth charged object
+  std::vector<float> _pfo_PhiTile1;//!
+  //The EtaTile2 of extract of the pth charged object
+  std::vector<float> _pfo_EtaTile2;//!
+  //The PhiTile2 of extract of the pth charged object
+  std::vector<float> _pfo_PhiTile2;//!
+  //The EtaTile3 of extract of the pth charged object
+  std::vector<float> _pfo_EtaTile3;//!
+  //The PhiTile3 of extract of the pth charged object
+  std::vector<float> _pfo_PhiTile3;//!
+  //The first cluster EOP of the pth charged object
+  std::vector<float> _pfo_EOP1;//!
+  //The all clusters EOP of the pth charged object
+  std::vector<float> _pfo_EOPTotal;//!
+  //The number of CellLevel mathing of the pth charged object
+  std::vector<float> _pfo_NMatchedClusterInCellLevelSubtraction;//!
+  //The energy of first cluster
+  std::vector<float> _pfo_eMatchedCluster1;//!
+  //The energy of second cluster
+  std::vector<float> _pfo_eMatchedCluster2;//!
+  //The Rprime of the first cluster
+  std::vector<float> _pfo_RpMatchedCluster1;//!
+  //The Rprime of the second cluster
+  std::vector<float> _pfo_RpMatchedCluster2;//!
+
   //Topocluster energy at em scale
   std::vector<float> _topocluster_em_E;//!
   

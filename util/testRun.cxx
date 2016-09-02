@@ -23,13 +23,12 @@ int main( int argc, char* argv[] ) {
   // use SampleHandler to scan all of the subdirectories of a directory for particular MC single file:
   SH::SampleHandler sh;
   //DiJetSample
-  //const char* inputFilePath = gSystem->ExpandPathName ("$DataFiles/JZ3/user.moles.147913.Pythia8_AU2CT10_jetjet_JZ3W.recon.AOD.e3099_s2832_r7617_AOD.67276209/");
-  //SH::ScanDir().filePattern("user.moles.7760083.AOD._000102.pool.root").scan(sh,inputFilePath); //One indiviudual file
-  //SH::ScanDir().scan(sh,inputFilePath); //All files in the directory
+  const char* inputFilePath = gSystem->ExpandPathName ("/afs/cern.ch/work/z/zhangr/eflowRec/data/matchingStudy/user.zhangr.mc15_13TeV.361021.Pythia8EvtGen_A14NNPDF23LO_jetjet_JZ1W.recon.AOD.e3569_s2832_r8014_AOD.94973736/");
+  SH::ScanDir().filePattern("user.zhangr.9335218.AOD._000001.pool.root").scan(sh,inputFilePath); //One indiviudual file
 
   //SinglePions
-  const char* inputFilePath = gSystem->ExpandPathName ("$DataFiles/SinglePions/mc15c_piplus/user.moles.mc15_13TeV.428001.ParticleGun_single_piplus_logE0p2to2000.recon.AOD.e3501_s2832_r8014_AOD/");
-  SH::ScanDir().filePattern("user.moles.8671065.AOD._000411.pool.root").scan(sh,inputFilePath); //One indiviudual file
+  //const char* inputFilePath = gSystem->ExpandPathName ("$DataFiles/SinglePions/mc15c_piplus/user.moles.mc15_13TeV.428001.ParticleGun_single_piplus_logE0p2to2000.recon.AOD.e3501_s2832_r8014_AOD/");
+  //SH::ScanDir().filePattern("user.moles.8671065.AOD._000411.pool.root").scan(sh,inputFilePath); //One indiviudual file
   //const char* inputFilePath = gSystem->ExpandPathName ("/afs/cern.ch/user/z/zhangr/work/eflowRec/r19.05-53/Run");
   //SH::ScanDir().filePattern("AOD.pool.root").scan(sh,inputFilePath); //One indiviudual file
 
@@ -48,7 +47,7 @@ int main( int argc, char* argv[] ) {
   EL::Job job;
   job.sampleHandler( sh );
   job.options()->setDouble (EL::Job::optSkipEvents, 0);
-  job.options()->setDouble (EL::Job::optMaxEvents, 100);
+  job.options()->setDouble (EL::Job::optMaxEvents, 5);
 
   // Add our analysis to the job:
   // SinglePionLowPerformanceStudies, DijetLowPerformance, DijetSubtraction, Zmumu

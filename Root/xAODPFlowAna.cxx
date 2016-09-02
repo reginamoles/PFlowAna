@@ -161,11 +161,20 @@ EL::StatusCode xAODPFlowAna :: histInitialize ()
   bookH1DPerformanceHistogram("dR",_matchScheme, _ptRange, _etaRange, n_bins, x_low, x_up);
   
   //====================================
-  // Eficiency and purity
+  // Efficiency and purity
   //====================================
   int n_effbins = 20; float eff_low = 0; float eff_up = 1.0001;
   bookH1DPerformanceHistogram("Eff","",_ptRange, _etaRange, n_effbins, eff_low, eff_up);
   bookH1DPerformanceHistogram("Pur","",_ptRange, _etaRange, n_effbins, eff_low, eff_up);
+
+  //====================================
+  // 1->2 Matching
+  //====================================
+  bookH1DPerformanceHistogram("SubtractStatus","",_ptRange, _etaRange, 5, 0, 5);
+  bookH1DPerformanceHistogram("EOP","",_ptRange, _etaRange, 5, 0, 1.5);
+  bookH1DPerformanceHistogram("EOPtotal","",_ptRange, _etaRange, 5, 0, 1.5);
+  bookH1DPerformanceHistogram("Energy1st","",_ptRange, _etaRange, 20, 0, 20);
+  bookH1DPerformanceHistogram("Energy2rd","",_ptRange, _etaRange, 20, 0, 20);
 
   //====================================
   // Cluster with 90% of energy
