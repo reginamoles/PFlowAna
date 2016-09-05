@@ -68,54 +68,6 @@ EL::StatusCode xAODPFlowAna :: setupJob (EL::Job& job)
 }
 
 
-///////////////////////////
-// Histograms booking
-//////////////////////////
-void xAODPFlowAna :: bookH1DHistogram(std::string name, int n_bins, float x_low, float x_up){
-  Info("bookH1DHistogram () ", "bookH1DHistograms...");
-  
-  TH1D* h1 = new TH1D(name.c_str(),name.c_str(),n_bins, x_low, x_up);
-  h1->Sumw2();
-  m_H1Dict[name] = h1;
-  wk()->addOutput (m_H1Dict[name]);
-  return; 
-}
-
-std::string xAODPFlowAna::histName(unsigned i_pt, unsigned i_eta, const std::string& name, const std::string& matchScheme, std::vector<float>& PtRange,
-                                   std::vector<float>& EtaRange) {
-
-  std::string complete_name = "WrongName";
-  if (i_pt != PtRange.size()-1 && i_eta != EtaRange.size()-1) {
-    complete_name = (name + matchScheme + "_" + std::to_string((int) (PtRange.at(i_pt))) + "_" + std::to_string((int) (PtRange.at(i_pt+1))) + "GeV__eta"
-                     + std::to_string((int) ((10 * EtaRange.at(i_eta)))) + "_" + std::to_string((int) ((10 * EtaRange.at(i_eta+1))))).c_str();
-  }
-  else {
-    complete_name = (name + matchScheme + "_" + std::to_string((int) (PtRange.at(i_pt))) + "GeV__eta"
-                      + std::to_string((int) ((10 * EtaRange.at(i_eta)))) ).c_str();
-  }
-  return complete_name;
-}
-
-
-void xAODPFlowAna :: bookH1DPerformanceHistogram(std::string name, std::string matchScheme, std::vector<float> PtRange, std::vector<float> EtaRange, int n_bins, float x_low, float x_up)
-{
-  Info("bookH1DPerformanceHistogram () ", "bookH1DPerformanceHistograms...");
-
-   for (unsigned i_pt = 0; i_pt<PtRange.size(); i_pt++){
-    for (unsigned i_eta =0; i_eta<EtaRange.size(); i_eta++){
-      
-      std::string complete_name = histName(i_pt, i_eta, name, matchScheme, PtRange, EtaRange);
-
-      TH1D* h1 = new TH1D(complete_name.c_str(), complete_name.c_str(),n_bins, x_low, x_up);
-      h1->Sumw2();
-      m_H1Dict[complete_name] = h1;
-      wk()->addOutput (m_H1Dict[complete_name]);
-    }
-  }
-  return ;
-} 
-
-
 EL::StatusCode xAODPFlowAna :: histInitialize ()
 {
   // Here you do everything that needs to be done at the very
@@ -132,24 +84,45 @@ EL::StatusCode xAODPFlowAna :: histInitialize ()
   
   
   /* WIP: a directory structure has to be created to store the histograms */
-  //====================================
-  // DiJet subtraction
-  //====================================
+ 
   if(m_DijetSubtraction){
     
-    double TurnOffBins[20]={500.,631.,794.,1000.,1259.,1585.,1995.,2512.,3162.,3981.,5012.,6310.,7943.,10000.,12589.,15849.,19953.,25119.,31623.,40000.};
-    double TurnOffBins2[26]={-5.0,-4.0,-3.0,-2.5,-2.0,-1.5,-1.0,-0.5,0.0,0.5,1.0,1.5,2.0,2.5,3.0,4.0,5.0,6.0,7.0,8.0,10.,12.,14.,16.,20.,25.};
-    hTurnOff_Entries_vs_Pull_eta_00_04_hist = new TH2D("hTurnOff_Entries_vs_Pull_eta_00_04_hist","hTurnOff_Entries_vs_Pull_eta_00_04_hist",19,TurnOffBins,25,TurnOffBins2);
-    wk()->addOutput (hTurnOff_Entries_vs_Pull_eta_00_04_hist);
-    hTurnOff_CalHitsOverPt_eta_00_04_hist = new TH2D ("hTurnOff_CalHitsOverPt_eta_00_04_hist","hTurnOff_CalHitsOverPt_eta_00_04_hist",19,TurnOffBins,40,-0.5,1.5);
-    wk()->addOutput (hTurnOff_CalHitsOverPt_eta_00_04_hist);
-    hTurnOff_CalHitsRemainingOverPt_vs_Pull_eta_00_04_hist =
-      new TProfile2D("hTurnOff_CalHitsRemainingOverPt_vs_Pull_eta_00_04_hist","hTurnOff_CalHitsRemainingOverPt_vs_Pull_eta_00_04_hist",19,TurnOffBins,25,TurnOffBins2,"S");
-    wk()->addOutput (hTurnOff_CalHitsRemainingOverPt_vs_Pull_eta_00_04_hist);
+    //===================================================
+    // Track-jet multiplicity and leading jet-track pt 
+    //===================================================
+    int n_bins = 100; float x_low = 0.; float x_up = 100.;
+    bookH1DPerformanceHistogram("h_TrackJetMultiplicity","", _ptRange, _etaRange, n_bins, x_low, x_up);
+    bookH1DPerformanceHistogram("h_TrackJetLeadPt","", _ptRange, _etaRange, n_bins, x_low, x_up);
+ 
+    //====================================
+    // Subtraction criteria
+    //====================================
+    // Which is the criteria that should be use for the binning?
+    // from Chris: {500.,600.,750.,950.,1200.,1500.,1850.,2250.,2700.,3200.,3750.,4350.,5000.,5700.,6450.,15849.,19953.,25119.,31623.,40000.};
+    int n_binX =25;
+    double ptTrack_trueRange[26] = {500., 650.,850.,1100., 1400., 1800., 2300., 2950., 3800., 4800., 6100., 7700., 9300., 11300., 13800., 16800., 20800., 25800., 31800.,
+					    39800., 50000., 60000., 70000., 80000., 90000., 100000.,};
+    int n_binY =25;
+    double PullRange[26] = {-5.0,-4.0,-3.0,-2.5,-2.0,-1.5,-1.0,-0.5,0.0,0.5,1.0,1.5,2.0,2.5,3.0,4.0,5.0,6.0,7.0,8.0,10.,12.,14.,16.,20.,25.};
+    std::vector<int> PullDeltaR= {10, 15, 20};
+    
+    bookSubHistogram("h_Entries_vs_Pull", PullDeltaR, _etaRange, n_binX, ptTrack_trueRange,  n_binY, PullRange, "TH2D");
+    bookSubHistogram("h_CalHitsRemainingOverPt_vs_Pull", PullDeltaR, _etaRange, n_binX, ptTrack_trueRange,  n_binY, PullRange, "TProfile");
+    bookSubHistogram2("h_CalHitsOverPt", _etaRange, n_binX, ptTrack_trueRange, 40, -0.5, 1.5);
+         
+    //====================================
+    // Track-jet density
+    //====================================
+
+    
+    //====================================
+    // Jet pt resolution
+    //====================================
+    
   }
 
  
-  if(m_SinglePionLowPerformanceStudies || m_DijetLowPerformance){
+  if(m_SinglePionLowPerformanceStudies || m_DijetLowPerformance || m_DijetSubtraction){
     //====================================
     // Track cluster matching histograms
     //====================================
@@ -597,193 +570,194 @@ EL::StatusCode xAODPFlowAna :: execute ()
   //--------------------------- 
   //the order for the tools has to be checked!
 
-  int numGoodJets = 0;
 
-  // Create the new container and its auxiliary store to store the good and calibrated jets .
-  // AuxContainerBase is used because if we were using a derivation as input some of the original auxillary variables
-  // may have been slimmed away (removed to make the container smaller), so if we were to do a deep-copy of the full JetAuxContainer then we would make our container larger than necessary.
-  xAOD::JetContainer* goodEMTopoJets = new xAOD::JetContainer();
-  xAOD::AuxContainerBase* goodEMTopoJetsAux = new xAOD::AuxContainerBase();
-  goodEMTopoJets->setStore( goodEMTopoJetsAux );
   
-  xAOD::JetContainer::const_iterator jet_itr =  m_Jets->begin();
-  xAOD::JetContainer::const_iterator jet_end =  m_Jets->end();
-  for( ; jet_itr != jet_end; ++jet_itr ) {
-    
-    Info("Execute () ", "Jet before calibration E = %.2f GeV  pt = %.2f GeV eta = %.2f  phi =  %.2f",
-	 (*jet_itr)->e()/GEV,(*jet_itr)->pt()/GEV, (*jet_itr)->eta(), (*jet_itr)->phi());
-    
-    //Cleaning TOOL
-    //Should we remove the whole event or only the jet? Top analyses remove the whole event.
-    if( !m_jetCleaning->accept( **jet_itr )) continue; //only keep good clean jets
-    numGoodJets++;
-    
-    //Calibration Tool (Jet Calibration)
-    xAOD::Jet* jet = new xAOD::Jet();
-    m_akt4EMTopoCalibrationTool->calibratedCopy(**jet_itr,jet); //make a calibrated copy, assuming a copy hasn't been made already
-    
-    Info("Execute () ", "Jet after Calibration E = %.10f GeV  pt = %.10f GeV eta = %.2f  phi =  %.2f",
-     	 jet->e()/GEV, jet->pt()/GEV, jet->eta(), jet->phi());
-    
-    //JER Tool (Jet Energy Resolution)
-    double resMC = m_JERTool->getRelResolutionMC(jet);
-    double resData = m_JERTool->getRelResolutionData(jet);
-    
-    Info("Execute () ","resMC = %.10f  resData = %.10f ", resMC, resData);
-    
-    ANA_CHECK(m_SmearTool->applyCorrection(*jet));
-    //virtual CP::CorrectionCode applyCorrection(xAOD::Jet& jet);
+  if(m_Zmumu){
+    int numGoodJets = 0;
 
-    if(!(m_jetsf->passesJvtCut(*jet))) continue; //*** Does it have to be applied to all jets or only those with pt < 40GeV ?
+    // Create the new container and its auxiliary store to store the good and calibrated jets .
+    // AuxContainerBase is used because if we were using a derivation as input some of the original auxillary variables
+    // may have been slimmed away (removed to make the container smaller), so if we were to do a deep-copy of the full JetAuxContainer then we would make our container larger than necessary.
+    xAOD::JetContainer* goodEMTopoJets = new xAOD::JetContainer();
+    xAOD::AuxContainerBase* goodEMTopoJetsAux = new xAOD::AuxContainerBase();
+    goodEMTopoJets->setStore( goodEMTopoJetsAux );
     
-    goodEMTopoJets->push_back(jet); // jet acquires the m_akt4CalibEMTopo auxstore
-    *jet= **jet_itr; // copies auxdata from one auxstore to the other
+    xAOD::JetContainer::const_iterator jet_itr =  m_Jets->begin();
+    xAOD::JetContainer::const_iterator jet_end =  m_Jets->end();
+    for( ; jet_itr != jet_end; ++jet_itr ) {
+      
+      Info("Execute () ", "Jet before calibration E = %.2f GeV  pt = %.2f GeV eta = %.2f  phi =  %.2f",
+	   (*jet_itr)->e()/GEV,(*jet_itr)->pt()/GEV, (*jet_itr)->eta(), (*jet_itr)->phi());
+      
+      //Cleaning TOOL
+      //Should we remove the whole event or only the jet? Top analyses remove the whole event.
+      if( !m_jetCleaning->accept( **jet_itr )) continue; //only keep good clean jets
+      numGoodJets++;
+      
+      //Calibration Tool (Jet Calibration)
+      xAOD::Jet* jet = new xAOD::Jet();
+      m_akt4EMTopoCalibrationTool->calibratedCopy(**jet_itr,jet); //make a calibrated copy, assuming a copy hasn't been made already
+      
+      Info("Execute () ", "Jet after Calibration E = %.10f GeV  pt = %.10f GeV eta = %.2f  phi =  %.2f",
+	   jet->e()/GEV, jet->pt()/GEV, jet->eta(), jet->phi());
+      
+      //JER Tool (Jet Energy Resolution)
+      double resMC = m_JERTool->getRelResolutionMC(jet);
+      double resData = m_JERTool->getRelResolutionData(jet);
+      
+      Info("Execute () ","resMC = %.10f  resData = %.10f ", resMC, resData);
+      
+      ANA_CHECK(m_SmearTool->applyCorrection(*jet));
+      //virtual CP::CorrectionCode applyCorrection(xAOD::Jet& jet);
+      
+      if(!(m_jetsf->passesJvtCut(*jet))) continue; //*** Does it have to be applied to all jets or only those with pt < 40GeV ?
+      
+      goodEMTopoJets->push_back(jet); // jet acquires the m_akt4CalibEMTopo auxstore
+      *jet= **jet_itr; // copies auxdata from one auxstore to the other
+      
+      Info("Execute () ", "Jet after Smearing E = %.10f GeV  pt = %.10f GeV eta = %.2f  phi =  %.2f",
+	   jet->e()/GEV, jet->pt()/GEV, jet->eta(), jet->phi());
+    }
     
-    Info("Execute () ", "Jet after Smearing E = %.10f GeV  pt = %.10f GeV eta = %.2f  phi =  %.2f",
-	 jet->e()/GEV, jet->pt()/GEV, jet->eta(), jet->phi());
+    //Just to check that GoodEMTopoJets has been store properly
+    jet_itr =  goodEMTopoJets->begin();
+    jet_end =  goodEMTopoJets->end();
+    for( ; jet_itr != jet_end; ++jet_itr ) {
+      Info("Execute () ", "goodEMTopoJets: E = %.2f GeV  pt = %.2f GeV eta = %.2f  phi =  %.2f",
+	   (*jet_itr)->e()/GEV,(*jet_itr)->pt()/GEV, (*jet_itr)->eta(), (*jet_itr)->phi());
+    }
+    
+    
+    //** It has to be revisited. CorrectCopy doing nothing, not sure if the Medium is OK implemented, d0&z0 cuts still missing
+    //---------------------------
+    // Tools for Electrons
+    //--------------------------- 
+    // Create the new container and its auxiliary store to store the good and calibrated jets.
+    xAOD::ElectronContainer* goodElectrons = new xAOD::ElectronContainer();
+    xAOD::AuxContainerBase* goodElectronsAux = new xAOD::AuxContainerBase();
+    goodElectrons->setStore( goodElectronsAux );
+    
+    // //Loop over vertices and look for good primary vertex (needed for z0 electron cut)
+    // for (xAOD::VertexContainer::const_iterator vxIter = vxContainer->begin(); vxIter != vxContainer->end(); ++vxIter) {
+    //   // Select good primary vertex
+    //   if ((*vxIter)->vertexType() == xAOD::VxType::PriVtx) {
+    //     //This is the primary vertex
+    //   }
+    // }
+    
+    xAOD::ElectronContainer::const_iterator el_itr = m_Electrons->begin();
+    xAOD::ElectronContainer::const_iterator el_end = m_Electrons->end();
+    for( ; el_itr != el_end; ++el_itr ) {
+      
+      Info("Execute () ", "Electron before slecetion/calibration E = %.2f GeV  pt = %.2f GeV eta = %.2f  phi =  %.2f",
+	   (*el_itr)->e()/GEV,(*el_itr)->pt()/GEV, (*el_itr)->eta(), (*el_itr)->phi());
+      
+      //Reject bad electrons
+      if( !(*el_itr)->isGoodOQ(xAOD::EgammaParameters::BADCLUSELECTRON) ) continue;
+      std::cout<<"Pass isGoodOQ"<<std::endl;
+      // Formally unnecessary because all electrons in the container have these authors by construction
+      if ( !(*el_itr)->author(xAOD::EgammaParameters::AuthorElectron) && !(*el_itr)->author(xAOD::EgammaParameters::AuthorAmbiguous) ) continue;
+      std::cout<<"Pass Author"<<std::endl;
+      // Calorimeter crack excluded
+      if  ( fabs( (*el_itr)->caloCluster()->etaBE(2) ) >1.37 &&  fabs( (*el_itr)->caloCluster()->etaBE(2) ) <1.52) continue;
+      std::cout<<"Is not in the crack region"<<std::endl;
+      // Reject electrons outside the kinematic acceptance
+      if (( (*el_itr)->pt() < 7000) || (fabs( (*el_itr)->caloCluster()->etaBE(2) ) > 2.47 )) continue;
+      
+      std::cout<<"Kinematic region selected"<<std::endl;
+      // // Electron d0 and z0 cut: |d0BL significance |<5 and |Δz0BL*sinθ|<0.5 mm (***still in progress)
+      // xAOD::TrackParticle *tp_el = (*el_itr)->trackParticle() ; 
+      // double d0sig = xAOD::TrackingHelpers::d0significance( tp_el, m_event->beamPosSigmaX(), m_event->beamPosSigmaY(), m_event->beamPosSigmaXY() );
+      // xAOD::Vertex vtx; //(***) Primary vertex has to be computed
+      // //PV has to be chosen properly
+      // float delta_z0 = fabs(tp_el->z0() + tp_el->vz() - vtx->z());
+      // if(fabs(d0sig) < 5) >= continue;
+      // if(fabs(delta_z0*TMath::sin(tp_el->theta)) >= 0.5) continue;
+      // Electron Identification tool
+      // std::cout<<"MediumLH = "<<m_MediumLH->accept(*el_itr)<<std::endl;
+      std::cout<<"VeryLooseLHElectron = "<<m_VeryLooseLHElectron->accept(*el_itr)<<std::endl;
+      if(!m_VeryLooseLHElectron->accept(*el_itr)) continue; 
+      
+      //    if(!m_MediumLH->accept(*el_itr)) continue; 
+      //std::cout<<"is LHMediumSel"<<std::endl;
+      //Isolation
+      //if (!m_iso->accept( **el_itr )) continue; //***Has to be applied after or before calibration?  
+      //std::cout<<"is Isolated"<<std::endl;
+      
+      //Calibration Tool (Jet Calibration)
+      xAOD::Electron* el = NULL;
+      m_electronCalibrationAndSmearingTool->correctedCopy(**el_itr,el); //make a calibrated copy, assuming a copy hasn't been made already
+      goodElectrons->push_back(el); // jet acquires the m_akt4CalibEMTopo auxstore
+      *el= **el_itr; // copies auxdata from one auxstore to the other
+      
+      //Info("execute()", "corrected electron pt = %.2f GeV", ((*el_itr)->pt() * 0.001));  
+      //if (!m_iso->accept( **el_itr )) continue; //***Has to be applied after or before calibration? 
+      // m_electronCalibrationAndSmearingTool->applyCorrection(**el_itr);
+      // xAOD::Electron* electrondc = new xAOD::Electron();
+      //goodElectrons->push_back( electrondc ); // jet acquires the goodJets auxstore
+      // *electrondc= **el_itr; // copies auxdata from one auxstore to the other
+    }
+    
+    Info("execute()", "  number of good electrons = %lu", goodElectrons->size());
+    //Just to check that GoodElectrons has been store properly
+    el_itr =  goodElectrons->begin();
+    el_end =  goodElectrons->end();
+    for( ; el_itr != el_end; ++el_itr ) {
+      Info("Execute () ", "goodElectrons: E = %.2f GeV  pt = %.2f GeV eta = %.2f  phi =  %.2f",
+	   (*el_itr)->e()/GEV,(*el_itr)->pt()/GEV, (*el_itr)->eta(), (*el_itr)->phi());
+    }
+    
+    
+    //*** Problem with corrected copy ; not stored properly! Have a look into the push_back
+    //---------------------------
+    // Tools for Muons
+    //---------------------------
+    // Create the new container and its auxiliary store to store the good and calibrated jets .
+    xAOD::MuonContainer* goodMuons = new xAOD::MuonContainer();
+    xAOD::AuxContainerBase* goodMuonsAux = new xAOD::AuxContainerBase();
+    goodMuons->setStore( goodMuonsAux ); //< Connect the two
+    
+    xAOD::MuonContainer::const_iterator mu_itr = m_Muons->begin();
+    xAOD::MuonContainer::const_iterator mu_end = m_Muons->end();
+    for( ; mu_itr != mu_end; ++mu_itr ) {
+      
+      Info("Execute () ", "Muons before calibration: E = %.2f GeV  pt = %.2f GeV eta = %.2f  phi =  %.2f",
+	   (*mu_itr)->e()/GEV,(*mu_itr)->pt()/GEV, (*mu_itr)->eta(), (*mu_itr)->phi());
+      
+      xAOD::Muon* mu = 0;
+      m_muonCalibrationAndSmearingTool->correctedCopy(**mu_itr, mu);
+      
+      if (!m_iso->accept( **mu_itr )) continue;
+      if ((((*mu_itr)->pt()/GEV)<25) || (fabs((*mu_itr)->eta())>2.4))continue;
+      
+      Info("execute()", "corrected muon pt = %.2f GeV", ((*mu_itr)->pt()/GEV));
+      Info("execute()", "corrected muon pt (from copy) = %.2f GeV", (mu->pt()/GEV)); 
+      
+      goodMuons->push_back( mu ); // jet acquires the goodJets auxstore
+      *mu= **mu_itr; // copies auxdata from one auxstore to the other
+      
+    } // end for loop over shallow copied muons
+    
+    
+    Info("execute()", "  number of good and calibrated muons = %lu", goodMuons->size());
+    //Just to check that GoodMuons has been store properly
+    mu_itr =  goodMuons->begin();
+    mu_end =  goodMuons->end();
+    for( ; mu_itr != mu_end; ++mu_itr ) {
+      Info("Execute () ", "GoodMuons: E = %.2f GeV  pt = %.2f GeV eta = %.2f  phi =  %.2f",
+	   (*mu_itr)->e()/GEV,(*mu_itr)->pt()/GEV, (*mu_itr)->eta(), (*mu_itr)->phi());
+    }
+    
+    //---------------------------
+    // Zmumu selection
+    //---------------------------
+    if (ZmumuSelection(goodElectrons, goodMuons)){
+      FillZmumuHistograms(goodMuons);
+      JetRecoil_Zmumu(goodMuons, goodEMTopoJets);
+    }
   }
-
-  //Just to check that GoodEMTopoJets has been store properly
-  jet_itr =  goodEMTopoJets->begin();
-  jet_end =  goodEMTopoJets->end();
-  for( ; jet_itr != jet_end; ++jet_itr ) {
-    Info("Execute () ", "goodEMTopoJets: E = %.2f GeV  pt = %.2f GeV eta = %.2f  phi =  %.2f",
-	 (*jet_itr)->e()/GEV,(*jet_itr)->pt()/GEV, (*jet_itr)->eta(), (*jet_itr)->phi());
-  }
-  
-
-  //** It has to be revisited. CorrectCopy doing nothing, not sure if the Medium is OK implemented, d0&z0 cuts still missing
-  //---------------------------
-  // Tools for Electrons
-  //--------------------------- 
-  // Create the new container and its auxiliary store to store the good and calibrated jets.
-  xAOD::ElectronContainer* goodElectrons = new xAOD::ElectronContainer();
-  xAOD::AuxContainerBase* goodElectronsAux = new xAOD::AuxContainerBase();
-  goodElectrons->setStore( goodElectronsAux );
-
-  // //Loop over vertices and look for good primary vertex (needed for z0 electron cut)
-  // for (xAOD::VertexContainer::const_iterator vxIter = vxContainer->begin(); vxIter != vxContainer->end(); ++vxIter) {
-  //   // Select good primary vertex
-  //   if ((*vxIter)->vertexType() == xAOD::VxType::PriVtx) {
-  //     //This is the primary vertex
-  //   }
-  // }
-  
-  xAOD::ElectronContainer::const_iterator el_itr = m_Electrons->begin();
-  xAOD::ElectronContainer::const_iterator el_end = m_Electrons->end();
-  for( ; el_itr != el_end; ++el_itr ) {
-    
-    Info("Execute () ", "Electron before slecetion/calibration E = %.2f GeV  pt = %.2f GeV eta = %.2f  phi =  %.2f",
-	 (*el_itr)->e()/GEV,(*el_itr)->pt()/GEV, (*el_itr)->eta(), (*el_itr)->phi());
-    
-    //Reject bad electrons
-    if( !(*el_itr)->isGoodOQ(xAOD::EgammaParameters::BADCLUSELECTRON) ) continue;
-    std::cout<<"Pass isGoodOQ"<<std::endl;
-    // Formally unnecessary because all electrons in the container have these authors by construction
-    if ( !(*el_itr)->author(xAOD::EgammaParameters::AuthorElectron) && !(*el_itr)->author(xAOD::EgammaParameters::AuthorAmbiguous) ) continue;
-    std::cout<<"Pass Author"<<std::endl;
-    // Calorimeter crack excluded
-    if  ( fabs( (*el_itr)->caloCluster()->etaBE(2) ) >1.37 &&  fabs( (*el_itr)->caloCluster()->etaBE(2) ) <1.52) continue;
-    std::cout<<"Is not in the crack region"<<std::endl;
-    // Reject electrons outside the kinematic acceptance
-    if (( (*el_itr)->pt() < 7000) || (fabs( (*el_itr)->caloCluster()->etaBE(2) ) > 2.47 )) continue;
-    
-    std::cout<<"Kinematic region selected"<<std::endl;
-    // // Electron d0 and z0 cut: |d0BL significance |<5 and |Δz0BL*sinθ|<0.5 mm (***still in progress)
-    // xAOD::TrackParticle *tp_el = (*el_itr)->trackParticle() ; 
-    // double d0sig = xAOD::TrackingHelpers::d0significance( tp_el, m_event->beamPosSigmaX(), m_event->beamPosSigmaY(), m_event->beamPosSigmaXY() );
-    // xAOD::Vertex vtx; //(***) Primary vertex has to be computed
-    // //PV has to be chosen properly
-    // float delta_z0 = fabs(tp_el->z0() + tp_el->vz() - vtx->z());
-    // if(fabs(d0sig) < 5) >= continue;
-    // if(fabs(delta_z0*TMath::sin(tp_el->theta)) >= 0.5) continue;
-    // Electron Identification tool
-    // std::cout<<"MediumLH = "<<m_MediumLH->accept(*el_itr)<<std::endl;
-    std::cout<<"VeryLooseLHElectron = "<<m_VeryLooseLHElectron->accept(*el_itr)<<std::endl;
-    if(!m_VeryLooseLHElectron->accept(*el_itr)) continue; 
-    
-    //    if(!m_MediumLH->accept(*el_itr)) continue; 
-    //std::cout<<"is LHMediumSel"<<std::endl;
-    //Isolation
-    //if (!m_iso->accept( **el_itr )) continue; //***Has to be applied after or before calibration?  
-    //std::cout<<"is Isolated"<<std::endl;
-    
-    //Calibration Tool (Jet Calibration)
-    xAOD::Electron* el = NULL;
-    m_electronCalibrationAndSmearingTool->correctedCopy(**el_itr,el); //make a calibrated copy, assuming a copy hasn't been made already
-    goodElectrons->push_back(el); // jet acquires the m_akt4CalibEMTopo auxstore
-    *el= **el_itr; // copies auxdata from one auxstore to the other
-    
-    //Info("execute()", "corrected electron pt = %.2f GeV", ((*el_itr)->pt() * 0.001));  
-    //if (!m_iso->accept( **el_itr )) continue; //***Has to be applied after or before calibration? 
-    // m_electronCalibrationAndSmearingTool->applyCorrection(**el_itr);
-    // xAOD::Electron* electrondc = new xAOD::Electron();
-    //goodElectrons->push_back( electrondc ); // jet acquires the goodJets auxstore
-    // *electrondc= **el_itr; // copies auxdata from one auxstore to the other
-  }
-  
-  Info("execute()", "  number of good electrons = %lu", goodElectrons->size());
-  //Just to check that GoodElectrons has been store properly
-  el_itr =  goodElectrons->begin();
-  el_end =  goodElectrons->end();
-  for( ; el_itr != el_end; ++el_itr ) {
-    Info("Execute () ", "goodElectrons: E = %.2f GeV  pt = %.2f GeV eta = %.2f  phi =  %.2f",
-	 (*el_itr)->e()/GEV,(*el_itr)->pt()/GEV, (*el_itr)->eta(), (*el_itr)->phi());
-  }
   
   
-  //*** Problem with corrected copy ; not stored properly! Have a look into the push_back
-  //---------------------------
-  // Tools for Muons
-  //---------------------------
-  // Create the new container and its auxiliary store to store the good and calibrated jets .
-  xAOD::MuonContainer* goodMuons = new xAOD::MuonContainer();
-  xAOD::AuxContainerBase* goodMuonsAux = new xAOD::AuxContainerBase();
-  goodMuons->setStore( goodMuonsAux ); //< Connect the two
-  
-  xAOD::MuonContainer::const_iterator mu_itr = m_Muons->begin();
-  xAOD::MuonContainer::const_iterator mu_end = m_Muons->end();
-  for( ; mu_itr != mu_end; ++mu_itr ) {
-    
-    Info("Execute () ", "Muons before calibration: E = %.2f GeV  pt = %.2f GeV eta = %.2f  phi =  %.2f",
-	 (*mu_itr)->e()/GEV,(*mu_itr)->pt()/GEV, (*mu_itr)->eta(), (*mu_itr)->phi());
-    
-    xAOD::Muon* mu = 0;
-    m_muonCalibrationAndSmearingTool->correctedCopy(**mu_itr, mu);
-    
-    if (!m_iso->accept( **mu_itr )) continue;
-    if ((((*mu_itr)->pt()/GEV)<25) || (fabs((*mu_itr)->eta())>2.4))continue;
-
-    Info("execute()", "corrected muon pt = %.2f GeV", ((*mu_itr)->pt()/GEV));
-    Info("execute()", "corrected muon pt (from copy) = %.2f GeV", (mu->pt()/GEV)); 
-     
-    goodMuons->push_back( mu ); // jet acquires the goodJets auxstore
-    *mu= **mu_itr; // copies auxdata from one auxstore to the other
-
-  } // end for loop over shallow copied muons
-
-  
-  Info("execute()", "  number of good and calibrated muons = %lu", goodMuons->size());
-  //Just to check that GoodMuons has been store properly
-  mu_itr =  goodMuons->begin();
-  mu_end =  goodMuons->end();
-  for( ; mu_itr != mu_end; ++mu_itr ) {
-    Info("Execute () ", "GoodMuons: E = %.2f GeV  pt = %.2f GeV eta = %.2f  phi =  %.2f",
-	 (*mu_itr)->e()/GEV,(*mu_itr)->pt()/GEV, (*mu_itr)->eta(), (*mu_itr)->phi());
-  }
-  
-
-  
-  
-  //---------------------------
-  // Zmumu selection
-  //---------------------------
-  if (ZmumuSelection(goodElectrons, goodMuons)){
-    FillZmumuHistograms(goodMuons);
-    JetRecoil_Zmumu(goodMuons, goodEMTopoJets);
-  }
-  
-
   
   //---------------------
   // Performance studies
@@ -803,7 +777,13 @@ EL::StatusCode xAODPFlowAna :: execute ()
     //calculate efficieny and purity
     Calculate_Efficiency_Purity(m_TruthParticles, (int)m_topocluster->size(), m_topocluster);    
     //subtraction code
-    if(m_DijetSubtraction)SubtractionPerf(m_JetETMissChargedParticleFlowObjects,m_topocluster, m_TruthParticles);
+    if(m_DijetSubtraction){
+      std::cout<< "In subtraction"<<std::endl;
+      SumClusterE_ConeR(m_JetETMissChargedParticleFlowObjects,m_topocluster,0.10);
+      SumClusterE_ConeR(m_JetETMissChargedParticleFlowObjects,m_topocluster,0.15);
+      SumClusterE_ConeR(m_JetETMissChargedParticleFlowObjects,m_topocluster,0.20);
+      SubtractionPerf(m_TruthParticles);
+    }
     //fill histograms
     fill_RPlus_R0(m_TruthParticles);
   }
