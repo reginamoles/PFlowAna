@@ -1,20 +1,5 @@
 #include <PFlowAna/xAODPFlowAna.h>
 
-
-//////////////////////////
-// Performance Histograms
-//////////////////////////
-void xAODPFlowAna :: PerformanceHistos(){
-  
-  
-  
-  return;
-}
-
-
-
-
-
 /////////////////////////////
 // Resize TruthParticle vectors
 /////////////////////////////
@@ -42,7 +27,9 @@ void xAODPFlowAna :: resize_PFOVectors(const xAOD::PFOContainer* JetETMissCharge
   _pfo_inisigmaEoPexp.resize(JetETMissChargedParticleFlowObjects->size());
   _pfo_LFI.resize(JetETMissChargedParticleFlowObjects->size());
   _clMatchedEflow.resize(JetETMissChargedParticleFlowObjects->size());  
+  _clMatchedEflowEcone10.resize(JetETMissChargedParticleFlowObjects->size());
   _clMatchedEflowEcone15.resize(JetETMissChargedParticleFlowObjects->size());
+  _clMatchedEflowEcone20.resize(JetETMissChargedParticleFlowObjects->size());
   
   _pfo_hasClusterMatched.resize(JetETMissChargedParticleFlowObjects->size());
   _pfo_hasClusterMatched_Eta.resize(JetETMissChargedParticleFlowObjects->size());
@@ -89,6 +76,12 @@ void xAODPFlowAna :: fill_PFOVectors(const xAOD::PFOContainer* JetETMissChargedP
     _pfo_inisigmaEoPexp.at(cpfo_index) = (*cpfo_itr)->auxdata< float >("eflowRec_tracksExpectedEnergyDepositVariance"); //varEExpect
     _pfo_LFI.at(cpfo_index) = (*cpfo_itr)->auxdata< int >("eflowRec_FirstIntLayer"); //FirstIntLayer
 
+    Info("fill_PFOVectors()", "pfo information: EoPExp  = %.3f, SigmaEoPt = %.3f, LFI = %d ",
+	 _pfo_iniEoPexp.at(cpfo_index),
+	 _pfo_inisigmaEoPexp.at(cpfo_index),
+	  _pfo_LFI.at(cpfo_index));
+    
+    
     //Not clear if this is the correct way to match clusters!
     const xAOD::CaloCluster* matchedCluster = (*cpfo_itr)->cluster(0);
     if(matchedCluster) {
@@ -102,8 +95,8 @@ void xAODPFlowAna :: fill_PFOVectors(const xAOD::PFOContainer* JetETMissChargedP
       _pfo_hasClusterMatched_Phi.at(cpfo_index) = 999;
       _pfo_hasClusterMatched_E.at(cpfo_index) = -999;
     }
-
-    Info("execute()", "Cluster mathced: E  = %.3f, eta = %.3f, phi = %.3f ",
+    
+    Info("execute()", "Cluster matched: E  = %.3f, eta = %.3f, phi = %.3f ",
 	 _pfo_hasClusterMatched_E.at(cpfo_index),
 	 _pfo_hasClusterMatched_Eta.at(cpfo_index),
 	 _pfo_hasClusterMatched_Phi.at(cpfo_index));
@@ -162,8 +155,8 @@ void xAODPFlowAna :: tp_Selection(const xAOD::TruthParticleContainer* TruthParti
 	    
 	    _mc_hasEflowTrack.at(tp_index) = 1; //=1 indicates that we have a eflowTrack matched to the mc particle
 	    _mc_hasEflowTrackIndex.at(tp_index) = cpfo_index; //say us which eflowObject corresponds for each mc particle (not association = 0)
-      _mc_hasEflowTrackP.at(tp_index) = fabs(1. / ptrk->qOverP());
-      _mc_hasEflowTrackPt.at(tp_index) =  (*cpfo_itr)->pt();
+	    _mc_hasEflowTrackP.at(tp_index) = fabs(1. / ptrk->qOverP());
+	    _mc_hasEflowTrackPt.at(tp_index) =  (*cpfo_itr)->pt();
 	  }
 	}
       } 
@@ -218,8 +211,7 @@ void xAODPFlowAna :: ComputeCalibHitsPerParticle(const xAOD::CalCellInfoContaine
    //printing information 
   for (unsigned int i=0;i<_CalHitEPerParAfterSubtraction.size();i++){
     if(_mc_hasEflowTrack.at(i)==1){
-      Info("ComputeCalibHitsPerParticle()", " The MC particle with index %i has a PFO associated with CalHitEPerPar = %.2f GeV and CalHitEPerParAfterSubtraction = %.2f GeV ",
-   	   _mc_hasEflowTrackIndex[i], _CalHitEPerPar[i]/GEV , _CalHitEPerParAfterSubtraction[i]/GEV);
+      //Info("ComputeCalibHitsPerParticle()", " The MC particle with index %i has a PFO associated with CalHitEPerPar = %.2f GeV and CalHitEPerParAfterSubtraction = %.2f GeV ", _mc_hasEflowTrackIndex[i], _CalHitEPerPar[i]/GEV , _CalHitEPerParAfterSubtraction[i]/GEV);
     }
   }
   
@@ -297,7 +289,7 @@ void xAODPFlowAna::Calculate_Efficiency_Purity(const xAOD::TruthParticleContaine
         }
         else {v_Efficiency.at(i_clus) = -999;}
 
-        Info("fill_Eff_LeadCluster", " v_Efficicency.at(%i)  = %.3f ",i_clus,v_Efficiency.at(i_clus));
+	//       Info("fill_Eff_LeadCluster", " v_Efficicency.at(%i)  = %.3f ",i_clus,v_Efficiency.at(i_clus));
 
         if (_CalHitEPerClusFromAllPart.at(i_clus) !=0) {
           float Pur = _CalHitEPerClusFromOnePart.at(i_clus*TruthParticles->size()+i_mcPart)/_CalHitEPerClusFromAllPart.at(i_clus);
@@ -305,7 +297,7 @@ void xAODPFlowAna::Calculate_Efficiency_Purity(const xAOD::TruthParticleContaine
         }
         else {v_Purity.at(i_clus) =-999;}
 
-        Info("fill_Eff_LeadCluster", " v_PURITY.at(%i)  = %.3f ",i_clus,v_Purity.at(i_clus));
+        //Info("fill_Eff_LeadCluster", " v_PURITY.at(%i)  = %.3f ",i_clus,v_Purity.at(i_clus));
       }  //end loop over cluster
 
       // Fill efficiency & putity for cluster matched to histograms
@@ -557,61 +549,97 @@ void xAODPFlowAna::Calculate_Efficiency_Purity(const xAOD::TruthParticleContaine
 /////////////////////////////////////
 // Subtraction algorithm
 /////////////////////////////////////
-// Calculate the energy in a cone 0.15 around the CPFO axis
+// Calculate the energy in a cone R around the CPFO axis
 
-void xAODPFlowAna :: SubtractionPerf(const xAOD::PFOContainer* JetETMissChargedParticleFlowObjects,const xAOD::CaloClusterContainer* topocluster, const xAOD::TruthParticleContainer* TruthParticles){ 
+void xAODPFlowAna :: SumClusterE_ConeR(const xAOD::PFOContainer* JetETMissChargedParticleFlowObjects,const xAOD::CaloClusterContainer* topocluster, float DeltaR){ 
   
   xAOD::PFOContainer::const_iterator cpfo_itr = JetETMissChargedParticleFlowObjects->begin();
   xAOD::PFOContainer::const_iterator cpfo_end = JetETMissChargedParticleFlowObjects->end();
   int cpfo_index = 0;
+  
   for( ; cpfo_itr != cpfo_end; ++cpfo_itr ) {
     cpfo_index = std::distance(JetETMissChargedParticleFlowObjects->begin(),cpfo_itr);
-    double Econe15 = 0.0;
-
+    
+    Info("PrintPFOInfo", "Charged PFO %d E = %.2f GeV  pt = %.2f GeV  eta = %.2f  phi = %.2f",
+	 cpfo_index, (*cpfo_itr)->e()/GEV,
+	 (*cpfo_itr)->pt()/GEV,
+	 (*cpfo_itr)->eta(),
+	 (*cpfo_itr)->phi());     
+    
+    
+    double EconeR = 0.0;
+    
     xAOD::CaloClusterContainer::const_iterator CaloCluster_itr = topocluster->begin();
     xAOD::CaloClusterContainer::const_iterator CaloCluster_end = topocluster->end();
     for( ; CaloCluster_itr != CaloCluster_end; ++CaloCluster_itr  ) {
       double dEta = ((*cpfo_itr)->eta()-(*CaloCluster_itr)->eta());
       double dPhi = fabs((*cpfo_itr)->phi()-(*CaloCluster_itr)->phi());
       if(dPhi > M_PI) dPhi = 2*M_PI - dPhi;
-      if(sqrt(dEta*dEta + dPhi*dPhi)<=0.15){
-	Econe15 += (*CaloCluster_itr)->rawE();
+      if(sqrt(dEta*dEta + dPhi*dPhi)<=DeltaR){
+	EconeR += (*CaloCluster_itr)->rawE();
       }
     }
-    _clMatchedEflowEcone15.at(cpfo_index) = Econe15;
-  }
 
-  //printing information 
-  for (unsigned int i=0;i<_clMatchedEflowEcone15.size();i++) Info("SubtractionPerf()", " _clMatchedEflowEcone15 E  = %.2f GeV ", _clMatchedEflowEcone15[i]/GEV);
+    if(AreTheSame(DeltaR, 0.10)) _clMatchedEflowEcone10.at(cpfo_index) = EconeR;
+    else if(AreTheSame(DeltaR, 0.15)) _clMatchedEflowEcone15.at(cpfo_index) = EconeR;
+    else if(AreTheSame(DeltaR, 0.20)) _clMatchedEflowEcone20.at(cpfo_index) = EconeR;
+    else Info("SumClusterE_ConeR() ", "ERROR: DeltaR cone not defined!");
+    
+    std::cout<<" DeltaR: "<< DeltaR<<" ECone = "<<EconeR<<std::endl;
+  }
+  
+  return;
+}
+  
+void xAODPFlowAna :: SubtractionPerf(const xAOD::TruthParticleContainer* TruthParticles){ 
+
+  std::vector<int> PullDeltaR= {10, 15, 20}; //**WIP: maybe move to the header and define only at the beginning
   
   //Calculate the variables
   xAOD::TruthParticleContainer::const_iterator tp_itr = TruthParticles->begin();
   xAOD::TruthParticleContainer::const_iterator tp_end = TruthParticles->end();
   for( ; tp_itr != tp_end; ++tp_itr ) {
     int i = std::distance(TruthParticles->begin(),tp_itr);
-       
-    if (_mc_hasEflowTrack[i]==1){
-      //if (_mc_hasEflowTrack[i]==1 && (_mc_trueE[i]/(*tp_itr)->pt()*cosh((*tp_itr)->eta()))>0.1){
-      // std::cout<<" Has eflow track associated "<<std::endl;
-      if (std::fabs((_pfo_Pt.at(_mc_hasEflowTrackIndex[i])-(*tp_itr)->pt())/(*tp_itr)->pt())<0.05){
-	//std::cout<<" (_pfo_Pt.at(_mc_hasEflowTrackIndex[i])-(*tp_itr)->pt())/(*tp_itr)->pt())<0.05 "<<std::endl;
-	if (std::fabs((*tp_itr)->eta())>0.0 && std::fabs((*tp_itr)->eta())<0.4){
-	  // std::cout<<" std::fabs((*tp_itr)->eta())>0.0 && std::fabs((*tp_itr)->eta())<0.4 "<<std::endl;
-	  // std::cout<<"_mc_trueE[i]="<<_mc_trueE[i]<<" ((*tp_itr)->pt()*cosh((*tp_itr)->eta()))="<<((*tp_itr)->pt()*cosh((*tp_itr)->eta()))<< "Ratio="<<_mc_trueE[i]/((*tp_itr)->pt()*cosh((*tp_itr)->eta()))<<std::endl;
-	  hTurnOff_CalHitsOverPt_eta_00_04_hist->Fill((*tp_itr)->pt(), _CalHitEPerPar[i]/((*tp_itr)->pt()*cosh((*tp_itr)->eta())),m_EvtWeight);
-	  
-	  if (_pfo_hasClusterMatched[_mc_hasEflowTrackIndex[i]]==1 && _pfo_LFI[_mc_hasEflowTrackIndex[i]]!=999){
-	    float pull15=(_clMatchedEflowEcone15[_mc_hasEflowTrackIndex[i]]-_pfo_iniEoPexp[_mc_hasEflowTrackIndex[i]])/_pfo_inisigmaEoPexp[_mc_hasEflowTrackIndex[i]];
-	    Info("SubtractionPerf", " pull15  = %.2f GeV ", pull15);
-	    hTurnOff_CalHitsRemainingOverPt_vs_Pull_eta_00_04_hist->Fill((*tp_itr)->pt(),pull15,_CalHitEPerParAfterSubtraction[i]/((*tp_itr)->pt()*cosh((*tp_itr)->eta())), m_EvtWeight);
-	    hTurnOff_Entries_vs_Pull_eta_00_04_hist->Fill((*tp_itr)->pt(),pull15,m_EvtWeight);
-	  }
-	}
+
+    std::cout<<" _mc_hasEflowTrack[i]:"<<_mc_hasEflowTrack[i]<<std::endl;
+    if (_mc_hasEflowTrack[i]!=1) continue;
+    std::cout<<"_CalHitEPerPar[i]="<< _CalHitEPerPar[i]<<" _CalHitEPerPar[i]/(*tp_itr)->pt()*cosh((*tp_itr)->eta()):"<<_CalHitEPerPar[i]/(*tp_itr)->pt()*cosh((*tp_itr)->eta())<<std::endl;
+    if (_CalHitEPerPar[i]/(*tp_itr)->pt()*cosh((*tp_itr)->eta()) < 0.1) continue;
+    std::cout<<"std::fabs((_pfo_Pt.at(_mc_hasEflowTrackIndex[i])-(*tp_itr)->pt())/(*tp_itr)->pt()) =" <<std::fabs((_pfo_Pt.at(_mc_hasEflowTrackIndex[i])-(*tp_itr)->pt())/(*tp_itr)->pt()) <<std::endl;
+    if (std::fabs((_pfo_Pt.at(_mc_hasEflowTrackIndex[i])-(*tp_itr)->pt())/(*tp_itr)->pt()) > 0.05) continue; 
+    std::cout<< "Truth particle passes"<<std::endl;
+    
+    //filled for different DeltaR and eta values
+    for (unsigned i_eta = 0; i_eta<_etaRange.size()-1; i_eta++){
+      
+      std::cout<< "Truth particle with eta "<< std::fabs((*tp_itr)->eta()) << std::endl;
+      if (std::fabs((*tp_itr)->eta())>_etaRange.at(i_eta) && std::fabs((*tp_itr)->eta())<_etaRange.at(i_eta)+1){
+
+	std::string complete_name = histSubName2(i_eta, "h_CalHitsOverPt", _etaRange);
+	m_H2Dict[complete_name]->Fill((*tp_itr)->pt(), _CalHitEPerPar[i]/((*tp_itr)->pt()*cosh((*tp_itr)->eta())),m_EvtWeight);
+	std::cout<<"Filling histogram "<< complete_name<<std::endl;
 	
+	if (_pfo_hasClusterMatched[_mc_hasEflowTrackIndex[i]]!=1) continue;
+	std::cout<<"Hola "<< complete_name<<std::endl;
+	if (_pfo_LFI[_mc_hasEflowTrackIndex[i]]==999) continue;
+	std::cout<<"Hola2"<< complete_name<<std::endl;
+	
+	for (unsigned i_R = 0; i_R<PullDeltaR.size(); i_R++){
+	  float pull = 0;
+	  if (i_R == 0) pull=(_clMatchedEflowEcone10[_mc_hasEflowTrackIndex[i]]-_pfo_iniEoPexp[_mc_hasEflowTrackIndex[i]])/_pfo_inisigmaEoPexp[_mc_hasEflowTrackIndex[i]];
+	  else if (i_R == 1) pull=(_clMatchedEflowEcone15[_mc_hasEflowTrackIndex[i]]-_pfo_iniEoPexp[_mc_hasEflowTrackIndex[i]])/_pfo_inisigmaEoPexp[_mc_hasEflowTrackIndex[i]];
+	  else if (i_R == 2) pull=(_clMatchedEflowEcone20[_mc_hasEflowTrackIndex[i]]-_pfo_iniEoPexp[_mc_hasEflowTrackIndex[i]])/_pfo_inisigmaEoPexp[_mc_hasEflowTrackIndex[i]];
+	  else Info("SubtractionPerf() ", "ERROR: DeltaR cone not defined!");
+	  
+	  complete_name = histSubName(i_R, i_eta, "h_Entries_vs_Pull", PullDeltaR, _etaRange);
+	  m_H2Dict[complete_name]->Fill((*tp_itr)->pt(),pull,m_EvtWeight);
+	  //*** WIP are the 3 histograms needed? 
+	  complete_name = histSubName(i_R, i_eta, "h_CalHitsRemainingOverPt_vs_Pull", PullDeltaR, _etaRange);
+	  m_TProfDict[complete_name]->Fill((*tp_itr)->pt(), _CalHitEPerPar[i]/((*tp_itr)->pt()*cosh((*tp_itr)->eta())),m_EvtWeight);
+	}
       }
     }
   }
-  
   //  -------------------
   //  _mc_LinkedToTruthJets.resize(TruthParticles->size());
   //if (mc_LinkedToTruthJets[i]>=0){
@@ -648,7 +676,9 @@ void xAODPFlowAna :: clear_PerformanceVectors(){
   _pfo_hasClusterMatched_Phi.clear();
   _pfo_hasClusterMatched_E.clear();
   _clMatchedEflow.clear();
+  _clMatchedEflowEcone10.clear();
   _clMatchedEflowEcone15.clear();
+  _clMatchedEflowEcone20.clear();
 
 
   //CalibrationHits
