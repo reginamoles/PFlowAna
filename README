@@ -24,6 +24,9 @@ asetup 20.1.4.8
 export SVNROOT=svn+ssh://svn.cern.ch/reps/atlas-mhodgkin
 cmt co -r xAODCalCellInfo-00-00-06 mhodgkin/xAODCalCellInfo
 
+To use the 20.1 PFlow calibration:
+JetCalibTools-00-04-61
+
 rc find_packages
 rc compile
 
