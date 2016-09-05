@@ -131,6 +131,7 @@ class xAODPFlowAna : public EL::Algorithm
   bool isGoodDataEvent (const xAOD::EventInfo*, GoodRunsListSelectionTool*);
   void EnsurePhiInMinusPiToPi(double& );
   double deltaPhi(double , double );
+  bool AreTheSame(float , float);
     
   //----------------------------
   // Performance studies functions
@@ -143,8 +144,9 @@ class xAODPFlowAna : public EL::Algorithm
   void ComputeCalibHitsPerParticle(const xAOD::CalCellInfoContainer* ,const xAOD::CalCellInfoContainer*, const xAOD::TruthParticleContainer*);
   void ComputeCalibHitsPerCluster(const xAOD::CalCellInfoContainer*, const xAOD::CaloClusterContainer*, int);
   void Calculate_Efficiency_Purity(const xAOD::TruthParticleContainer*,int,const xAOD::CaloClusterContainer*);
-  void SubtractionPerf(const xAOD::PFOContainer*,const xAOD::CaloClusterContainer*, const xAOD::TruthParticleContainer*);
-
+  void SumClusterE_ConeR(const xAOD::PFOContainer*,const xAOD::CaloClusterContainer*, float);
+  void SubtractionPerf(const xAOD::TruthParticleContainer*);
+    
   void clear_PerformanceVectors();
 
   void PerformanceHistos(); //SinglePions performance --> WIP
@@ -159,17 +161,22 @@ class xAODPFlowAna : public EL::Algorithm
   //---------------------------------
   //  Create and fill Histograms
   //--------------------------------
-  //Subtraction studies
-  TH2D *hTurnOff_CalHitsOverPt_eta_00_04_hist;//!
-  TProfile2D *hTurnOff_CalHitsRemainingOverPt_vs_Pull_eta_00_04_hist;//!
-  TH2D *hTurnOff_Entries_vs_Pull_eta_00_04_hist;//!
-
-  void bookH1DHistogram(std::string, int, float, float);
-  
   //Low performance studies
   std::map<std::string, TH1D*> m_H1Dict;//!
+  std::map<std::string, TH2D*> m_H2Dict;//!
   void bookH1DPerformanceHistogram(std::string, std::string, std::vector<float>, std::vector<float>, int, float, float);
-
+  std::string histName(unsigned i_pt, unsigned i_eta, const std::string& name, const std::string& matchScheme, std::vector<float>& PtRange, std::vector<float>& EtaRange);
+  
+  //Subtraction studies
+  std::map<std::string, TProfile2D*> m_TProfDict;//!
+  void bookSubHistogram (std::string, std::vector<int>, std::vector<float>, int,  const Double_t *, int,  const Double_t *, std::string);
+  std::string histSubName(unsigned i_R, unsigned i_eta, const std::string& name, std::vector<int>& DeltaR, std::vector<float>& EtaRange);
+  void bookSubHistogram2(std::string, std::vector<float>, int, const Double_t * ,  int,   float, float);
+  std::string  histSubName2(unsigned i_eta, const std::string& name,std::vector<float>& EtaRange);
+  
+  //Zmumu studies
+  void bookH1DHistogram(std::string, int, float, float);
+  
   //R0 R+ studies
   TH1F *_R0;//!
   TH1F *_1MinusChargedR;//!
@@ -220,10 +227,10 @@ class xAODPFlowAna : public EL::Algorithm
    //std::vector<float> _mc_trueEafter;//!  
    
    
-   //The sum of cluster energies in a cone of radius 0.1 around the qth charged eflow object
+   //The sum of cluster energies in a cone of radius 0.1, 0.15 and 0.2 around the qth charged eflow object
    std::vector<float> _clMatchedEflowEcone10;//!
-   //The sum of cluster energies in a cone of radius 0.15 around the qth charged eflow object
-   std::vector<float> _clMatchedEflowEcone15;//! 
+   std::vector<float> _clMatchedEflowEcone15;//!
+   std::vector<float> _clMatchedEflowEcone20;//! 
    //The index of the truth jet the mc particle belongs to
    std::vector<int> _mc_LinkedToTruthJets;//!  
 
@@ -237,9 +244,6 @@ class xAODPFlowAna : public EL::Algorithm
   bool HasPFlowJetMatched(const xAOD::Jet&); //return a true is has been matched
   int  WhichPFlowJetMatched(const xAOD::Jet&); //return the index of the PFlowJet matched
  
-  
-  std::string histName(unsigned i_pt, unsigned i_eta, const std::string& name, const std::string& matchScheme, std::vector<float>& PtRange, std::vector<float>& EtaRange);
-
 public:
 
   // this is needed to distribute the algorithm to the workers
