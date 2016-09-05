@@ -41,3 +41,10 @@ double xAODPFlowAna :: deltaPhi(double phi1, double phi2) {
   return dPhi;
 }
 
+
+bool xAODPFlowAna ::AreTheSame(float a, float b)
+{
+  float EPSILON = 0.0001;
+  return fabs(a - b) < EPSILON;
+  
+}
