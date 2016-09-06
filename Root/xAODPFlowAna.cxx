@@ -165,8 +165,15 @@ EL::StatusCode xAODPFlowAna :: histInitialize ()
   // Efficiency and purity
   //====================================
   int n_effbins = 20; float eff_low = 0; float eff_up = 1.0001;
-  bookH1DPerformanceHistogram("Eff","",_ptRange, _etaRange, n_effbins, eff_low, eff_up);
-  bookH1DPerformanceHistogram("Pur","",_ptRange, _etaRange, n_effbins, eff_low, eff_up);
+  if (m_1to2matching) {
+    bookH1DPerformanceHistogram("EffMatch","",_ptRange, _etaRange, n_effbins, eff_low, eff_up);
+    bookH1DPerformanceHistogram("PurMatch","",_ptRange, _etaRange, n_effbins, eff_low, eff_up);
+    bookH1DPerformanceHistogram("EffMatchboth","",_ptRange, _etaRange, n_effbins, eff_low, eff_up);
+    bookH1DPerformanceHistogram("PurMatchboth","",_ptRange, _etaRange, n_effbins, eff_low, eff_up);
+  } else {
+    bookH1DPerformanceHistogram("Eff", "", _ptRange, _etaRange, n_effbins, eff_low, eff_up);
+    bookH1DPerformanceHistogram("Pur","",_ptRange, _etaRange, n_effbins, eff_low, eff_up);
+  }
 
   //====================================
   // 1->2 Matching

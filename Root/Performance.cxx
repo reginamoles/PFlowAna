@@ -28,6 +28,7 @@ void xAODPFlowAna :: resize_tpVectors(const xAOD::TruthParticleContainer* TruthP
   _mc_hasEflowTrackPt.resize(TruthParticles->size());
   _mc_hasEflowTrackEtaAtLayer.resize(TruthParticles->size());
   _mc_matchedClusterHash.resize(TruthParticles->size());
+  _mc_subtractStatus.resize(TruthParticles->size());
   return;
 }
 
@@ -157,9 +158,7 @@ void xAODPFlowAna :: fill_PFOVectors(const xAOD::PFOContainer* JetETMissChargedP
     _pfo_EtaTile3.at(cpfo_index) = (*cpfo_itr)->auxdata< float >("EtaTile3");
     _pfo_PhiTile3.at(cpfo_index) = (*cpfo_itr)->auxdata< float >("PhiTile3");
     _pfo_hashCluster1.at(cpfo_index) = (*cpfo_itr)->auxdata< long int >("hashCluster1");
-    std::cout<<"zhangrui _pfo_hashCluster1.at("<<cpfo_index<<")="<<_pfo_hashCluster1.at(cpfo_index)<<std::endl;
     _pfo_hashCluster2.at(cpfo_index) = (*cpfo_itr)->auxdata< long int >("hashCluster2");
-    std::cout<<"zhangrui _pfo_hashCluster2.at("<<cpfo_index<<")="<<_pfo_hashCluster2.at(cpfo_index)<<std::endl;
     _pfo_EOP1.at(cpfo_index) = (*cpfo_itr)->auxdata< float >("EOP1");
     _pfo_EOPTotal.at(cpfo_index) = (*cpfo_itr)->auxdata< float >("EOPTotal");
     _pfo_NMatchedClusterInCellLevelSubtraction.at(cpfo_index) = (*cpfo_itr)->auxdata< float >("NMatchedClusterInCellLevelSubtraction");
@@ -245,10 +244,8 @@ void xAODPFlowAna :: tp_Selection(const xAOD::TruthParticleContainer* TruthParti
       _mc_hasEflowTrackP.at(tp_index) = fabs(1. / ptrk->qOverP());
       _mc_hasEflowTrackPt.at(tp_index) =  (*cpfo_itr)->pt();
       if(m_1to2matching) {
-      std::cout<<"zhangrui before "<<cpfo_index<<", "<<_pfo_hashCluster1.size()<<","<<_pfo_hashCluster2.size()<<std::endl;
-      std::cout<<"zhangrui before _mc_matchedClusterHash="<<_pfo_hashCluster1.at(cpfo_index)<<","<<_pfo_hashCluster2.at(cpfo_index)<<std::endl;
       _mc_matchedClusterHash.at(tp_index) = std::make_pair(_pfo_hashCluster1.at(cpfo_index), _pfo_hashCluster2.at(cpfo_index));
-      std::cout<<"zhangrui after _mc_matchedClusterHash="<<_pfo_hashCluster1.at(cpfo_index)<<","<<_pfo_hashCluster2.at(cpfo_index)<<std::endl;
+      _mc_subtractStatus.at(tp_index) = _pfo_SubtractStatus.at(cpfo_index);
       }
 	  }
 	}
@@ -360,40 +357,6 @@ void xAODPFlowAna :: fill_RPlus_R0(const xAOD::TruthParticleContainer* TruthPart
   return;
 }
 
-void xAODPFlowAna::FillEffPurHisto(int i_mcPart, xAOD::TruthParticleContainer::const_iterator tp_itr, const std::vector<double>& v_Efficiency,
-                                   const std::vector<double>& v_Purity) {
-  // Fill efficiency & purity for cluster matched to histograms
-  double max_eff = *max_element(v_Efficiency.begin(), v_Efficiency.end());
-  double i_max_eff = distance(v_Efficiency.begin(), max_element(v_Efficiency.begin(), v_Efficiency.end()));
-
-
-  _mc_hasEflowTrackEtaAtLayer.at(i_mcPart) = (*tp_itr)->eta();
-  for (unsigned iptbin = 0; iptbin < _ptRange.size(); ++iptbin) {
-    for (unsigned ietabin = 0; ietabin < _etaRange.size(); ++ietabin) {
-      bool inRegion[2] = { false, false };
-      if (iptbin == _ptRange.size() - 1 && _mc_hasEflowTrackPt.at(i_mcPart) / GEV > _ptRange.at(iptbin)) {
-        inRegion[0] = true;
-      } else if (_mc_hasEflowTrackPt.at(i_mcPart) / GEV > _ptRange.at(iptbin) && _mc_hasEflowTrackPt.at(i_mcPart) / GEV <= _ptRange.at(iptbin + 1)) {
-        inRegion[0] = true;
-      }
-
-      if (fabs(_mc_hasEflowTrackEtaAtLayer.at(i_mcPart)) > _etaRange.at(ietabin) && ietabin == _etaRange.size() - 1) {
-        inRegion[1] = true;
-      } else if (fabs(_mc_hasEflowTrackEtaAtLayer.at(i_mcPart)) > _etaRange.at(ietabin) && fabs(_mc_hasEflowTrackEtaAtLayer.at(i_mcPart)) <= _etaRange.at(ietabin + 1)) {
-        inRegion[1] = true;
-      }
-
-      if (!(inRegion[0] && inRegion[1])) continue;
-
-      std::string complete_name = histName(iptbin, ietabin, "Eff", "", _ptRange, _etaRange);
-      m_H1Dict[complete_name]->Fill(max_eff);
-      if (v_Efficiency.at(i_max_eff) > 0.5) {
-        std::string complete_name = histName(iptbin, ietabin, "Pur", "", _ptRange, _etaRange);
-        m_H1Dict[complete_name]->Fill(v_Purity.at(i_max_eff));
-      } //Purity for those clusters with eff>50%
-    }
-  }
-}
 
 void xAODPFlowAna::fillEffPurVectorDefault(const xAOD::CaloClusterContainer* topocluster, int i_mcPart, const xAOD::TruthParticleContainer* TruthParticles,
                                            std::vector<double>& v_Efficiency, std::vector<double>& v_Purity) {
@@ -433,23 +396,43 @@ void xAODPFlowAna::Calculate_Efficiency_Purity(const xAOD::TruthParticleContaine
     std::vector<double> v_Efficiency, v_Purity;
 
     if (m_1to2matching) {
-      v_Efficiency.resize(_n_clusters);
-      v_Purity.resize(_n_clusters);
+
       long int clusterHash1 = _mc_matchedClusterHash.at(i_mcPart).first;
       long int clusterHash2 = _mc_matchedClusterHash.at(i_mcPart).second;
-      std::cout << "zhangrui hash=" << clusterHash1 << "," << clusterHash2 << std::endl;
 
       if (clusterHash2 == -1) {
-        fillEffPurVectorDefault(topocluster, i_mcPart, TruthParticles, v_Efficiency, v_Purity);
+        v_Efficiency.resize(1); // cluster1, cluster2, cluster1+2
+        v_Purity.resize(1); // cluster1, cluster2, cluster1+2
+        xAOD::CaloClusterContainer::const_iterator CaloCluster_itr = topocluster->begin();
+        xAOD::CaloClusterContainer::const_iterator CaloCluster_end = topocluster->end();
+        for (; CaloCluster_itr != CaloCluster_end; ++CaloCluster_itr) {
+          int i_clus = std::distance(topocluster->begin(), CaloCluster_itr);
+          long int hash = (*CaloCluster_itr)->rawE() * 1000 * (*CaloCluster_itr)->rawEta() * 10 * (*CaloCluster_itr)->rawPhi() * 10;
+          if (clusterHash1 != hash) continue;
+
+          if (_CalHitEPerPar.at(i_mcPart) != 0) {
+            float Eff1 = _CalHitEPerClusFromOnePart.at(i_clus * TruthParticles->size() + i_mcPart) / _CalHitEPerPar.at(i_mcPart);
+            v_Efficiency.at(0) = Eff1;
+          }
+          Info("TwoCluster", " v_Efficicency.at(%i)  = %.3f ", i_clus, v_Efficiency.at(0));
+
+          if (_CalHitEPerClusFromAllPart.at(i_clus) != 0) {
+            float Pur1 = _CalHitEPerClusFromOnePart.at(i_clus * TruthParticles->size() + i_mcPart) / _CalHitEPerClusFromAllPart.at(i_clus);
+
+            v_Purity.at(0) = Pur1;
+          }
+          Info("TwoCluster", " v_PURITY.at(%i)  = %.3f ", i_clus, v_Purity.at(0));
+        }
+
       } else {
+        v_Efficiency.resize(3); // cluster1, cluster2, cluster1+2
+        v_Purity.resize(3); // cluster1, cluster2, cluster1+2
         xAOD::CaloClusterContainer::const_iterator CaloCluster_itr = topocluster->begin();
         xAOD::CaloClusterContainer::const_iterator CaloCluster_end = topocluster->end();
         int pos1(-1), pos2(-1);
         for (; CaloCluster_itr != CaloCluster_end; ++CaloCluster_itr) {
           int i_clus = std::distance(topocluster->begin(), CaloCluster_itr);
           long int hash = (*CaloCluster_itr)->rawE() * 1000 * (*CaloCluster_itr)->rawEta() * 10 * (*CaloCluster_itr)->rawPhi() * 10;
-          std::cout << "zhangrui iclus=" << i_clus << "/" << topocluster->size() << ", hash=" << hash << " hash info " << (*CaloCluster_itr)->rawE() << ", "
-                    << (*CaloCluster_itr)->rawEta() << ", " << (*CaloCluster_itr)->rawPhi() << std::endl;
           if (clusterHash1 == hash) {
             pos1 = i_clus;
           }
@@ -459,22 +442,28 @@ void xAODPFlowAna::Calculate_Efficiency_Purity(const xAOD::TruthParticleContaine
         }
 
         if (_CalHitEPerPar.at(i_mcPart) != 0) {
-          float Eff = (_CalHitEPerClusFromOnePart.at(pos1 * TruthParticles->size() + i_mcPart) + _CalHitEPerClusFromOnePart.at(pos2 * TruthParticles->size() + i_mcPart))
+          float Eff1 = _CalHitEPerClusFromOnePart.at(pos1 * TruthParticles->size() + i_mcPart) / _CalHitEPerPar.at(i_mcPart);
+          float Eff2 = _CalHitEPerClusFromOnePart.at(pos2 * TruthParticles->size() + i_mcPart) / _CalHitEPerPar.at(i_mcPart);
+          float Effboth = (_CalHitEPerClusFromOnePart.at(pos1 * TruthParticles->size() + i_mcPart) + _CalHitEPerClusFromOnePart.at(pos2 * TruthParticles->size() + i_mcPart))
               / (_CalHitEPerPar.at(i_mcPart) + _CalHitEPerPar.at(i_mcPart));
-          std::cout << "Eff=" << Eff << std::endl;
-          v_Efficiency.at(pos1) = Eff;
-          v_Efficiency.at(pos2) = Eff;
-          std::cout << "zhangrui in eff " << Eff << " pos1=" << pos1 << " pos2=" << pos2 << std::endl;
+          std::cout << "Eff=" << Eff1 << ", " << Eff2 << ", " << Effboth << std::endl;
+          v_Efficiency.at(0) = Eff1;
+          v_Efficiency.at(1) = Eff2;
+          v_Efficiency.at(2) = Effboth;
         }
-        Info("fill_Eff_TwoCluster", " v_Efficicency.at(%i) and v_Efficicency.at(%i) = %.3f ", pos1, pos2, v_Efficiency.at(pos1));
+        Info("TwoCluster", " v_Efficicency both = %.3f, %.3f, %.3f ", v_Efficiency.at(0), v_Efficiency.at(1), v_Efficiency.at(2));
 
         if (_CalHitEPerClusFromAllPart.at(pos1) != 0) {
-          float Pur = (_CalHitEPerClusFromOnePart.at(pos1 * TruthParticles->size() + i_mcPart) + _CalHitEPerClusFromOnePart.at(pos2 * TruthParticles->size() + i_mcPart))
+          float Pur1 = _CalHitEPerClusFromOnePart.at(pos1 * TruthParticles->size() + i_mcPart) / _CalHitEPerClusFromAllPart.at(pos1);
+          float Pur2 = _CalHitEPerClusFromOnePart.at(pos2 * TruthParticles->size() + i_mcPart) / _CalHitEPerClusFromAllPart.at(pos2);
+          float Purboth = (_CalHitEPerClusFromOnePart.at(pos1 * TruthParticles->size() + i_mcPart) + _CalHitEPerClusFromOnePart.at(pos2 * TruthParticles->size() + i_mcPart))
               / (_CalHitEPerClusFromAllPart.at(pos1) + _CalHitEPerClusFromAllPart.at(pos2));
-          v_Purity.at(pos1) = Pur;
-          v_Purity.at(pos2) = Pur;
+
+          v_Purity.at(0) = Pur1;
+          v_Purity.at(1) = Pur2;
+          v_Purity.at(2) = Purboth;
         }
-        Info("fill_Eff_TwoCluster", " v_PURITY.at(%i) and v_PURITY.at(%i)  = %.3f ", pos1, pos2, v_Purity.at(pos1));
+        Info("TwoCluster", " v_PURITY both = %.3f, %.3f, %.3f ", v_Purity.at(0), v_Purity.at(1), v_Purity.at(2));
       }
     } else {
       v_Efficiency.resize(_n_clusters);
@@ -482,214 +471,116 @@ void xAODPFlowAna::Calculate_Efficiency_Purity(const xAOD::TruthParticleContaine
       fillEffPurVectorDefault(topocluster, i_mcPart, TruthParticles, v_Efficiency, v_Purity);
     }
 
-    FillEffPurHisto(i_mcPart, tp_itr, v_Efficiency, v_Purity);
+    if (m_1to2matching) {
+      fillEffPurHistoMatch(i_mcPart, tp_itr, v_Efficiency, v_Purity, (v_Efficiency.size()==3));
+    } else {
+      fillEffPurHistoDefault(i_mcPart, tp_itr, v_Efficiency, v_Purity);
+    }
   }
   return;
 }
 
-
-/*
-      
-      //Fill Eff & Purity histograms here
-      double max_eff = *max_element(v_Efficiency.begin(), v_Efficiency.end());
-      double i_max_eff = distance(v_Efficiency.begin(), max_element(v_Efficiency.begin(), v_Efficiency.end()));
-
-    
-      if(_mc_hasEflowTrackPt.at(i_mcPart)>1000 && _mc_hasEflowTrackPt.at(i_mcPart)<=2000){
-	if(fabs(_mc_hasEflowTrackEtaAtLayer.at(i_mcPart))<=1){
-	  _eff_Lead_1_2GeV_eta1->Fill(max_eff);
-	  if(v_Efficiency.at(i_max_eff)>0.5){_pur_Lead_1_2GeV_eta1->Fill(v_Purity.at(i_max_eff));}  //Purity for those clusters with eff>50%
-	}
-	else if(fabs(_mc_hasEflowTrackEtaAtLayer.at(i_mcPart))>1 && fabs(_mc_hasEflowTrackEtaAtLayer.at(i_mcPart))<=2.0){
-	  _eff_Lead_1_2GeV_eta2->Fill(max_eff);
-	  if(v_Efficiency.at(i_max_eff)>0.5){_pur_Lead_1_2GeV_eta2->Fill(v_Purity.at(i_max_eff));}
-	}
-	else{
-	  _eff_Lead_1_2GeV_eta25->Fill(max_eff);
-	  if(v_Efficiency.at(i_max_eff)>0.5){_pur_Lead_1_2GeV_eta25->Fill(v_Purity.at(i_max_eff));}
-	}
+void xAODPFlowAna::fillEffPurHistoMatch(int i_mcPart, xAOD::TruthParticleContainer::const_iterator tp_itr, const std::vector<double>& v_Efficiency,
+                                        const std::vector<double>& v_Purity, bool twoClusters) {
+  _mc_hasEflowTrackEtaAtLayer.at(i_mcPart) = (*tp_itr)->eta();
+  for (unsigned iptbin = 0; iptbin < _ptRange.size(); ++iptbin) {
+    for (unsigned ietabin = 0; ietabin < _etaRange.size(); ++ietabin) {
+      bool inRegion[2] = { false, false };
+      if (iptbin == _ptRange.size() - 1 && _mc_hasEflowTrackPt.at(i_mcPart) / GEV > _ptRange.at(iptbin)) {
+        inRegion[0] = true;
+      } else if (_mc_hasEflowTrackPt.at(i_mcPart) / GEV > _ptRange.at(iptbin) && _mc_hasEflowTrackPt.at(i_mcPart) / GEV <= _ptRange.at(iptbin + 1)) {
+        inRegion[0] = true;
       }
-      else if(_mc_hasEflowTrackPt.at(i_mcPart)>2000 && _mc_hasEflowTrackPt.at(i_mcPart)<=5000){
-	if(fabs(_mc_hasEflowTrackEtaAtLayer.at(i_mcPart))<=1){
-	  _eff_Lead_2_5GeV_eta1->Fill(max_eff);
-	  if(v_Efficiency.at(i_max_eff)>0.5){_pur_Lead_2_5GeV_eta1->Fill(v_Purity.at(i_max_eff));} 
-	}
-	else if(fabs(_mc_hasEflowTrackEtaAtLayer.at(i_mcPart))>1 && fabs(_mc_hasEflowTrackEtaAtLayer.at(i_mcPart))<=2.0){
-	  _eff_Lead_2_5GeV_eta2->Fill(max_eff);
-	  if(v_Efficiency.at(i_max_eff)>0.5){_pur_Lead_2_5GeV_eta2->Fill(v_Purity.at(i_max_eff));}
-	}
-	else{
-	  _eff_Lead_2_5GeV_eta25->Fill(max_eff);
-	  if(v_Efficiency.at(i_max_eff)>0.5){_pur_Lead_2_5GeV_eta25->Fill(v_Purity.at(i_max_eff));}
-	}	
-      }
-      else if(_mc_hasEflowTrackPt.at(i_mcPart)>5000 && _mc_hasEflowTrackPt.at(i_mcPart)<=10000){
-	if(fabs(_mc_hasEflowTrackEtaAtLayer.at(i_mcPart))<=1){
-	  _eff_Lead_5_10GeV_eta1->Fill(max_eff);
-	  if(v_Efficiency.at(i_max_eff)>0.5){_pur_Lead_5_10GeV_eta1->Fill(v_Purity.at(i_max_eff));} 
-	}
-	else if(fabs(_mc_hasEflowTrackEtaAtLayer.at(i_mcPart))>1 && fabs(_mc_hasEflowTrackEtaAtLayer.at(i_mcPart))<=2.0){
-	  _eff_Lead_5_10GeV_eta2->Fill(max_eff);
-	  if(v_Efficiency.at(i_max_eff)>0.5){_pur_Lead_5_10GeV_eta2->Fill(v_Purity.at(i_max_eff));}
-	}
-	else{
-	  _eff_Lead_5_10GeV_eta25->Fill(max_eff);
-	  if(v_Efficiency.at(i_max_eff)>0.5){_pur_Lead_5_10GeV_eta25->Fill(v_Purity.at(i_max_eff));}
-	}	
-      }	
-      if(_mc_hasEflowTrackPt.at(i_mcPart)>10000 && _mc_hasEflowTrackPt.at(i_mcPart)<=20000){
-	if(fabs(_mc_hasEflowTrackEtaAtLayer.at(i_mcPart))<=1){
-	  _eff_Lead_10GeV_eta1->Fill(max_eff);
-	  if(v_Efficiency.at(i_max_eff)>0.5){_pur_Lead_10GeV_eta1->Fill(v_Purity.at(i_max_eff));} 
-	}
-	else if(fabs(_mc_hasEflowTrackEtaAtLayer.at(i_mcPart))>1 && fabs(_mc_hasEflowTrackEtaAtLayer.at(i_mcPart))<=2.0){
-	  _eff_Lead_10GeV_eta2->Fill(max_eff);
-	  if(v_Efficiency.at(i_max_eff)>0.5){_pur_Lead_10GeV_eta2->Fill(v_Purity.at(i_max_eff));}
-	}
-	else{
-	  _eff_Lead_10GeV_eta25->Fill(max_eff);
-	  if(v_Efficiency.at(i_max_eff)>0.5){_pur_Lead_10GeV_eta25->Fill(v_Purity.at(i_max_eff));}
-	}	
-      }
-      
-      //Fill distributions E_exp-E_cl
-      cpfo_itr = JetETMissChargedParticleFlowObjects->begin();
-      cpfo_end = JetETMissChargedParticleFlowObjects->end();
-      for( ; cpfo_itr != cpfo_end; ++cpfo_itr ) {
-       	int cpfo_index = std::distance(JetETMissChargedParticleFlowObjects->begin(),cpfo_itr);
-	
-	if( _pfo_hasClusterMatched_Index.at(cpfo_index) >=0 && v_Efficiency.at(_pfo_hasClusterMatched_Index.at(cpfo_index))>=0.9){
-       	  std::cout<<"Pt="<< _mc_hasEflowTrackPt.at(i_mcPart)  <<"  Eta="<<fabs(_mc_hasEflowTrackEtaAtLayer.at(i_mcPart))
-       		   << "  Ratio="<<((_pfo_hasClusterMatched_E.at(cpfo_index)-_pfo_iniEoPexp.at(cpfo_index))/_pfo_inisigmaEoPexp.at(cpfo_index))<<std::endl;
 
-	  if(_mc_hasEflowTrackPt.at(i_mcPart)>1000 && _mc_hasEflowTrackPt.at(i_mcPart)<=2000){
-      	    if(fabs(_mc_hasEflowTrackEtaAtLayer.at(i_mcPart))<=1)
-      	      _DeltaE_1_2GeV_eta1->Fill((_pfo_hasClusterMatched_E.at(cpfo_index)-_pfo_iniEoPexp.at(cpfo_index))/_pfo_inisigmaEoPexp.at(cpfo_index));
-      	    if(fabs(_mc_hasEflowTrackEtaAtLayer.at(i_mcPart))>1 && fabs(_mc_hasEflowTrackEtaAtLayer.at(i_mcPart))<=2.0)
-      	      _DeltaE_1_2GeV_eta2->Fill((_pfo_hasClusterMatched_E.at(cpfo_index)-_pfo_iniEoPexp.at(cpfo_index))/_pfo_inisigmaEoPexp.at(cpfo_index));
-      	    else _DeltaE_1_2GeV_eta25->Fill((_pfo_hasClusterMatched_E.at(cpfo_index)-_pfo_iniEoPexp.at(cpfo_index))/_pfo_inisigmaEoPexp.at(cpfo_index));
-      	  }
-	  
-      	  if(_mc_hasEflowTrackPt.at(i_mcPart)>2000 && _mc_hasEflowTrackPt.at(i_mcPart)<=5000){
-      	    if(fabs(_mc_hasEflowTrackEtaAtLayer.at(i_mcPart))<=1)
-      	      _DeltaE_2_5GeV_eta1->Fill((_pfo_hasClusterMatched_E.at(cpfo_index)-_pfo_iniEoPexp.at(cpfo_index))/_pfo_inisigmaEoPexp.at(cpfo_index));
-      	    if(fabs(_mc_hasEflowTrackEtaAtLayer.at(i_mcPart))>1 && fabs(_mc_hasEflowTrackEtaAtLayer.at(i_mcPart))<=2.0)
-      	      _DeltaE_2_5GeV_eta2->Fill((_pfo_hasClusterMatched_E.at(cpfo_index)-_pfo_iniEoPexp.at(cpfo_index))/_pfo_inisigmaEoPexp.at(cpfo_index));
-      	    else _DeltaE_2_5GeV_eta25->Fill((_pfo_hasClusterMatched_E.at(cpfo_index)-_pfo_iniEoPexp.at(cpfo_index))/_pfo_inisigmaEoPexp.at(cpfo_index));
-      	  }
-
-	  if(_mc_hasEflowTrackPt.at(i_mcPart)>5000 && _mc_hasEflowTrackPt.at(i_mcPart)<=10000){
-      	    if(fabs(_mc_hasEflowTrackEtaAtLayer.at(i_mcPart))<=1)
-      	      _DeltaE_5_10GeV_eta1->Fill((_pfo_hasClusterMatched_E.at(cpfo_index)-_pfo_iniEoPexp.at(cpfo_index))/_pfo_inisigmaEoPexp.at(cpfo_index));
-      	    if(fabs(_mc_hasEflowTrackEtaAtLayer.at(i_mcPart))>1 && fabs(_mc_hasEflowTrackEtaAtLayer.at(i_mcPart))<=2.0)
-      	      _DeltaE_5_10GeV_eta2->Fill((_pfo_hasClusterMatched_E.at(cpfo_index)-_pfo_iniEoPexp.at(cpfo_index))/_pfo_inisigmaEoPexp.at(cpfo_index));
-      	    else _DeltaE_5_10GeV_eta25->Fill((_pfo_hasClusterMatched_E.at(cpfo_index)-_pfo_iniEoPexp.at(cpfo_index))/_pfo_inisigmaEoPexp.at(cpfo_index));
-      	  }
-
-	  if(_mc_hasEflowTrackPt.at(i_mcPart)>10000 && _mc_hasEflowTrackPt.at(i_mcPart)<=20000){
-      	    if(fabs(_mc_hasEflowTrackEtaAtLayer.at(i_mcPart))<=1)
-      	      _DeltaE_10GeV_eta1->Fill((_pfo_hasClusterMatched_E.at(cpfo_index)-_pfo_iniEoPexp.at(cpfo_index))/_pfo_inisigmaEoPexp.at(cpfo_index));
-      	    if(fabs(_mc_hasEflowTrackEtaAtLayer.at(i_mcPart))>1 && fabs(_mc_hasEflowTrackEtaAtLayer.at(i_mcPart))<=2.0)
-      	      _DeltaE_10GeV_eta2->Fill((_pfo_hasClusterMatched_E.at(cpfo_index)-_pfo_iniEoPexp.at(cpfo_index))/_pfo_inisigmaEoPexp.at(cpfo_index));
-      	    else _DeltaE_10GeV_eta25->Fill((_pfo_hasClusterMatched_E.at(cpfo_index)-_pfo_iniEoPexp.at(cpfo_index))/_pfo_inisigmaEoPexp.at(cpfo_index));
-      	  }
-	}
-	
-      	if( _pfo_hasClusterMatched_Index.at(cpfo_index) >=0 && v_Efficiency.at(_pfo_hasClusterMatched_Index.at(cpfo_index))<=0.7){
-
-	  if(_mc_hasEflowTrackPt.at(i_mcPart)>1000 && _mc_hasEflowTrackPt.at(i_mcPart)<=2000){
-      	    if(fabs(_mc_hasEflowTrackEtaAtLayer.at(i_mcPart))<=1)
-      	      _DeltaE07_1_2GeV_eta1->Fill((_pfo_hasClusterMatched_E.at(cpfo_index)-_pfo_iniEoPexp.at(cpfo_index))/_pfo_inisigmaEoPexp.at(cpfo_index));
-      	    if(fabs(_mc_hasEflowTrackEtaAtLayer.at(i_mcPart))>1 && fabs(_mc_hasEflowTrackEtaAtLayer.at(i_mcPart))<=2.0)
-      	      _DeltaE07_1_2GeV_eta2->Fill((_pfo_hasClusterMatched_E.at(cpfo_index)-_pfo_iniEoPexp.at(cpfo_index))/_pfo_inisigmaEoPexp.at(cpfo_index));
-      	    else _DeltaE07_1_2GeV_eta25->Fill((_pfo_hasClusterMatched_E.at(cpfo_index)-_pfo_iniEoPexp.at(cpfo_index))/_pfo_inisigmaEoPexp.at(cpfo_index));
-      	  }
-	  if(_mc_hasEflowTrackPt.at(i_mcPart)>2000 && _mc_hasEflowTrackPt.at(i_mcPart)<=5000){
-      	    if(fabs(_mc_hasEflowTrackEtaAtLayer.at(i_mcPart))<=1)
-      	      _DeltaE07_2_5GeV_eta1->Fill((_pfo_hasClusterMatched_E.at(cpfo_index)-_pfo_iniEoPexp.at(cpfo_index))/_pfo_inisigmaEoPexp.at(cpfo_index));
-      	    if(fabs(_mc_hasEflowTrackEtaAtLayer.at(i_mcPart))>1 && fabs(_mc_hasEflowTrackEtaAtLayer.at(i_mcPart))<=2.0)
-      	      _DeltaE07_2_5GeV_eta2->Fill((_pfo_hasClusterMatched_E.at(cpfo_index)-_pfo_iniEoPexp.at(cpfo_index))/_pfo_inisigmaEoPexp.at(cpfo_index));
-      	    else _DeltaE07_2_5GeV_eta25->Fill((_pfo_hasClusterMatched_E.at(cpfo_index)-_pfo_iniEoPexp.at(cpfo_index))/_pfo_inisigmaEoPexp.at(cpfo_index));
-      	  }
-
-	  if(_mc_hasEflowTrackPt.at(i_mcPart)>5000 && _mc_hasEflowTrackPt.at(i_mcPart)<=10000){
-      	    if(fabs(_mc_hasEflowTrackEtaAtLayer.at(i_mcPart))<=1)
-      	      _DeltaE07_5_10GeV_eta1->Fill((_pfo_hasClusterMatched_E.at(cpfo_index)-_pfo_iniEoPexp.at(cpfo_index))/_pfo_inisigmaEoPexp.at(cpfo_index));
-      	    if(fabs(_mc_hasEflowTrackEtaAtLayer.at(i_mcPart))>1 && fabs(_mc_hasEflowTrackEtaAtLayer.at(i_mcPart))<=2.0)
-      	      _DeltaE07_5_10GeV_eta2->Fill((_pfo_hasClusterMatched_E.at(cpfo_index)-_pfo_iniEoPexp.at(cpfo_index))/_pfo_inisigmaEoPexp.at(cpfo_index));
-      	    else _DeltaE07_5_10GeV_eta25->Fill((_pfo_hasClusterMatched_E.at(cpfo_index)-_pfo_iniEoPexp.at(cpfo_index))/_pfo_inisigmaEoPexp.at(cpfo_index));
-      	  }
-	  if(_mc_hasEflowTrackPt.at(i_mcPart)>10000 && _mc_hasEflowTrackPt.at(i_mcPart)<=20000){
-      	    if(fabs(_mc_hasEflowTrackEtaAtLayer.at(i_mcPart))<=1)
-      	      _DeltaE07_10GeV_eta1->Fill((_pfo_hasClusterMatched_E.at(cpfo_index)-_pfo_iniEoPexp.at(cpfo_index))/_pfo_inisigmaEoPexp.at(cpfo_index));
-      	    if(fabs(_mc_hasEflowTrackEtaAtLayer.at(i_mcPart))>1 && fabs(_mc_hasEflowTrackEtaAtLayer.at(i_mcPart))<=2.0)
-      	      _DeltaE07_10GeV_eta2->Fill((_pfo_hasClusterMatched_E.at(cpfo_index)-_pfo_iniEoPexp.at(cpfo_index))/_pfo_inisigmaEoPexp.at(cpfo_index));
-      	    else _DeltaE07_10GeV_eta25->Fill((_pfo_hasClusterMatched_E.at(cpfo_index)-_pfo_iniEoPexp.at(cpfo_index))/_pfo_inisigmaEoPexp.at(cpfo_index));
-      	  }
-      	}
+      if (fabs(_mc_hasEflowTrackEtaAtLayer.at(i_mcPart)) > _etaRange.at(ietabin) && ietabin == _etaRange.size() - 1) {
+        inRegion[1] = true;
+      } else if (fabs(_mc_hasEflowTrackEtaAtLayer.at(i_mcPart)) > _etaRange.at(ietabin) && fabs(_mc_hasEflowTrackEtaAtLayer.at(i_mcPart)) <= _etaRange.at(ietabin + 1)) {
+        inRegion[1] = true;
       }
-	
-      //link with cluster index destroyed!
-      std::sort (v_Efficiency.begin(), v_Efficiency.end());
-      
-      int NClusters_09 = 0.0;
-      double Eff_09 = v_Efficiency[v_Efficiency.size()-1];
-      if(Eff_09>0.9) NClusters_09 = 1;
-      else{
-	Eff_09 += v_Efficiency[v_Efficiency.size()-2];
-	if(Eff_09>0.9) NClusters_09 = 2;
-	else{
-	  Eff_09 += v_Efficiency[v_Efficiency.size()-3];
-	  if(Eff_09>0.9) NClusters_09 = 3;
-	  else{
-	    Eff_09 += v_Efficiency[v_Efficiency.size()-4];
-	    if(Eff_09>0.9) NClusters_09 = 4;
-	    else{
-	      Eff_09 += v_Efficiency[v_Efficiency.size()-5];
-	      if(Eff_09>0.9) NClusters_09 = 5;
-	      else{
-		Eff_09 += v_Efficiency[v_Efficiency.size()-6];
-		if(Eff_09>0.9) NClusters_09 = 6;
-		else{
-		  Eff_09 += v_Efficiency[v_Efficiency.size()-7];
-		  if(Eff_09>0.9) NClusters_09 = 7;
-		  else{
-		    NClusters_09 = 8;
-		  }}}}}}}
-      _nCluster09->Fill(NClusters_09);
-      
-      
-      //for plotting
-      
-      if(_mc_hasEflowTrackPt.at(i_mcPart)>1000 && _mc_hasEflowTrackPt.at(i_mcPart)<=2000) {
-       	if(fabs(_mc_hasEflowTrackEtaAtLayer.at(i_mcPart))<=1){_nClus09_1_2GeV_eta1->Fill(NClusters_09);}
-      	else if(fabs(_mc_hasEflowTrackEtaAtLayer.at(i_mcPart))>1 && fabs(_mc_hasEflowTrackEtaAtLayer.at(i_mcPart))<=2)
-    	  {_nClus09_1_2GeV_eta2->Fill(NClusters_09);}
-  	else{_nClus09_1_2GeV_eta25->Fill(NClusters_09);    }
+
+      if (!(inRegion[0] && inRegion[1])) continue;
+
+//      std::string complete_name = histName(iptbin, ietabin, "EffMatch", "", _ptRange, _etaRange);
+//      m_H1Dict[complete_name]->Fill(v_Efficiency[0]);
+//      if (v_Efficiency[0] > 0.5) {
+//        std::string complete_name = histName(iptbin, ietabin, "PurMatch", "", _ptRange, _etaRange);
+//        m_H1Dict[complete_name]->Fill(v_Purity[0]);
+//      } //Purity for those clusters with eff>50%
+//      if (twoClusters) {
+//        std::string complete_name = histName(iptbin, ietabin, "EffMatch", "", _ptRange, _etaRange);
+//        m_H1Dict[complete_name]->Fill(v_Efficiency[1]);
+//        if (v_Efficiency[1] > 0.5) {
+//          std::string complete_name = histName(iptbin, ietabin, "PurMatch", "", _ptRange, _etaRange);
+//          m_H1Dict[complete_name]->Fill(v_Purity[1]);
+//        } //Purity for those clusters with eff>50%
+//
+//        complete_name = histName(iptbin, ietabin, "EffMatchboth", "", _ptRange, _etaRange);
+//        m_H1Dict[complete_name]->Fill(v_Efficiency[2]);
+//        if (v_Efficiency[2] > 0.5) {
+//          std::string complete_name = histName(iptbin, ietabin, "PurMatchboth", "", _ptRange, _etaRange);
+//          m_H1Dict[complete_name]->Fill(v_Purity[2]);
+//        } //Purity for those clusters with eff>50%
+//
+//      }
+      if (twoClusters) {
+      std::string complete_name = histName(iptbin, ietabin, "EffMatch", "", _ptRange, _etaRange);
+      m_H1Dict[complete_name]->Fill(v_Efficiency[0]);
+      if (v_Efficiency[0] > 0.5) {
+        std::string complete_name = histName(iptbin, ietabin, "PurMatch", "", _ptRange, _etaRange);
+        m_H1Dict[complete_name]->Fill(v_Purity[0]);
+      } //Purity for those clusters with eff>50%
+
+        complete_name = histName(iptbin, ietabin, "EffMatchboth", "", _ptRange, _etaRange);
+        m_H1Dict[complete_name]->Fill(v_Efficiency[2]);
+        if (v_Efficiency[2] > 0.5) {
+          std::string complete_name = histName(iptbin, ietabin, "PurMatchboth", "", _ptRange, _etaRange);
+          m_H1Dict[complete_name]->Fill(v_Purity[2]);
+        } //Purity for those clusters with eff>50%
+
+
       }
-      else if (_mc_hasEflowTrackPt.at(i_mcPart)>2000 && _mc_hasEflowTrackPt.at(i_mcPart)<=5000) {
-	if(fabs(_mc_hasEflowTrackEtaAtLayer.at(i_mcPart))<=1){_nClus09_2_5GeV_eta1->Fill(NClusters_09);}
-	else if(fabs(_mc_hasEflowTrackEtaAtLayer.at(i_mcPart))>1 && fabs(_mc_hasEflowTrackEtaAtLayer.at(i_mcPart))<=2)
-	  {_nClus09_2_5GeV_eta2->Fill(NClusters_09);}   
-	else{_nClus09_2_5GeV_eta25->Fill(NClusters_09);}
-      } 
-      else if (_mc_hasEflowTrackPt.at(i_mcPart)>5000 && _mc_hasEflowTrackPt.at(i_mcPart)<=10000) {
-	if(fabs(_mc_hasEflowTrackEtaAtLayer.at(i_mcPart))<=1){_nClus09_5_10GeV_eta1->Fill(NClusters_09);}
-	else if(fabs(_mc_hasEflowTrackEtaAtLayer.at(i_mcPart))>1 && fabs(_mc_hasEflowTrackEtaAtLayer.at(i_mcPart))<=2)
-	  {_nClus09_5_10GeV_eta2->Fill(NClusters_09);}
-	else{_nClus09_5_10GeV_eta25->Fill(NClusters_09);}
+      std::string complete_name = histName(iptbin, ietabin, "SubtractStatus", "", _ptRange, _etaRange);
+        m_H1Dict[complete_name]->Fill(_mc_subtractStatus[i_mcPart]);
+    }
+  }
+
+}
+
+void xAODPFlowAna::fillEffPurHistoDefault(int i_mcPart, xAOD::TruthParticleContainer::const_iterator tp_itr, const std::vector<double>& v_Efficiency,
+                                   const std::vector<double>& v_Purity) {
+  // Fill efficiency & purity for cluster matched to histograms
+  double max_eff = *max_element(v_Efficiency.begin(), v_Efficiency.end());
+  double i_max_eff = distance(v_Efficiency.begin(), max_element(v_Efficiency.begin(), v_Efficiency.end()));
+
+
+  _mc_hasEflowTrackEtaAtLayer.at(i_mcPart) = (*tp_itr)->eta();
+  for (unsigned iptbin = 0; iptbin < _ptRange.size(); ++iptbin) {
+    for (unsigned ietabin = 0; ietabin < _etaRange.size(); ++ietabin) {
+      bool inRegion[2] = { false, false };
+      if (iptbin == _ptRange.size() - 1 && _mc_hasEflowTrackPt.at(i_mcPart) / GEV > _ptRange.at(iptbin)) {
+        inRegion[0] = true;
+      } else if (_mc_hasEflowTrackPt.at(i_mcPart) / GEV > _ptRange.at(iptbin) && _mc_hasEflowTrackPt.at(i_mcPart) / GEV <= _ptRange.at(iptbin + 1)) {
+        inRegion[0] = true;
       }
-       else if (_mc_hasEflowTrackPt.at(i_mcPart)>10000 && _mc_hasEflowTrackPt.at(i_mcPart)<=20000) {
-	if(fabs(_mc_hasEflowTrackEtaAtLayer.at(i_mcPart))<=1){_nClus09_10GeV_eta1->Fill(NClusters_09);}
-      	else if(fabs(_mc_hasEflowTrackEtaAtLayer.at(i_mcPart))>1 && fabs(_mc_hasEflowTrackEtaAtLayer.at(i_mcPart))<=2)
-	  {_nClus09_10GeV_eta2->Fill(NClusters_09);}
-	else{_nClus09_10GeV_eta25->Fill(NClusters_09);}
+
+      if (fabs(_mc_hasEflowTrackEtaAtLayer.at(i_mcPart)) > _etaRange.at(ietabin) && ietabin == _etaRange.size() - 1) {
+        inRegion[1] = true;
+      } else if (fabs(_mc_hasEflowTrackEtaAtLayer.at(i_mcPart)) > _etaRange.at(ietabin) && fabs(_mc_hasEflowTrackEtaAtLayer.at(i_mcPart)) <= _etaRange.at(ietabin + 1)) {
+        inRegion[1] = true;
       }
-    }                   
-  }                   
-  
-  
-*/
+
+      if (!(inRegion[0] && inRegion[1])) continue;
+
+      std::string complete_name = histName(iptbin, ietabin, "Eff", "", _ptRange, _etaRange);
+      m_H1Dict[complete_name]->Fill(max_eff);
+      if (v_Efficiency.at(i_max_eff) > 0.5) {
+        std::string complete_name = histName(iptbin, ietabin, "Pur", "", _ptRange, _etaRange);
+        m_H1Dict[complete_name]->Fill(v_Purity.at(i_max_eff));
+      } //Purity for those clusters with eff>50%
+    }
+  }
+}
+
 
 
 
@@ -776,6 +667,7 @@ void xAODPFlowAna :: clear_PerformanceVectors(){
   _mc_hasEflowTrackPt.clear();
   _mc_hasEflowTrackEtaAtLayer.clear();
   _mc_matchedClusterHash.clear();
+  _mc_subtractStatus.clear();
 
   //PFOVectors
   _pfo_Pt.clear();

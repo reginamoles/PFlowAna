@@ -26,7 +26,7 @@ int main( int argc, char* argv[] ) {
   //const char* inputFilePath = gSystem->ExpandPathName ("/afs/cern.ch/work/z/zhangr/eflowRec/data/matchingStudy/user.zhangr.mc15_13TeV.361021.Pythia8EvtGen_A14NNPDF23LO_jetjet_JZ1W.recon.AOD.e3569_s2832_r8014_AOD.94973736/");
   //SH::ScanDir().filePattern("user.zhangr.9335218.AOD._000001.pool.root").scan(sh,inputFilePath); //One indiviudual file
   const char* inputFilePath = gSystem->ExpandPathName ("/afs/cern.ch/work/z/zhangr/eflowRec/r19.05-53/Run/");
-  SH::ScanDir().filePattern("AOD.pool1.root").scan(sh,inputFilePath); //One indiviudual file
+  SH::ScanDir().filePattern("AOD.pool.root").scan(sh,inputFilePath); //One indiviudual file
 
   //SinglePions
   //const char* inputFilePath = gSystem->ExpandPathName ("$DataFiles/SinglePions/mc15c_piplus/user.moles.mc15_13TeV.428001.ParticleGun_single_piplus_logE0p2to2000.recon.AOD.e3501_s2832_r8014_AOD/");
