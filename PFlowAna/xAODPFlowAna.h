@@ -294,11 +294,9 @@ class xAODPFlowAna : public EL::Algorithm
   bool ZmumuSelection(const xAOD::ElectronContainer*,const xAOD::MuonContainer*); //return a trueif event pass the selection
   void JetRecoil_Zmumu(const xAOD::ElectronContainer*, const xAOD::MuonContainer*, const xAOD::JetContainer*);
   std::string histName(unsigned i_pt, unsigned i_eta, const std::string& name, const std::string& matchScheme, std::vector<float>& PtRange, std::vector<float>& EtaRange);
-  void FillEffPurHisto(int i_mcPart, xAOD::TruthParticleContainer::const_iterator tp_itr, const std::vector<double>& v_Efficiency,
-                       const std::vector<double>& v_Purity);
-  void fillEffPurVectorDefault( const xAOD::CaloClusterContainer* topocluster,
-                                                                     int i_mcPart, const xAOD::TruthParticleContainer* TruthParticles, std::vector<double>& v_Efficiency,
-                                                                     std::vector<double>& v_Purity);
+  void FillEffPurHisto(int i_mcPart, xAOD::TruthParticleContainer::const_iterator tp_itr, const std::vector<double>& v_Efficiency, const std::vector<double>& v_Purity);
+  void fillEffPurVectorDefault(const xAOD::CaloClusterContainer* topocluster, int i_mcPart, const xAOD::TruthParticleContainer* TruthParticles, std::vector<double>& v_Efficiency,
+                               std::vector<double>& v_Purity);
 
 public:
 
