@@ -34,12 +34,13 @@ xAODPFlowAna :: xAODPFlowAna ()
 }
 
 
-xAODPFlowAna :: xAODPFlowAna (bool SinglePionLowPerformanceStudies, bool DijetLowPerformance, bool DijetSubtraction, bool Zmumu)
+xAODPFlowAna :: xAODPFlowAna (bool SinglePionLowPerformanceStudies, bool DijetLowPerformance, bool DijetSubtraction, bool Zmumu, bool matching)
 {
   m_SinglePionLowPerformanceStudies = SinglePionLowPerformanceStudies;
   m_DijetLowPerformance = DijetLowPerformance;
   m_DijetSubtraction = DijetSubtraction;
   m_Zmumu = Zmumu;
+  m_1to2matching = matching;
 
 }
 

@@ -62,7 +62,7 @@ class xAODPFlowAna : public EL::Algorithm
   virtual EL::StatusCode finalize ();
   virtual EL::StatusCode histFinalize ();
   xAODPFlowAna ();
-  xAODPFlowAna (bool SinglePionLowPerformanceStudies, bool DijetLowPerformance, bool DijetSubtraction, bool Zmumu);
+  xAODPFlowAna (bool SinglePionLowPerformanceStudies, bool DijetLowPerformance, bool DijetSubtraction, bool Zmumu, bool matching);
   
  private:
   
@@ -78,6 +78,7 @@ class xAODPFlowAna : public EL::Algorithm
   bool m_DijetLowPerformance;
   bool m_DijetSubtraction;
   bool m_Zmumu;
+  bool m_1to2matching;
 
   xAOD::TEvent *m_event;//!
   int m_eventCounter; //!
@@ -128,6 +129,7 @@ class xAODPFlowAna : public EL::Algorithm
   void ComputeCalibHitsPerParticle(const xAOD::CalCellInfoContainer* ,const xAOD::CalCellInfoContainer*, const xAOD::TruthParticleContainer*);
   void ComputeCalibHitsPerCluster(const xAOD::CalCellInfoContainer*, const xAOD::CaloClusterContainer*, int);
   void Calculate_Efficiency_Purity(const xAOD::TruthParticleContainer*,int,const xAOD::CaloClusterContainer*);
+  void FindMatchedClusterIndex(const xAOD::PFOContainer* JetETMissChargedParticleFlowObjects, const xAOD::CaloClusterContainer* topocluster);
   void SubtractionPerf(const xAOD::PFOContainer*,const xAOD::CaloClusterContainer*, const xAOD::TruthParticleContainer*);
 
   void clear_PerformanceVectors();
@@ -217,6 +219,10 @@ class xAODPFlowAna : public EL::Algorithm
   std::vector<float> _pfo_EtaTile3;//!
   //The PhiTile3 of extract of the pth charged object
   std::vector<float> _pfo_PhiTile3;//!
+  //The first cluster hash code
+  std::vector<long int> _pfo_hashCluster1;//!
+  //The second cluster hash code
+  std::vector<long int> _pfo_hashCluster2;//!
   //The first cluster EOP of the pth charged object
   std::vector<float> _pfo_EOP1;//!
   //The all clusters EOP of the pth charged object
@@ -240,10 +246,11 @@ class xAODPFlowAna : public EL::Algorithm
   std::vector<int> _mc_hasEflowTrack;//! 
   //The index of the eflow charged object associated with the ith mc particle.
    std::vector<int> _mc_hasEflowTrackIndex;//!
-
    std::vector<float> _mc_hasEflowTrackP;    //!
    std::vector<float> _mc_hasEflowTrackPt;    //!
    std::vector<float> _mc_hasEflowTrackEtaAtLayer;    //!
+   std::vector<std::pair<long int, long int>> _mc_matchedClusterHash; //!
+
    std::vector<double> _CalHitEPerClusFromOnePart; //!   //calibration energy per cluster from a certain particle
    std::vector<double> _CalHitEPerClusFromAllPart; //!   //calibration energy per cluster from all particles
   
@@ -287,6 +294,11 @@ class xAODPFlowAna : public EL::Algorithm
   bool ZmumuSelection(const xAOD::ElectronContainer*,const xAOD::MuonContainer*); //return a trueif event pass the selection
   void JetRecoil_Zmumu(const xAOD::ElectronContainer*, const xAOD::MuonContainer*, const xAOD::JetContainer*);
   std::string histName(unsigned i_pt, unsigned i_eta, const std::string& name, const std::string& matchScheme, std::vector<float>& PtRange, std::vector<float>& EtaRange);
+  void FillEffPurHisto(int i_mcPart, xAOD::TruthParticleContainer::const_iterator tp_itr, const std::vector<double>& v_Efficiency,
+                       const std::vector<double>& v_Purity);
+  void fillEffPurVectorDefault( const xAOD::CaloClusterContainer* topocluster,
+                                                                     int i_mcPart, const xAOD::TruthParticleContainer* TruthParticles, std::vector<double>& v_Efficiency,
+                                                                     std::vector<double>& v_Purity);
 
 public:
 
