@@ -34,15 +34,13 @@ bool m_UseNarrowPtRange;
 bool m_UseNarrowEtaRange;
 bool m_1to2matching;
 
-std::vector<float> _ptRange;
-std::vector<float> _etaRange;
+std::vector<float> m_ptRange;
+std::vector<float> m_etaRange;
 
 TFile *HistFile;
 
 //Store plots in a ps file
-std::vector<TCanvas*> m_CanVect;
 void Efficiency();
-void printPS();
 void setStyle();
 std::pair<std::string, std::string> histName(unsigned i_pt, unsigned i_eta, const std::string& name, const std::string& matchScheme, std::vector<float>& PtRange, std::vector<float>& EtaRange);
 
