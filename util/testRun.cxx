@@ -24,8 +24,11 @@ int main( int argc, char* argv[] ) {
   //=================================
   bool SinglePionLowPerformanceStudies = false;
   bool DijetLowPerformance = false;
-  bool DijetSubtraction = true;
-  bool Zmumu = false;
+  bool DijetSubtraction = false;
+  bool Zmumu = true;
+  //data or MC
+  bool data = true;
+  bool MC = false;
   std::string matchScheme = (std::string)"_EM2";
   bool UseNarrowPtRange = false;
   bool UseNarrowEtaRange = false;
@@ -54,9 +57,16 @@ int main( int argc, char* argv[] ) {
   }
   
   if(Zmumu){
-    const char* inputFilePath = gSystem->ExpandPathName ("$DataFiles/Zmumu/mc15_13TeV.361107.PowhegPythia8EvtGen_AZNLOCTEQ6L1_Zmumu.merge.DAOD_JETM3.e3601_s2576_s2132_r7725_r7676_p2666_tid08619356_00/");
-    SH::ScanDir().filePattern("DAOD_JETM3.08619356._000027.pool.root.1").scan(sh,inputFilePath); //One indiviudual file
+	if(MC){	
+		const char* inputFilePath = gSystem->ExpandPathName ("$DataFiles/Zmumu/mc15_13TeV.361107.PowhegPythia8EvtGen_AZNLOCTEQ6L1_Zmumu.merge.DAOD_JETM3.e3601_s2576_s2132_r7725_r7676_p2666_tid08619356_00/");
+		SH::ScanDir().filePattern("DAOD_JETM3.08619356._000027.pool.root.1").scan(sh,inputFilePath); //One indiviudual file
+	}
+	if(data){
+		const char* inputFilePath = gSystem->ExpandPathName ("~/Desktop/data/");
+		SH::ScanDir().filePattern("DAOD_JETM3.08654688._000082.pool.root.1").scan(sh,inputFilePath); //One indiviudual file
+	}
   }
+  
   
   //const char* inputFilePath = gSystem->ExpandPathName ("/afs/cern.ch/user/z/zhangr/work/eflowRec/r19.05-53/Run");
   //SH::ScanDir().filePattern("AOD.pool.root").scan(sh,inputFilePath); //One indiviudual file

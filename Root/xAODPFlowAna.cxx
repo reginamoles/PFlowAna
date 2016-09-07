@@ -446,13 +446,14 @@ EL::StatusCode xAODPFlowAna :: execute ()
   // Cuts defined to remove problematic luminosity blocks (~1 minute of data taking) based on the GRL
   // and individual events that suffer from detector-level or reconstruction problems. 
   //---------------------------------------------------------------------------------------------------
-
+/*
   if(!isMC){ // it's data!
     bool dataEventPasses = isGoodDataEvent (m_EventInfo, m_grl);
     if(!dataEventPasses){
       return EL::StatusCode::SUCCESS; // go to the next event
     } 
   }
+  */
   
   //trigger tools: here the trigger chain is chosen
   auto chainGroup = m_trigDecisionTool->getChainGroup("HLT_mu20_iloose_L1MU15, HLT_mu50");
