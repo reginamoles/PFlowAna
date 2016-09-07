@@ -207,7 +207,7 @@ EL::StatusCode xAODPFlowAna :: histInitialize ()
     //Z distributions
     bookH1DHistogram("h_ZPt", pt_bin, pt_low, pt_up);
     bookH1DHistogram("h_ZE", E_bin, E_low, E_up);
-    bookH1DHistogram("h_ZM", 20, 30, 180); //Is this a proper range? 
+    bookH1DHistogram("h_ZM", 10, 70, 120); //Is this a proper range? 
     bookH1DHistogram("h_ZEta", eta_bin, eta_low, eta_up);
     bookH1DHistogram("h_ZPhi", phi_bin, phi_low, phi_up);
     //Z+jet system
