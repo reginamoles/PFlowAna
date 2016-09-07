@@ -188,7 +188,6 @@ void xAODPFlowAna :: fill_PFOVectors(const xAOD::PFOContainer* JetETMissChargedP
 	 _pfo_hasClusterMatched_Phi.at(cpfo_index));
   }
   
-  std::cout<<"Finish fill_PFOVectors function."<<std::endl;
   return;
 }
 
@@ -445,7 +444,7 @@ void xAODPFlowAna::Calculate_Efficiency_Purity(const xAOD::TruthParticleContaine
           float Eff1 = _CalHitEPerClusFromOnePart.at(pos1 * TruthParticles->size() + i_mcPart) / _CalHitEPerPar.at(i_mcPart);
           float Eff2 = _CalHitEPerClusFromOnePart.at(pos2 * TruthParticles->size() + i_mcPart) / _CalHitEPerPar.at(i_mcPart);
           float Effboth = (_CalHitEPerClusFromOnePart.at(pos1 * TruthParticles->size() + i_mcPart) + _CalHitEPerClusFromOnePart.at(pos2 * TruthParticles->size() + i_mcPart))
-              / (_CalHitEPerPar.at(i_mcPart) + _CalHitEPerPar.at(i_mcPart));
+              / _CalHitEPerPar.at(i_mcPart);
           std::cout << "Eff=" << Eff1 << ", " << Eff2 << ", " << Effboth << std::endl;
           v_Efficiency.at(0) = Eff1;
           v_Efficiency.at(1) = Eff2;
