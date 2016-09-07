@@ -1,3 +1,6 @@
 .*project
 *.swp
 .settings
+AutoDict*
+.*swp
+*eps

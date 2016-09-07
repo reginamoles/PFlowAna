@@ -91,7 +91,6 @@ std::string xAODPFlowAna::histName(unsigned i_pt, unsigned i_eta, const std::str
                       + std::to_string((int) ((10 * EtaRange.at(i_eta)))) ).c_str();
   }
 
-
   return complete_name;
 }
 
