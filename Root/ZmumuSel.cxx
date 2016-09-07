@@ -1,4 +1,4 @@
-#include <PFlowAna/xAODPFlowAna.h>
+	#include <PFlowAna/xAODPFlowAna.h>
 
 //////////////////////////
 // Zmumu Selection
@@ -25,7 +25,7 @@ bool xAODPFlowAna :: ZmumuSelection(const xAOD::ElectronContainer* goodElectrons
   TLorentzVector Z = (goodMuons->at(0)->p4()+goodMuons->at(1)->p4());
   Info("Z boson candidate", "Z E = %.2f GeV  pt  = %.2f GeV eta = %.2f  phi =  %.2f",Z.E(), Z.Pt(), Z.Eta(), Z.Phi());
 
-  if (Z.M()/GEV<55 || Z.M()/GEV>135) return false; //Mass widow - to be checked by Christian
+  if (Z.M()/GEV<82 || Z.M()/GEV>102) return false; //Mass widow - to be checked by Christian
   if (Z.Pt()/GEV < 30) return false;
 
   return true;
