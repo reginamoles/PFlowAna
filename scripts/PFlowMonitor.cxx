@@ -25,7 +25,6 @@ void PFlowMonitor()
 
   setStyle();
   Efficiency();
-//  printPS();
 }
 
 ////
@@ -34,8 +33,8 @@ void Efficiency()
 {
   int tcolor[5] = {4, 2, 8, 6, 28};
 
-  std::vector<std::string> catagory = {"EffMatch1", "EffMatchboth"};
-  std::vector<std::string> xTitle = {"#varepsilon_{1st cluster}", "#varepsilon_{both clusters}"};
+  std::vector<std::string> catagory = {"EffMatch1", "EffMatchboth", "PurMatch1", "PurMatch2", "SubtractStatus"};
+  std::vector<std::string> xTitle = {"#varepsilon_{1st cluster}", "#varepsilon_{both clusters}", "P_{1st cluster}", "P_{2nd cluster}", "Stage"};
 
   for (int icat = 0; icat < catagory.size(); ++icat) {
     TCanvas* Can_Efficiency = new TCanvas(catagory[icat].c_str(), catagory[icat].c_str(), 900, 800);
@@ -78,9 +77,9 @@ void Efficiency()
           continue;
         }
         if (first == 1) {
-          h_pTs[ipt]->Draw("histE");
+          h_pTs[ipt]->Draw("hist");
         } else {
-          h_pTs[ipt]->Draw("samehistE");
+          h_pTs[ipt]->Draw("samehist");
         }
       }
       if (!first) {
