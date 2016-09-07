@@ -522,20 +522,14 @@ void xAODPFlowAna::fillEffPurHistoMatch(int i_mcPart, xAOD::TruthParticleContain
 //
 //      }
       if (twoClusters) {
-      std::string complete_name = histName(iptbin, ietabin, "EffMatch", "", _ptRange, _etaRange);
-      m_H1Dict[complete_name]->Fill(v_Efficiency[0]);
-      if (v_Efficiency[0] > 0.5) {
-        std::string complete_name = histName(iptbin, ietabin, "PurMatch", "", _ptRange, _etaRange);
+        std::string complete_name = histName(iptbin, ietabin, "EffMatch1", "", _ptRange, _etaRange);
+        m_H1Dict[complete_name]->Fill(v_Efficiency[0]);
+        complete_name = histName(iptbin, ietabin, "PurMatch1", "", _ptRange, _etaRange);
         m_H1Dict[complete_name]->Fill(v_Purity[0]);
-      } //Purity for those clusters with eff>50%
-
         complete_name = histName(iptbin, ietabin, "EffMatchboth", "", _ptRange, _etaRange);
         m_H1Dict[complete_name]->Fill(v_Efficiency[2]);
-        if (v_Efficiency[2] > 0.5) {
-          std::string complete_name = histName(iptbin, ietabin, "PurMatchboth", "", _ptRange, _etaRange);
-          m_H1Dict[complete_name]->Fill(v_Purity[2]);
-        } //Purity for those clusters with eff>50%
-
+        complete_name = histName(iptbin, ietabin, "PurMatch2", "", _ptRange, _etaRange);
+        m_H1Dict[complete_name]->Fill(v_Purity[1]);
 
       }
       std::string complete_name = histName(iptbin, ietabin, "SubtractStatus", "", _ptRange, _etaRange);
