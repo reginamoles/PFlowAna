@@ -438,7 +438,7 @@ EL::StatusCode xAODPFlowAna :: execute ()
   if( m_EventInfo->eventType( xAOD::EventInfo::IS_SIMULATION ) ) isMC = true; 
   
   if( isMC ) { m_EvtWeight = m_EventInfo->mcEventWeight();}
-  Info("execute()", "Event number = %llu  Run Number =  %d  Event weight = %.2f  isMC = %s",m_EventInfo->eventNumber(), m_EventInfo->runNumber(), m_EvtWeight, (isMC ? "true" : "false"));
+  //Info("execute()", "Event number = %llu  Run Number =  %d  Event weight = %.2f  isMC = %s",m_EventInfo->eventNumber(), m_EventInfo->runNumber(), m_EvtWeight, (isMC ? "true" : "false"));
 
 
   //--------------------------------------------------------------------------------------------------
@@ -449,8 +449,8 @@ EL::StatusCode xAODPFlowAna :: execute ()
 
   if(!isMC){ // it's data!
     bool dataEventPasses = isGoodDataEvent (m_EventInfo, m_grl);
-    if(!dataEventPasses){
-		   Info("execute()", "something wrong in utils");
+    if(dataEventPasses){ // oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooon dont forget !
+		   //Info("execute()", "something wrong in utils");
       return EL::StatusCode::SUCCESS; // go to the next event
     } 
   }
@@ -592,13 +592,13 @@ EL::StatusCode xAODPFlowAna :: execute ()
 	   (*jet_itr)->e()/GEV,(*jet_itr)->pt()/GEV, (*jet_itr)->eta(), (*jet_itr)->phi());
       
       //Cleaning TOOL
-      //Should we remove the whole event or only the jet? Top analyses remove the whole event.
-      //if( !m_jetCleaning->accept( **jet_itr )) continue; //only keep good clean jets
-      //numGoodJets++;
+      Should we remove the whole event or only the jet? Top analyses remove the whole event.
+      if( !m_jetCleaning->accept( **jet_itr )) return EL::StatusCode::SUCCESS; //only keep good clean EVENTS due to missing JetCleaning for PFLOW
+      numGoodJets++;
       
       //Calibration Tool (Jet Calibration)
       xAOD::Jet* jet = new xAOD::Jet();
-      m_akt4EMPFlowCalibrationTool->calibratedCopy(**jet_itr,jet); //make a calibrated copy, assuming a copy hasn't been made already
+      m_akt4EMTopoCalibrationTool->calibratedCopy(**jet_itr,jet); //make a calibrated copy, assuming a copy hasn't been made already
       
       Info("Execute () ", "Jet after Calibration E = %.10f GeV  pt = %.10f GeV eta = %.2f  phi =  %.2f",
 	   jet->e()/GEV, jet->pt()/GEV, jet->eta(), jet->phi());
