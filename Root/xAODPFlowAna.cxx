@@ -298,7 +298,7 @@ EL::StatusCode xAODPFlowAna :: initialize ()
   ANA_CHECK(m_jetCleaning->setProperty( "CutLevel", "LooseBad"));
   ANA_CHECK(m_jetCleaning->setProperty("DoUgly", false));
   ANA_CHECK(m_jetCleaning->initialize());
-
+	/*
   // JetCalibration tool for EMTopo jets 
   const std::string name = "akt4EMTopoCalibrationTool";
   TString jetAlgo = "AntiKt4EMTopo";  
@@ -314,23 +314,23 @@ EL::StatusCode xAODPFlowAna :: initialize ()
   ANA_CHECK(m_akt4EMTopoCalibrationTool->setProperty("IsData",isData));
   // Initialize the tool
   ANA_CHECK( m_akt4EMTopoCalibrationTool->initializeTool(name));
+  */
   
-  /*
   // JetCalibration tool for PFlow jets 
   const std::string name = "JetCalibration_PFlow"; //string describing the current thread, for logging
-  TString jetAlgo_PFlow = AntiKt4EMTopo;  //String describing your jet collection, for example AntiKt4EMTopo or AntiKt4LCTopo (see below)
-  TString config_PFlow = ; //Path to global config used to initialize the tool (see below)
-  TString calibSeq_PFlow = ; //String describing the calibration sequence to apply (see below)
-  bool isData = ; //bool describing if the events are data or from simulation
+  TString jetAlgo = "AntiKt4EMPFlow";  //String describing your jet collection, for example AntiKt4EMTopo or AntiKt4LCTopo (see below)
+  TString config = "JES_MC15Recommendation_PFlow_Aug2016.config"; //Path to global config used to initialize the tool (see below)
+  TString calibSeq = "JetArea_Residual_EtaJES"; //String describing the calibration sequence to apply (see below)
+  bool isData = false; //bool describing if the events are data or from simulation
   
-  m_jetCalibration_PFlow = new JetCalibrationTool(name);
-  ANA_CHECK(m_jetCalibration_PFlow->setProperty("JetCollection",jetAlgo.Data()));
-  ANA_CHECK(m_jetCalibration_PFlow->setProperty("ConfigFile",config.Data()));
-  ANA_CHECK(m_jetCalibration_PFlow->setProperty("CalibSequence",calibSeq.Data()));
-  ANA_CHECK(m_jetCalibration_PFlow->setProperty("IsData",isData));
+  m_akt4EMPFlowCalibrationTool = new JetCalibrationTool(name);
+  ANA_CHECK(m_akt4EMPFlowCalibrationTool->setProperty("JetCollection",jetAlgo.Data()));
+  ANA_CHECK(m_akt4EMPFlowCalibrationTool->setProperty("ConfigFile",config.Data()));
+  ANA_CHECK(m_akt4EMPFlowCalibrationTool->setProperty("CalibSequence",calibSeq.Data()));
+  ANA_CHECK(m_akt4EMPFlowCalibrationTool->setProperty("IsData",isData));
   // Initialize the tool
-  ANA_CHECK(m_jetCalibration->initializeTool(name));
-  */
+  ANA_CHECK(m_akt4EMPFlowCalibrationTool->initializeTool(name));
+  
   
   // Configure the JERTool.
   m_JERTool = new JERTool("JERTool");
@@ -593,12 +593,12 @@ EL::StatusCode xAODPFlowAna :: execute ()
       
       //Cleaning TOOL
       //Should we remove the whole event or only the jet? Top analyses remove the whole event.
-      if( !m_jetCleaning->accept( **jet_itr )) continue; //only keep good clean jets
-      numGoodJets++;
+      //if( !m_jetCleaning->accept( **jet_itr )) continue; //only keep good clean jets
+      //numGoodJets++;
       
       //Calibration Tool (Jet Calibration)
       xAOD::Jet* jet = new xAOD::Jet();
-      m_akt4EMTopoCalibrationTool->calibratedCopy(**jet_itr,jet); //make a calibrated copy, assuming a copy hasn't been made already
+      m_akt4EMPFlowCalibrationTool->calibratedCopy(**jet_itr,jet); //make a calibrated copy, assuming a copy hasn't been made already
       
       Info("Execute () ", "Jet after Calibration E = %.10f GeV  pt = %.10f GeV eta = %.2f  phi =  %.2f",
 	   jet->e()/GEV, jet->pt()/GEV, jet->eta(), jet->phi());
