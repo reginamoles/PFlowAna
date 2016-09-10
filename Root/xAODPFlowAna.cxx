@@ -768,6 +768,8 @@ EL::StatusCode xAODPFlowAna :: execute ()
     resize_PFOVectors(m_JetETMissChargedParticleFlowObjects);
     initialise_PFOVectors((int)m_TruthParticles->size(), (int)m_topocluster->size(), (int)m_JetETMissChargedParticleFlowObjects->size());
     fill_PFOVectors(m_JetETMissChargedParticleFlowObjects);
+    // Calculate the MinDeltaR between cPFO and truth particles and fill the vector _mc_MinDeltaREflowTrackPair
+    CalculateMatrix_MinDeltaR (m_TruthParticles, m_JetETMissChargedParticleFlowObjects, 0.03);
     //truth particle selection
     tp_Selection(m_TruthParticles,m_JetETMissChargedParticleFlowObjects);
     //associate calibration hits to truth particles
@@ -778,7 +780,6 @@ EL::StatusCode xAODPFlowAna :: execute ()
     Calculate_Efficiency_Purity(m_TruthParticles, (int)m_topocluster->size(), m_topocluster);    
     //subtraction code
     if(m_DijetSubtraction){
-      std::cout<< "In subtraction"<<std::endl;
       SumClusterE_ConeR(m_JetETMissChargedParticleFlowObjects,m_topocluster,0.10);
       SumClusterE_ConeR(m_JetETMissChargedParticleFlowObjects,m_topocluster,0.15);
       SumClusterE_ConeR(m_JetETMissChargedParticleFlowObjects,m_topocluster,0.20);
