@@ -10,21 +10,18 @@
 
 #include "PFlowAna/xAODPFlowAna.h"
 
-int main( int argc, char* argv[] ) {
+void testGrid(const std::string& submitDir) {
 
-  // Take the submit directory from the input if provided:
-  std::string submitDir = "submitDir";
-  if( argc > 1 ) submitDir = argv[ 1 ];
 
   // Set up the job for xAOD access:
   xAOD::Init().ignore();
 
-  // Construct the samples to run on:
   // use SampleHandler to scan all of the subdirectories of a directory for particular MC single file:
   SH::SampleHandler sh;
 
   SH::scanRucio (sh, "mc15_13TeV.370900.MadGraphPythia8EvtGen_A14NNPDF23LO_GG_direct_200_0.merge.DAOD_SUSY1.e4008_a766_a821_r7676_p2666/");
 
+  
   // Set the name of the input TTree. It's always "CollectionTree"
   // for xAOD files.
   sh.setMetaString( "nc_tree", "CollectionTree" );
@@ -36,20 +33,19 @@ int main( int argc, char* argv[] ) {
   EL::Job job;
   job.sampleHandler( sh );
   job.options()->setDouble (EL::Job::optSkipEvents, 0);
-  job.options()->setDouble (EL::Job::optMaxEvents, 1000);
+  job.options()->setDouble (EL::Job::optMaxEvents, 2000);
 
   // Add our analysis to the job:
   // SinglePionLowPerformanceStudies, DijetLowPerformance, DijetSubtraction, Zmumu
-  xAODPFlowAna* alg = new xAODPFlowAna(false, false, true, false);
-  //xAODPFlowAna* alg = new xAODPFlowAna(true, false, false, false);
+  xAODPFlowAna* alg = new xAODPFlowAna(false, false, true, false, true);
   job.algsAdd( alg );
 
   // Run the job using the local/direct driver:
   //EL::DirectDriver driver;
   EL::PrunDriver driver;
+  driver.submit( job, submitDir );
   driver.options()->setString("nc_outputSampleName", "user.zhangr.PflowAna.%in:name[2]%.%in:name[6]%");
 
-  driver.submit( job, submitDir );
 
-  return 0;
+  return;
 }
