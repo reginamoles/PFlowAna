@@ -37,13 +37,14 @@ int main( int argc, char* argv[] ) {
   SH::SampleHandler sh;
 
   if(DijetLowPerformance || DijetSubtraction){
-    const char* inputFilePath = gSystem->ExpandPathName ("$DataFiles/JZ3/user.moles.mc15_13TeV.361023.Pythia8EvtGen_A14NNPDF23LO_jetjet_JZ3W.recon.AOD.e3668_s2832_r8014_AOD.92387207/");
-    SH::ScanDir().filePattern("user.moles.9200087.AOD._008942.pool.root").scan(sh,inputFilePath); //One indiviudual file
-
-    //test File
-    //const char* inputFilePath = gSystem->ExpandPathName ("/afs/cern.ch/user/m/moles/pflow/Performance/20.7.5/run/AOD/");
-    //SH::ScanDir().filePattern("AOD.pool.root").scan(sh,inputFilePath); //One indiviudual file
+    //const char* inputFilePath = gSystem->ExpandPathName ("$DataFiles/JZ3/user.moles.mc15_13TeV.361023.Pythia8EvtGen_A14NNPDF23LO_jetjet_JZ3W.recon.AOD.e3668_s2832_r8014_AOD.92387207/");
+    //SH::ScanDir().filePattern("user.moles.9200087.AOD._008942.pool.root").scan(sh,inputFilePath); //One indiviudual file
     
+    //test File
+    const char* inputFilePath = gSystem->ExpandPathName ("$DataFiles/JZTest/user.moles.mc15_13TeV.361022.JZ2W.test_AOD.95245057/");
+    SH::ScanDir().filePattern("user.moles.*").scan(sh,inputFilePath); //One indiviudual file
+    //SH::DiskListLocal list("./../../../workspace/MC/AOD/DataFiles/JZ3/user.moles.mc15_13TeV.361024.JZ4W.test_AOD.95245123/");    
+    //SH::scanFiles(sh, list);
   }
     
   if(SinglePionLowPerformanceStudies){
@@ -76,7 +77,7 @@ int main( int argc, char* argv[] ) {
   EL::Job job;
   job.sampleHandler( sh );
   job.options()->setDouble (EL::Job::optSkipEvents, 0);
-  job.options()->setDouble (EL::Job::optMaxEvents, -1);
+  job.options()->setDouble (EL::Job::optMaxEvents, 1);
 
   //-------------------------
   // Check duplicates
