@@ -48,3 +48,12 @@ bool xAODPFlowAna ::AreTheSame(float a, float b)
   return fabs(a - b) < EPSILON;
   
 }
+
+// double xAODPFlowAna :: DeltaR ( xAOD::TruthParticle cPFO, xAOD::CaloCluster cluster){
+
+//   double dEta = ((*cpfo_itr)->eta()-(*CaloCluster_itr)->eta());
+//   double dPhi = fabs(part1->phi()- part2->phi());
+//   if(dPhi > M_PI) dPhi = 2*M_PI - dPhi;
+  
+//   return sqrt(dEta*dEta + dPhi*dPhi);
+// }
