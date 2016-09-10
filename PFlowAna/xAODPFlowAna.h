@@ -40,7 +40,7 @@
 #include <cstring>
 #include <vector>
 #include <map>
-#include <vector>
+
 
 
 
@@ -206,7 +206,7 @@ class xAODPFlowAna : public EL::Algorithm
    std::vector<float> _mc_hasEflowTrackEtaAtLayer;    //!
    std::vector<double> _CalHitEPerClusFromOnePart; //!   //calibration energy per cluster from a certain particle
    std::vector<double> _CalHitEPerClusFromAllPart; //!   //calibration energy per cluster from all particles
-  
+   std::vector< std::pair<int,int> > _mc_MinDeltaREflowTrackPair;//! //indices for tp and cpfo with MinDeltaR
    //This is 1 if there is a cluster matched to the CPFO
    std::vector<int> _pfo_hasClusterMatched;//!   
    std::vector<int> _pfo_hasClusterMatched_Index;//!   
@@ -234,10 +234,12 @@ class xAODPFlowAna : public EL::Algorithm
    //The index of the truth jet the mc particle belongs to
    std::vector<int> _mc_LinkedToTruthJets;//!  
 
-  
-
+   
+   // DeltaR calculation
+   void CalculateMatrix_MinDeltaR (const xAOD::TruthParticleContainer*, const xAOD::PFOContainer*, float);
+   bool AreBothTracksMatched (int, int);
+   
    /* WIP: Jet matching tool */
-  
   //BadJetsScan
   void BadJetsScan(const xAOD::Jet&);
   void MatchJetCollections(const xAOD::JetContainer*, const xAOD::JetContainer*);
