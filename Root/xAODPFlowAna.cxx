@@ -319,7 +319,7 @@ EL::StatusCode xAODPFlowAna :: initialize ()
   // JetCalibration tool for PFlow jets 
   const std::string name = "JetCalibration_PFlow"; //string describing the current thread, for logging
   TString jetAlgo = "AntiKt4EMPFlow";  //String describing your jet collection, for example AntiKt4EMTopo or AntiKt4LCTopo (see below)
-  TString config = "JES_MC15Recommendation_PFlow_Aug2016.config"; //Path to global config used to initialize the tool (see below)
+  TString config = "JES_MC15cRecommendation_PFlow_Aug2016.config"; //Path to global config used to initialize the tool (see below)
   TString calibSeq = "JetArea_Residual_EtaJES"; //String describing the calibration sequence to apply (see below)
   bool isData = false; //bool describing if the events are data or from simulation
   
@@ -436,9 +436,9 @@ EL::StatusCode xAODPFlowAna :: execute ()
   m_EvtWeight = 1.0;
   
   if( m_EventInfo->eventType( xAOD::EventInfo::IS_SIMULATION ) ) isMC = true; 
-  
+  //info mismatch
   if( isMC ) { m_EvtWeight = m_EventInfo->mcEventWeight();}
-  //Info("execute()", "Event number = %llu  Run Number =  %d  Event weight = %.2f  isMC = %s",m_EventInfo->eventNumber(), m_EventInfo->runNumber(), m_EvtWeight, (isMC ? "true" : "false"));
+  Info("execute()", "Event number = %llu  Run Number =  %d  Event weight = %.2f  isMC = %s",m_EventInfo->eventNumber(), m_EventInfo->runNumber(), m_EvtWeight, (isMC ? "true" : "false"));
 
 
   //--------------------------------------------------------------------------------------------------
@@ -449,7 +449,7 @@ EL::StatusCode xAODPFlowAna :: execute ()
 
   if(!isMC){ // it's data!
     bool dataEventPasses = isGoodDataEvent (m_EventInfo, m_grl);
-    if(dataEventPasses){ // oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooon dont forget !
+    if(!dataEventPasses){ 
 		   //Info("execute()", "something wrong in utils");
       return EL::StatusCode::SUCCESS; // go to the next event
     } 
@@ -463,9 +463,9 @@ EL::StatusCode xAODPFlowAna :: execute ()
   for(auto &trig : chainGroup->getListOfTriggers()) {
     auto cg = m_trigDecisionTool->getChainGroup(trig);
     std::string thisTrig = trig;
-    //Info( "execute()", "%30s chain passed(1)/failed(0): %d total chain prescale (L1*HLT): %.1f", thisTrig.c_str(), cg->isPassed(), cg->getPrescale() );
+    Info( "execute()", "%30s chain passed(1)/failed(0): %d total chain prescale (L1*HLT): %.1f", thisTrig.c_str(), cg->isPassed(), cg->getPrescale() );
     if(cg->isPassed())trigger = 1;
-    //Info("execute()", "Trigger + %i", trigger);
+    Info("execute()", "Trigger + %i", trigger);
   } 
 
   //***Later we will require pass the trigger (not added yet)
@@ -574,35 +574,50 @@ EL::StatusCode xAODPFlowAna :: execute ()
 
 
   
-  if(m_Zmumu){
+  if(m_Zmumu && !trigger){ // I added the trigger here. It seems to be the wrong chain
     int numGoodJets = 0;
+    
+    
+    //first loop over the cleaning because it is not using PFlow
+    
+    xAOD::JetContainer::const_iterator jetEM_itr =  m_Jets->begin();
+    xAOD::JetContainer::const_iterator jetEM_end =  m_Jets->end();
+    for( ; jetEM_itr != jetEM_end; ++jetEM_itr ) {
+		
+		if( !m_jetCleaning->accept( **jetEM_itr )){
+		   Info("execute()", "We failed");
+		   return EL::StatusCode::SUCCESS; //only keep good clean EVENTS due to missing JetCleaning for PFLOW
+		   
+	   }
+      numGoodJets++;
+		
+		
+	}
 
     // Create the new container and its auxiliary store to store the good and calibrated jets .
     // AuxContainerBase is used because if we were using a derivation as input some of the original auxillary variables
     // may have been slimmed away (removed to make the container smaller), so if we were to do a deep-copy of the full JetAuxContainer then we would make our container larger than necessary.
-    xAOD::JetContainer* goodEMTopoJets = new xAOD::JetContainer();
-    xAOD::AuxContainerBase* goodEMTopoJetsAux = new xAOD::AuxContainerBase();
-    goodEMTopoJets->setStore( goodEMTopoJetsAux );
+    xAOD::JetContainer* goodPFlowJets = new xAOD::JetContainer();
+    xAOD::AuxContainerBase* goodPFlowJetsAux = new xAOD::AuxContainerBase();
+    goodPFlowJets->setStore( goodPFlowJetsAux );
     
-    xAOD::JetContainer::const_iterator jet_itr =  m_Jets->begin();
-    xAOD::JetContainer::const_iterator jet_end =  m_Jets->end();
+    xAOD::JetContainer::const_iterator jet_itr =  m_PFlowJets->begin();
+    xAOD::JetContainer::const_iterator jet_end =  m_PFlowJets->end();
     for( ; jet_itr != jet_end; ++jet_itr ) {
       
       Info("Execute () ", "Jet before calibration E = %.2f GeV  pt = %.2f GeV eta = %.2f  phi =  %.2f",
 	   (*jet_itr)->e()/GEV,(*jet_itr)->pt()/GEV, (*jet_itr)->eta(), (*jet_itr)->phi());
       
       //Cleaning TOOL
-      Should we remove the whole event or only the jet? Top analyses remove the whole event.
-      if( !m_jetCleaning->accept( **jet_itr )) return EL::StatusCode::SUCCESS; //only keep good clean EVENTS due to missing JetCleaning for PFLOW
-      numGoodJets++;
+      
       
       //Calibration Tool (Jet Calibration)
-      xAOD::Jet* jet = new xAOD::Jet();
-      m_akt4EMTopoCalibrationTool->calibratedCopy(**jet_itr,jet); //make a calibrated copy, assuming a copy hasn't been made already
+      xAOD::Jet* jet = 0;//new xAOD::Jet();
+      m_akt4EMPFlowCalibrationTool->calibratedCopy(**jet_itr,jet); //make a calibrated copy, assuming a copy hasn't been made already
       
       Info("Execute () ", "Jet after Calibration E = %.10f GeV  pt = %.10f GeV eta = %.2f  phi =  %.2f",
 	   jet->e()/GEV, jet->pt()/GEV, jet->eta(), jet->phi());
-      
+      goodPFlowJets->push_back(jet); // jet acquires the m_akt4CalibEMTopo auxstore
       //JER Tool (Jet Energy Resolution)
       double resMC = m_JERTool->getRelResolutionMC(jet);
       double resData = m_JERTool->getRelResolutionData(jet);
@@ -614,20 +629,24 @@ EL::StatusCode xAODPFlowAna :: execute ()
       
       if(!(m_jetsf->passesJvtCut(*jet))) continue; //*** Does it have to be applied to all jets or only those with pt < 40GeV ?
       
-      goodEMTopoJets->push_back(jet); // jet acquires the m_akt4CalibEMTopo auxstore
-      *jet= **jet_itr; // copies auxdata from one auxstore to the other
-      
       Info("Execute () ", "Jet after Smearing E = %.10f GeV  pt = %.10f GeV eta = %.2f  phi =  %.2f",
 	   jet->e()/GEV, jet->pt()/GEV, jet->eta(), jet->phi());
+	   
+	   
+     //*jet= **jet_itr; // copies auxdata from one auxstore to the other
+      
+      
     }
     
     //Just to check that GoodEMTopoJets has been store properly
-    jet_itr =  goodEMTopoJets->begin();
-    jet_end =  goodEMTopoJets->end();
+    jet_itr =  goodPFlowJets->begin();
+    jet_end =  goodPFlowJets->end();
     for( ; jet_itr != jet_end; ++jet_itr ) {
       Info("Execute () ", "goodEMTopoJets: E = %.2f GeV  pt = %.2f GeV eta = %.2f  phi =  %.2f",
 	   (*jet_itr)->e()/GEV,(*jet_itr)->pt()/GEV, (*jet_itr)->eta(), (*jet_itr)->phi());
     }
+    
+    Info("execute()", "Number of good Jets: %i", numGoodJets);
     
     
     //** It has to be revisited. CorrectCopy doing nothing, not sure if the Medium is OK implemented, d0&z0 cuts still missing
@@ -755,7 +774,7 @@ EL::StatusCode xAODPFlowAna :: execute ()
     //---------------------------
     if (ZmumuSelection(goodElectrons, goodMuons)){
       FillZmumuHistograms(goodMuons);
-      JetRecoil_Zmumu(goodMuons, goodEMTopoJets);
+      JetRecoil_Zmumu(goodMuons, goodPFlowJets);
     }
   }
   

@@ -28,7 +28,7 @@ int main( int argc, char* argv[] ) {
   bool Zmumu = true;
   //data or MC
   bool data = true;
-  bool MC = false;
+  bool MC = !data;
   std::string matchScheme = (std::string)"_EM2";
   bool UseNarrowPtRange = false;
   bool UseNarrowEtaRange = false;
