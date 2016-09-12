@@ -1,16 +1,4 @@
-#include "xAODRootAccess/Init.h"
-#include "SampleHandler/SampleHandler.h"
-#include "SampleHandler/ScanDir.h"
-#include "SampleHandler/ToolsDiscovery.h"
-#include "EventLoop/Job.h"
-#include "EventLoop/DirectDriver.h"
-#include "SampleHandler/DiskListLocal.h"
-#include <TSystem.h>
-
-
-#include "PFlowAna/xAODPFlowAna.h"
-
-void testGrid(const std::string& submitDir) {
+void testGrid(const std::string& submitDir, const std::string& path) {
 
 
   // Set up the job for xAOD access:
@@ -19,7 +7,8 @@ void testGrid(const std::string& submitDir) {
   // use SampleHandler to scan all of the subdirectories of a directory for particular MC single file:
   SH::SampleHandler sh;
 
-  SH::scanRucio (sh, "mc15_13TeV.370900.MadGraphPythia8EvtGen_A14NNPDF23LO_GG_direct_200_0.merge.DAOD_SUSY1.e4008_a766_a821_r7676_p2666/");
+  //SH::scanRucio (sh, "mc15_13TeV.370900.MadGraphPythia8EvtGen_A14NNPDF23LO_GG_direct_200_0.merge.DAOD_SUSY1.e4008_a766_a821_r7676_p2666/");
+  SH::scanRucio (sh, path);
 
   
   // Set the name of the input TTree. It's always "CollectionTree"
