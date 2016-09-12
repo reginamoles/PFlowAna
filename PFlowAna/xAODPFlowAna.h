@@ -67,7 +67,7 @@ class xAODPFlowAna : public EL::Algorithm
   virtual EL::StatusCode finalize ();
   virtual EL::StatusCode histFinalize ();
   xAODPFlowAna ();
-  xAODPFlowAna (bool SinglePionLowPerformanceStudies, bool DijetLowPerformance, bool DijetSubtraction, bool Zmumu, std::string matchScheme, bool UseNarrowPtRange, bool UseNarrowEtaRange, bool PrintDebug);
+  xAODPFlowAna (bool data, bool SinglePionLowPerformanceStudies, bool DijetLowPerformance, bool DijetSubtraction, bool Zmumu, std::string matchScheme, bool UseNarrowPtRange, bool UseNarrowEtaRange, bool PrintDebug);
 
 
   
@@ -81,6 +81,9 @@ class xAODPFlowAna : public EL::Algorithm
   
   /* WIP: create a config file to select of this options */
   //Example: https://svnweb.cern.ch/trac/atlasperf/browser/CombPerf/JetETMiss/Run2/Jet/Calibration/JetCalibrationTools/MC/DeriveGSC/trunk/Root/GSC_analysis.cxx
+  
+  bool m_data;
+  
   bool m_SinglePionLowPerformanceStudies; 
   bool m_DijetLowPerformance;
   bool m_DijetSubtraction;

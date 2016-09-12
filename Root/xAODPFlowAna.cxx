@@ -33,8 +33,10 @@ xAODPFlowAna :: xAODPFlowAna ()
 }
 
 
-xAODPFlowAna :: xAODPFlowAna (bool SinglePionLowPerformanceStudies, bool DijetLowPerformance, bool DijetSubtraction, bool Zmumu, std::string matchScheme, bool UseNarrowPtRange, bool UseNarrowEtaRange, bool PrintDebug)
+xAODPFlowAna :: xAODPFlowAna (bool data, bool SinglePionLowPerformanceStudies, bool DijetLowPerformance, bool DijetSubtraction, bool Zmumu, std::string matchScheme, bool UseNarrowPtRange, bool UseNarrowEtaRange, bool PrintDebug)
 {
+	
+  m_data = data;
   m_SinglePionLowPerformanceStudies = SinglePionLowPerformanceStudies;
   m_DijetLowPerformance = DijetLowPerformance;
   m_DijetSubtraction = DijetSubtraction;

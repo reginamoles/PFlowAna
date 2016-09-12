@@ -96,7 +96,7 @@ int main( int argc, char* argv[] ) {
   job.algsAdd (duplicates);
   
   
-  xAODPFlowAna* alg = new xAODPFlowAna(SinglePionLowPerformanceStudies, DijetLowPerformance, DijetSubtraction, Zmumu, matchScheme, UseNarrowPtRange, UseNarrowEtaRange, PrintDebug);
+  xAODPFlowAna* alg = new xAODPFlowAna(data, SinglePionLowPerformanceStudies, DijetLowPerformance, DijetSubtraction, Zmumu, matchScheme, UseNarrowPtRange, UseNarrowEtaRange, PrintDebug);
   job.algsAdd( alg );
 
   // Run the job using the local/direct driver:
