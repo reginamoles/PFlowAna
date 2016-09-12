@@ -234,10 +234,11 @@ void xAODPFlowAna :: tp_Selection(const xAOD::TruthParticleContainer* TruthParti
 	  
 	  if((*cpfo_itr)->charge()!=0 && (*cpfo_itr)->pt()!=0 
 	     && fabs((*cpfo_itr)->eta()) < 2.5 
-	     && fabs((*cpfo_itr)->eta()-(*tp_itr)->eta()) < 0.02
-	     && acos(cos((*cpfo_itr)->phi())*cos((*tp_itr)->phi())+sin((*cpfo_itr)->phi())*sin((*tp_itr)->phi()))<0.02
-	     && (fabs(z0-tp_z0)*sin(2*atan(exp(-1.0*(*cpfo_itr)->eta())))) < 2.){
-
+	     && AreBothTracksMatched(tp_index,cpfo_index))
+	     //&& fabs((*cpfo_itr)->eta()-(*tp_itr)->eta()) < 0.02
+	     //&& acos(cos((*cpfo_itr)->phi())*cos((*tp_itr)->phi())+sin((*cpfo_itr)->phi())*sin((*tp_itr)->phi()))<0.02
+	     //&& (fabs(z0-tp_z0)*sin(2*atan(exp(-1.0*(*cpfo_itr)->eta())))) < 2.)
+      {
 	    _mc_hasEflowTrack.at(tp_index) = 1; //=1 indicates that we have a eflowTrack matched to the mc particle
 	    _mc_hasEflowTrackIndex.at(tp_index) = cpfo_index; //say us which eflowObject corresponds for each mc particle (not association = 0)
       _mc_hasEflowTrackP.at(tp_index) = fabs(1. / ptrk->qOverP());

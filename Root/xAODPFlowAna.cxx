@@ -787,6 +787,8 @@ EL::StatusCode xAODPFlowAna :: execute ()
     resize_PFOVectors(m_JetETMissChargedParticleFlowObjects);
     initialise_PFOVectors((int)m_TruthParticles->size(), (int)m_topocluster->size(), (int)m_JetETMissChargedParticleFlowObjects->size());
     fill_PFOVectors(m_JetETMissChargedParticleFlowObjects);
+    // Calculate the MinDeltaR between cPFO and truth particles and fill the vector _mc_MinDeltaREflowTrackPair
+    CalculateMatrix_MinDeltaR (m_TruthParticles, m_JetETMissChargedParticleFlowObjects, 0.03);
     //truth particle selection
     tp_Selection(m_TruthParticles,m_JetETMissChargedParticleFlowObjects);
     //associate calibration hits to truth particles
