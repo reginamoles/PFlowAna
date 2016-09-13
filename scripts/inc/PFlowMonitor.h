@@ -30,19 +30,31 @@
 #include <cmath>
 #include <algorithm>
 
-bool m_UseNarrowPtRange;
-bool m_UseNarrowEtaRange;
-bool m_1to2matching;
+class PFlowMonitor {
 
-std::vector<float> m_ptRange;
-std::vector<float> m_etaRange;
+public:
+  PFlowMonitor();
+  ~PFlowMonitor();
 
-std::vector<TFile*> HistFile;
+  void run(char* inputs);
 
 //Store plots in a ps file
-void Efficiency();
-void setStyle();
-std::pair<std::string, std::string> histName(unsigned i_pt, unsigned i_eta, const std::string& name, const std::string& matchScheme, std::vector<float>& PtRange, std::vector<float>& EtaRange);
+  void Efficiency();
+  void setStyle();
+  std::pair<std::string, std::string> histName(unsigned i_pt, unsigned i_eta, const std::string& name, const std::string& matchScheme, std::vector<float>& PtRange,
+                                               std::vector<float>& EtaRange);
 
+  std::string Int_to_String(int n);
+
+private:
+  bool m_UseNarrowPtRange;
+  bool m_UseNarrowEtaRange;
+  bool m_1to2matching;
+
+  std::vector<float> m_ptRange;
+  std::vector<float> m_etaRange;
+
+  std::vector<TFile*> HistFile;
+};
 
 #endif
