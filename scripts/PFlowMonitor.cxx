@@ -21,7 +21,8 @@ void PFlowMonitor()
   if (m_UseNarrowEtaRange) m_etaRange= {0, 1, 2, 2.5};
   else m_etaRange= {0.0, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 2.0, 2.5};
   
-  HistFile = new TFile ("/afs/cern.ch/work/z/zhangr/eflowRec/PFlowAnaPackage/MyDir/hist-Run.root");
+  HistFile.push_back(new TFile ("/afs/cern.ch/work/z/zhangr/eflowRec/PFlowAnaPackage/Run/JZ1W_1/hist-user.zhangr.root"));
+  HistFile.push_back(new TFile ("/afs/cern.ch/work/z/zhangr/eflowRec/PFlowAnaPackage/Run/JZ1W_2/hist-user.zhangr.root"));
 
   setStyle();
   Efficiency();
@@ -36,12 +37,12 @@ void Efficiency()
   std::vector<std::string> catagory = {"EffMatch1", "EffMatchboth", "PurMatch1", "PurMatch2", "SubtractStatus"};
   std::vector<std::string> xTitle = {"#varepsilon_{1st cluster}", "#varepsilon_{both clusters}", "P_{1st cluster}", "P_{2nd cluster}", "Stage"};
 
-  for (int icat = 0; icat < catagory.size(); ++icat) {
+  for (int icat = 0; icat < 1/*catagory.size()*/; ++icat) {
     TCanvas* Can_Efficiency = new TCanvas(catagory[icat].c_str(), catagory[icat].c_str(), 900, 800);
     Can_Efficiency->Divide(2, 2);
     TH1F* h_pTs[5];
 
-    for (int ieta = 0; ieta < m_etaRange.size(); ++ieta) {
+    for (int ieta = 0; ieta < 1/*m_etaRange.size()*/; ++ieta) {
       Can_Efficiency->cd(ieta + 1);
       double xpos(0.25), ypos(0.88);
       TLegend* Legend = new TLegend(xpos, ypos - 0.08 * 3, xpos + 0.3, ypos);
@@ -51,10 +52,16 @@ void Efficiency()
       Legend->SetTextSize(20);
 
       int first(0);
-      for (int ipt = 0; ipt < m_ptRange.size(); ++ipt) {
+      for (int ipt = 0; ipt < 1/*m_ptRange.size()*/; ++ipt) {
         std::pair<std::string, std::string> names = histName(ipt, ieta, catagory[icat], "", m_ptRange, m_etaRange);
 
-        h_pTs[ipt] = (TH1F*) HistFile->Get(names.first.c_str());
+        for(unsigned int ifile = 0; ifile < HistFile.size(); ++ifile) {
+          if (ifile == 0) {
+            h_pTs[ipt] = (TH1F*) HistFile[ifile]->Get(names.first.c_str());
+          } else {
+            h_pTs[ipt]->Add((TH1F*) HistFile[ifile]->Get(names.first.c_str()));
+          }
+        }
         if (!h_pTs[ipt]) {
           std::cerr << "[ERROR]\t Histogram " << names.first << " not exist!" << std::endl;
         }
@@ -66,6 +73,7 @@ void Efficiency()
         h_pTs[ipt]->GetYaxis()->SetTitle("Fraction of particles");
         h_pTs[ipt]->SetTitle(Form("%1.1f < |#eta_{EM2}| < %1.1f", m_etaRange[ieta], m_etaRange[ieta + 1]));
         double entries = h_pTs[ipt]->Integral();
+        std::cout<<ipt<<" "<<entries<<std::endl;
         if (entries > 0) {
           h_pTs[ipt]->Scale(1. / entries);
           first++;
@@ -88,6 +96,7 @@ void Efficiency()
       }
       Legend->Draw();
       h_pTs[0]->Draw("axissame");
+      system("mkdir -vp plots/");
       Can_Efficiency->GetPad(ieta + 1)->SaveAs(Form("plots/%s_%d.eps", catagory[icat].c_str(), ieta));
     }
   }

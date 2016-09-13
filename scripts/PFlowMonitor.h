@@ -37,7 +37,7 @@ bool m_1to2matching;
 std::vector<float> m_ptRange;
 std::vector<float> m_etaRange;
 
-TFile *HistFile;
+std::vector<TFile*> HistFile;
 
 //Store plots in a ps file
 void Efficiency();
