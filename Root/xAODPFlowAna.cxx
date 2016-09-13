@@ -199,6 +199,14 @@ EL::StatusCode xAODPFlowAna :: histInitialize ()
     bookH1DHistogram("h_jetcount", 3,1,4);
     
     //Final histograms
+    
+    //Jet histograms
+    bookH1DHistogram("h_jetPt", pt_bin, pt_low, pt_up);
+    bookH1DHistogram("h_jetE", E_bin, E_low, E_up);
+    bookH1DHistogram("h_jetM", 20, 0, 100); //Is this a proper range? 
+    bookH1DHistogram("h_jetEta", eta_bin, eta_low, eta_up);
+    bookH1DHistogram("h_jetPhi", phi_bin, phi_low, phi_up);
+    
     //Muon histograms
     bookH1DHistogram("h_muonPt", pt_bin, pt_low, pt_up);
     bookH1DHistogram("h_muonE", E_bin, E_low, E_up);

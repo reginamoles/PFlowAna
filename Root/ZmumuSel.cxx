@@ -45,39 +45,42 @@ void xAODPFlowAna :: FillZmumuHistograms(const xAOD::MuonContainer* goodMuons){
     m_H1Dict["h_muonPhi"]->Fill(goodMuons->at(t)->phi());
   }
   
-  m_H1Dict["h_ZPt"]->Fill(((goodMuons->at(0)->p4())+(goodMuons->at(1)->p4())).Pt()/GEV);
-  m_H1Dict["h_ZE"]->Fill(((goodMuons->at(0)->p4())+(goodMuons->at(1)->p4())).E()/GEV);
-  m_H1Dict["h_ZM"]->Fill(((goodMuons->at(0)->p4())+(goodMuons->at(1)->p4())).M()/GEV);
-  m_H1Dict["h_ZEta"]->Fill(((goodMuons->at(0)->p4())+(goodMuons->at(1)->p4())).Eta());
-  m_H1Dict["h_ZPhi"]->Fill(((goodMuons->at(0)->p4())+(goodMuons->at(1)->p4())).Phi());
-  /*
-	m_H1Dict["h_JetPt"]->Fill((goodMuons->at(t)->pt())/GEV);
-    m_H1Dict["h_JetE"]->Fill((goodMuons->at(t)->e())/GEV);
-    m_H1Dict["h_JetM"]->Fill((goodMuons->at(t)->m())/GEV);
-    m_H1Dict["h_JetEta"]->Fill(goodMuons->at(t)->eta());
-    m_H1Dict["h_JetPhi"]->Fill(goodMuons->at(t)->phi());
-  */
+	m_H1Dict["h_ZPt"]->Fill(((goodMuons->at(0)->p4())+(goodMuons->at(1)->p4())).Pt()/GEV);
+	m_H1Dict["h_ZE"]->Fill(((goodMuons->at(0)->p4())+(goodMuons->at(1)->p4())).E()/GEV);
+	m_H1Dict["h_ZM"]->Fill(((goodMuons->at(0)->p4())+(goodMuons->at(1)->p4())).M()/GEV);
+	m_H1Dict["h_ZEta"]->Fill(((goodMuons->at(0)->p4())+(goodMuons->at(1)->p4())).Eta());
+	m_H1Dict["h_ZPhi"]->Fill(((goodMuons->at(0)->p4())+(goodMuons->at(1)->p4())).Phi());
+  
+	
+  
   return; 
 }
   
 
-void xAODPFlowAna :: JetRecoil_Zmumu(const xAOD::MuonContainer* goodMuons, const xAOD::JetContainer* goodJets){
+void xAODPFlowAna :: JetRecoil_Zmumu(const xAOD::MuonContainer* goodMuons, const xAOD::JetContainer* goodPFlowJets){
   
   TLorentzVector Z = goodMuons->at(0)->p4()+goodMuons->at(1)->p4();
   //Loop over jets
   int n_RecoilingJets = 0;
   float SumPt_RecoilingJets = 0;
 
-  xAOD::JetContainer::const_iterator jet_itr = goodJets->begin();
-  xAOD::JetContainer::const_iterator jet_end = goodJets->end();
+  xAOD::JetContainer::const_iterator jet_itr = goodPFlowJets->begin();
+  xAOD::JetContainer::const_iterator jet_end = goodPFlowJets->end();
   for( ; jet_itr != jet_end; ++jet_itr ) {
     if( (*jet_itr)->pt()/GEV < 20 ) continue;
     if( fabs(deltaPhi((*jet_itr)->phi(), Z.Phi())) > (M_PI - 0.4)) continue;
     n_RecoilingJets++;
+    m_H1Dict["h_jetPt"]->Fill((*jet_itr)->pt()/GEV);
+    m_H1Dict["h_jetE"]->Fill((*jet_itr)->e()/GEV);
+    m_H1Dict["h_jetM"]->Fill((*jet_itr)->m()/GEV);
+    m_H1Dict["h_jetEta"]->Fill((*jet_itr)->eta());
+    m_H1Dict["h_jetPhi"]->Fill((*jet_itr)->phi());
     SumPt_RecoilingJets = SumPt_RecoilingJets + (*jet_itr)->pt();
     // *WIP* These distributions has to be crosscheck (odd results for n_RecoilingJets == 1)
     if (n_RecoilingJets == 1)  m_H1Dict["h_ZPt_to_JetPt"]->Fill( (*jet_itr)->pt()/Z.Pt() );
     else if (n_RecoilingJets > 1 )  m_H1Dict["h_ZPt_to_JetPt_sum"]->Fill(SumPt_RecoilingJets/Z.Pt());
+    
+
   }
   
   return; 
