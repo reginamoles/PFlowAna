@@ -287,11 +287,13 @@ EL::StatusCode xAODPFlowAna :: initialize ()
 
   
   /* WIP: Should isData be initialized here for the tool? */ 
+  //dafuq?
   
   //----------
   // Tools
   //----------
   //GRL *WIP* check which file has to be used
+  //file should be right
   m_grl = new GoodRunsListSelectionTool("GoodRunsListSelectionTool");
   //const char* GRLFilePath = "$ALRB_TutorialData/data15_13TeV.periodAllYear_DetStatus-v73-pro19-08_DQDefects-00-01-02_PHYS_StandardGRL_All_Good_25ns.xml";
   const char* GRLFilePath = "/afs/cern.ch/user/a/atlasdqm/grlgen/All_Good/data16_13TeV.periodAllYear_DetStatus-v82-pro20-12_DQDefects-00-02-04_PHYS_StandardGRL_All_Good_25ns.xml";
