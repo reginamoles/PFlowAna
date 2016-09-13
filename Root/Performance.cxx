@@ -20,7 +20,7 @@ void xAODPFlowAna :: PerformanceHistos(){
 /////////////////////////////
 void xAODPFlowAna :: resize_tpVectors(const xAOD::TruthParticleContainer* TruthParticles){  
 
-  Info("resize_tpVectors () ", "In resize_tpVectors...");
+//  Info("resize_tpVectors () ", "In resize_tpVectors...");
   //Vectors for storing true information
   _mc_hasEflowTrack.resize(TruthParticles->size());
   _mc_hasEflowTrackIndex.resize(TruthParticles->size());
@@ -37,7 +37,7 @@ void xAODPFlowAna :: resize_tpVectors(const xAOD::TruthParticleContainer* TruthP
 /////////////////////////////
 void xAODPFlowAna :: resize_PFOVectors(const xAOD::PFOContainer* JetETMissChargedParticleFlowObjects){
   
-  Info("resize_PFOVectors () ", "In resize_PFOVectors...");
+//  Info("resize_PFOVectors () ", "In resize_PFOVectors...");
  //Vector for storing PFO variables
   _pfo_Pt.resize(JetETMissChargedParticleFlowObjects->size());
   _pfo_iniEoPexp.resize(JetETMissChargedParticleFlowObjects->size());
@@ -118,7 +118,7 @@ void xAODPFlowAna :: initialise_PFOVectors(int n_mcParticles, int n_clusters, in
 /////////////////////////////
 void xAODPFlowAna :: fill_PFOVectors(const xAOD::PFOContainer* JetETMissChargedParticleFlowObjects){
 
-  Info("fill_PFOVectors () ", "In fill_PFOVectors...");
+//  Info("fill_PFOVectors () ", "In fill_PFOVectors...");
   xAOD::PFOContainer::const_iterator cpfo_itr = JetETMissChargedParticleFlowObjects->begin();
   xAOD::PFOContainer::const_iterator cpfo_end = JetETMissChargedParticleFlowObjects->end();
   int cpfo_index = 0;
@@ -182,10 +182,7 @@ void xAODPFlowAna :: fill_PFOVectors(const xAOD::PFOContainer* JetETMissChargedP
       _pfo_hasClusterMatched_E.at(cpfo_index) = -999;
     }
 
-    Info("execute()", "Cluster mathced: E  = %.3f, eta = %.3f, phi = %.3f ",
-	 _pfo_hasClusterMatched_E.at(cpfo_index),
-	 _pfo_hasClusterMatched_Eta.at(cpfo_index),
-	 _pfo_hasClusterMatched_Phi.at(cpfo_index));
+//    Info("execute()", "Cluster mathced: E  = %.3f, eta = %.3f, phi = %.3f ", _pfo_hasClusterMatched_E.at(cpfo_index), _pfo_hasClusterMatched_Eta.at(cpfo_index), _pfo_hasClusterMatched_Phi.at(cpfo_index));
   }
   
   return;
@@ -301,8 +298,7 @@ void xAODPFlowAna :: ComputeCalibHitsPerParticle(const xAOD::CalCellInfoContaine
    //printing information 
   for (unsigned int i=0;i<_CalHitEPerParAfterSubtraction.size();i++){
     if(_mc_hasEflowTrack.at(i)==1){
-      Info("ComputeCalibHitsPerParticle()", " The MC particle with index %i has a PFO associated with CalHitEPerPar = %.2f GeV and CalHitEPerParAfterSubtraction = %.2f GeV ",
-   	   _mc_hasEflowTrackIndex[i], _CalHitEPerPar[i]/GEV , _CalHitEPerParAfterSubtraction[i]/GEV);
+//      Info("ComputeCalibHitsPerParticle()", " The MC particle with index %i has a PFO associated with CalHitEPerPar = %.2f GeV and CalHitEPerParAfterSubtraction = %.2f GeV ", _mc_hasEflowTrackIndex[i], _CalHitEPerPar[i]/GEV , _CalHitEPerParAfterSubtraction[i]/GEV);
     }
   }
   
@@ -371,14 +367,14 @@ void xAODPFlowAna::fillEffPurVectorDefault(const xAOD::CaloClusterContainer* top
     } else {
       v_Efficiency.at(i_clus) = -999;
     }
-    Info("fill_Eff_LeadCluster", " v_Efficicency.at(%i)  = %.3f ", i_clus, v_Efficiency.at(i_clus));
+//    Info("fill_Eff_LeadCluster", " v_Efficicency.at(%i)  = %.3f ", i_clus, v_Efficiency.at(i_clus));
     if (_CalHitEPerClusFromAllPart.at(i_clus) != 0) {
       float Pur = _CalHitEPerClusFromOnePart.at(i_clus * TruthParticles->size() + i_mcPart) / _CalHitEPerClusFromAllPart.at(i_clus);
       v_Purity.at(i_clus) = Pur;
     } else {
       v_Purity.at(i_clus) = -999;
     }
-    Info("fill_Eff_LeadCluster", " v_PURITY.at(%i)  = %.3f ", i_clus, v_Purity.at(i_clus));
+//    Info("fill_Eff_LeadCluster", " v_PURITY.at(%i)  = %.3f ", i_clus, v_Purity.at(i_clus));
   } //end loop over cluster
   return ;
 }
@@ -414,14 +410,14 @@ void xAODPFlowAna::Calculate_Efficiency_Purity(const xAOD::TruthParticleContaine
             float Eff1 = _CalHitEPerClusFromOnePart.at(i_clus * TruthParticles->size() + i_mcPart) / _CalHitEPerPar.at(i_mcPart);
             v_Efficiency.at(0) = Eff1;
           }
-          Info("TwoCluster", " v_Efficicency.at(%i)  = %.3f ", i_clus, v_Efficiency.at(0));
+//          Info("TwoCluster", " v_Efficicency.at(%i)  = %.3f ", i_clus, v_Efficiency.at(0));
 
           if (_CalHitEPerClusFromAllPart.at(i_clus) != 0) {
             float Pur1 = _CalHitEPerClusFromOnePart.at(i_clus * TruthParticles->size() + i_mcPart) / _CalHitEPerClusFromAllPart.at(i_clus);
 
             v_Purity.at(0) = Pur1;
           }
-          Info("TwoCluster", " v_PURITY.at(%i)  = %.3f ", i_clus, v_Purity.at(0));
+//          Info("TwoCluster", " v_PURITY.at(%i)  = %.3f ", i_clus, v_Purity.at(0));
         }
 
       } else {
@@ -446,12 +442,11 @@ void xAODPFlowAna::Calculate_Efficiency_Purity(const xAOD::TruthParticleContaine
           float Eff2 = _CalHitEPerClusFromOnePart.at(pos2 * TruthParticles->size() + i_mcPart) / _CalHitEPerPar.at(i_mcPart);
           float Effboth = (_CalHitEPerClusFromOnePart.at(pos1 * TruthParticles->size() + i_mcPart) + _CalHitEPerClusFromOnePart.at(pos2 * TruthParticles->size() + i_mcPart))
               / _CalHitEPerPar.at(i_mcPart);
-          std::cout << "Eff=" << Eff1 << ", " << Eff2 << ", " << Effboth << std::endl;
           v_Efficiency.at(0) = Eff1;
           v_Efficiency.at(1) = Eff2;
           v_Efficiency.at(2) = Effboth;
         }
-        Info("TwoCluster", " v_Efficicency both = %.3f, %.3f, %.3f ", v_Efficiency.at(0), v_Efficiency.at(1), v_Efficiency.at(2));
+//        Info("TwoCluster", " v_Efficicency both = %.3f, %.3f, %.3f ", v_Efficiency.at(0), v_Efficiency.at(1), v_Efficiency.at(2));
 
         if (_CalHitEPerClusFromAllPart.at(pos1) != 0) {
           float Pur1 = _CalHitEPerClusFromOnePart.at(pos1 * TruthParticles->size() + i_mcPart) / _CalHitEPerClusFromAllPart.at(pos1);
@@ -463,7 +458,7 @@ void xAODPFlowAna::Calculate_Efficiency_Purity(const xAOD::TruthParticleContaine
           v_Purity.at(1) = Pur2;
           v_Purity.at(2) = Purboth;
         }
-        Info("TwoCluster", " v_PURITY both = %.3f, %.3f, %.3f ", v_Purity.at(0), v_Purity.at(1), v_Purity.at(2));
+//        Info("TwoCluster", " v_PURITY both = %.3f, %.3f, %.3f ", v_Purity.at(0), v_Purity.at(1), v_Purity.at(2));
       }
     } else {
       v_Efficiency.resize(_n_clusters);
@@ -606,7 +601,7 @@ void xAODPFlowAna :: SubtractionPerf(const xAOD::PFOContainer* JetETMissChargedP
   }
 
   //printing information 
-  for (unsigned int i=0;i<_clMatchedEflowEcone15.size();i++) Info("SubtractionPerf()", " _clMatchedEflowEcone15 E  = %.2f GeV ", _clMatchedEflowEcone15[i]/GEV);
+//  for (unsigned int i=0;i<_clMatchedEflowEcone15.size();i++) Info("SubtractionPerf()", " _clMatchedEflowEcone15 E  = %.2f GeV ", _clMatchedEflowEcone15[i]/GEV);
   
   //Calculate the variables
   xAOD::TruthParticleContainer::const_iterator tp_itr = TruthParticles->begin();
@@ -626,7 +621,7 @@ void xAODPFlowAna :: SubtractionPerf(const xAOD::PFOContainer* JetETMissChargedP
 	  
 	  if (_pfo_hasClusterMatched[_mc_hasEflowTrackIndex[i]]==1 && _pfo_LFI[_mc_hasEflowTrackIndex[i]]!=999){
 	    float pull15=(_clMatchedEflowEcone15[_mc_hasEflowTrackIndex[i]]-_pfo_iniEoPexp[_mc_hasEflowTrackIndex[i]])/_pfo_inisigmaEoPexp[_mc_hasEflowTrackIndex[i]];
-	    Info("SubtractionPerf", " pull15  = %.2f GeV ", pull15);
+//	    Info("SubtractionPerf", " pull15  = %.2f GeV ", pull15);
 	    hTurnOff_CalHitsRemainingOverPt_vs_Pull_eta_00_04_hist->Fill((*tp_itr)->pt(),pull15,_CalHitEPerParAfterSubtraction[i]/((*tp_itr)->pt()*cosh((*tp_itr)->eta())), m_EvtWeight);
 	    hTurnOff_Entries_vs_Pull_eta_00_04_hist->Fill((*tp_itr)->pt(),pull15,m_EvtWeight);
 	  }

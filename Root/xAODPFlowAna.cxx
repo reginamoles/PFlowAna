@@ -69,7 +69,7 @@ EL::StatusCode xAODPFlowAna :: setupJob (EL::Job& job)
 // Histograms booking
 //////////////////////////
 void xAODPFlowAna :: bookH1DHistogram(std::string name, int n_bins, float x_low, float x_up){
-  Info("bookH1DHistogram () ", "bookH1DHistograms...");
+//  Info("bookH1DHistogram () ", "bookH1DHistograms...");
   
   TH1D* h1 = new TH1D(name.c_str(),name.c_str(),n_bins, x_low, x_up);
   h1->Sumw2();
@@ -96,7 +96,7 @@ std::string xAODPFlowAna::histName(unsigned i_pt, unsigned i_eta, const std::str
 
 void xAODPFlowAna :: bookH1DPerformanceHistogram(std::string name, std::string matchScheme, std::vector<float> PtRange, std::vector<float> EtaRange, int n_bins, float x_low, float x_up)
 {
-  Info("bookH1DPerformanceHistogram () ", "bookH1DPerformanceHistograms...");
+//  Info("bookH1DPerformanceHistogram () ", "bookH1DPerformanceHistograms...");
 
    for (unsigned i_pt = 0; i_pt<PtRange.size(); i_pt++){
     for (unsigned i_eta =0; i_eta<EtaRange.size(); i_eta++){
@@ -301,7 +301,7 @@ EL::StatusCode xAODPFlowAna :: initialize ()
   ANA_CHECK_SET_TYPE (EL::StatusCode);
 
   m_event = wk()->xaodEvent();
-  Info("initialize()", "Number of events = %lli", m_event->getEntries() );
+//  Info("initialize()", "Number of events = %lli", m_event->getEntries() );
 
   m_store = new xAOD::TStore();
 
@@ -476,7 +476,7 @@ EL::StatusCode xAODPFlowAna :: execute ()
     isMC = true; 
    
   if( isMC ) { m_EvtWeight = eventInfo->mcEventWeight();}
-  Info("execute()", "Event number = %llu  Run Number =  %d  Event weight = %.2f  isMC = %s",eventInfo->eventNumber(), eventInfo->runNumber(), m_EvtWeight, (isMC ? "true" : "false"));
+//  Info("execute()", "Event number = %llu  Run Number =  %d  Event weight = %.2f  isMC = %s",eventInfo->eventNumber(), eventInfo->runNumber(), m_EvtWeight, (isMC ? "true" : "false"));
 
 
   //trigger tools: here the trigger chain is chosen
@@ -502,7 +502,7 @@ EL::StatusCode xAODPFlowAna :: execute ()
     ANA_CHECK(m_event->retrieve( m_TruthParticles,"TruthParticles"));
     m_TruthVertices = 0;
     ANA_CHECK(m_event->retrieve(m_TruthVertices,"TruthVertices"));
-    PrintTruthInfo(m_TruthParticles, m_TruthVertices, PrintDebug);
+//    PrintTruthInfo(m_TruthParticles, m_TruthVertices, PrintDebug);
     
     //---------------------------
     // CalCellInfo_TopoCluster
@@ -511,7 +511,7 @@ EL::StatusCode xAODPFlowAna :: execute ()
     ANA_CHECK(m_event->retrieve(m_CalCellInfo_TopoCluster, "CalCellInfo_TopoCluster"));
     m_CalCellInfo = 0; //CalCellInfo PFO
     ANA_CHECK(m_event->retrieve(m_CalCellInfo, "CalCellInfo"));
-    PrintCalCellInfo(m_CalCellInfo_TopoCluster,m_CalCellInfo, PrintDebug);
+//    PrintCalCellInfo(m_CalCellInfo_TopoCluster,m_CalCellInfo, PrintDebug);
   }
 
   //---------------------------
@@ -519,7 +519,7 @@ EL::StatusCode xAODPFlowAna :: execute ()
   //---------------------------
   m_InDetTrackParticles  = 0;
   ANA_CHECK(m_event->retrieve( m_InDetTrackParticles ,"InDetTrackParticles"));
-  PrintTrackInfo(m_InDetTrackParticles,PrintDebug);
+//  PrintTrackInfo(m_InDetTrackParticles,PrintDebug);
   
   //---------------------------
   // cPFO and nPFO
@@ -528,7 +528,7 @@ EL::StatusCode xAODPFlowAna :: execute ()
   ANA_CHECK(m_event->retrieve( m_JetETMissChargedParticleFlowObjects ,"JetETMissChargedParticleFlowObjects"));
   m_JetETMissNeutralParticleFlowObjects = 0;
   ANA_CHECK(m_event->retrieve(m_JetETMissNeutralParticleFlowObjects,"JetETMissNeutralParticleFlowObjects"));
-  PrintPFOInfo( m_JetETMissChargedParticleFlowObjects,m_JetETMissNeutralParticleFlowObjects, PrintDebug);
+//  PrintPFOInfo( m_JetETMissChargedParticleFlowObjects,m_JetETMissNeutralParticleFlowObjects, PrintDebug);
 
   //---------------------------
   // EMTopoCluster and PFO cluster
@@ -545,17 +545,17 @@ EL::StatusCode xAODPFlowAna :: execute ()
   m_Jets = 0;
   m_PFlowJets = 0;
   ANA_CHECK(m_event->retrieve( m_Jets, "AntiKt4EMTopoJets" ));
-  Info("execute()", "  number of jets = %lu", m_Jets->size());
+//  Info("execute()", "  number of jets = %lu", m_Jets->size());
   ANA_CHECK(m_event->retrieve( m_PFlowJets, "AntiKt4EMPFlowJets" ));
-  Info("execute()", "  number of PFlow jets = %lu", m_PFlowJets->size());
-  PrintJetCollections(m_Jets,m_PFlowJets, true);
+//  Info("execute()", "  number of PFlow jets = %lu", m_PFlowJets->size());
+//  PrintJetCollections(m_Jets,m_PFlowJets, true);
 
   //----------------------------
   // Electrons (**Print options)
   //--------------------------- 
   m_Electrons = 0;
   ANA_CHECK(m_event->retrieve(m_Electrons, "Electrons") );
-  Info("execute()", "  number of electrons = %lu", m_Electrons->size());
+//  Info("execute()", "  number of electrons = %lu", m_Electrons->size());
   
   //***Do we need the forward electrons?
 
@@ -565,7 +565,7 @@ EL::StatusCode xAODPFlowAna :: execute ()
   //--------------------------- 
   m_Muons = 0;
   ANA_CHECK(m_event->retrieve( m_Muons, "Muons" ));
-  Info("execute()", "  number of muons = %lu", m_Muons->size());
+//  Info("execute()", "  number of muons = %lu", m_Muons->size());
   
 
   //---------------------------
@@ -604,8 +604,7 @@ EL::StatusCode xAODPFlowAna :: execute ()
   xAOD::JetContainer::const_iterator jet_end =  m_Jets->end();
   for( ; jet_itr != jet_end; ++jet_itr ) {
     
-    Info("Execute () ", "Jet before calibration E = %.2f GeV  pt = %.2f GeV eta = %.2f  phi =  %.2f",
-	 (*jet_itr)->e()/GEV,(*jet_itr)->pt()/GEV, (*jet_itr)->eta(), (*jet_itr)->phi());
+//    Info("Execute () ", "Jet before calibration E = %.2f GeV  pt = %.2f GeV eta = %.2f  phi =  %.2f", (*jet_itr)->e()/GEV,(*jet_itr)->pt()/GEV, (*jet_itr)->eta(), (*jet_itr)->phi());
     
     //Cleaning TOOL
     //Should we remove the whole event or only the jet? Top analyses remove the whole event.
@@ -616,14 +615,13 @@ EL::StatusCode xAODPFlowAna :: execute ()
     xAOD::Jet* jet = new xAOD::Jet();
     m_akt4EMTopoCalibrationTool->calibratedCopy(**jet_itr,jet); //make a calibrated copy, assuming a copy hasn't been made already
     
-    Info("Execute () ", "Jet after Calibration E = %.10f GeV  pt = %.10f GeV eta = %.2f  phi =  %.2f",
-     	 jet->e()/GEV, jet->pt()/GEV, jet->eta(), jet->phi());
+//    Info("Execute () ", "Jet after Calibration E = %.10f GeV  pt = %.10f GeV eta = %.2f  phi =  %.2f", jet->e()/GEV, jet->pt()/GEV, jet->eta(), jet->phi());
     
     //JER Tool (Jet Energy Resolution)
     double resMC = m_JERTool->getRelResolutionMC(jet);
     double resData = m_JERTool->getRelResolutionData(jet);
     
-    Info("Execute () ","resMC = %.10f  resData = %.10f ", resMC, resData);
+//    Info("Execute () ","resMC = %.10f  resData = %.10f ", resMC, resData);
     
     ANA_CHECK(m_SmearTool->applyCorrection(*jet));
     //virtual CP::CorrectionCode applyCorrection(xAOD::Jet& jet);
@@ -633,16 +631,14 @@ EL::StatusCode xAODPFlowAna :: execute ()
     goodEMTopoJets->push_back(jet); // jet acquires the m_akt4CalibEMTopo auxstore
     *jet= **jet_itr; // copies auxdata from one auxstore to the other
     
-    Info("Execute () ", "Jet after Smearing E = %.10f GeV  pt = %.10f GeV eta = %.2f  phi =  %.2f",
-	 jet->e()/GEV, jet->pt()/GEV, jet->eta(), jet->phi());
+//    Info("Execute () ", "Jet after Smearing E = %.10f GeV  pt = %.10f GeV eta = %.2f  phi =  %.2f", jet->e()/GEV, jet->pt()/GEV, jet->eta(), jet->phi());
   }
 
   //Just to check that GoodEMTopoJets has been store properly
   jet_itr =  goodEMTopoJets->begin();
   jet_end =  goodEMTopoJets->end();
   for( ; jet_itr != jet_end; ++jet_itr ) {
-    Info("Execute () ", "goodEMTopoJets: E = %.2f GeV  pt = %.2f GeV eta = %.2f  phi =  %.2f",
-	 (*jet_itr)->e()/GEV,(*jet_itr)->pt()/GEV, (*jet_itr)->eta(), (*jet_itr)->phi());
+//    Info("Execute () ", "goodEMTopoJets: E = %.2f GeV  pt = %.2f GeV eta = %.2f  phi =  %.2f", (*jet_itr)->e()/GEV,(*jet_itr)->pt()/GEV, (*jet_itr)->eta(), (*jet_itr)->phi());
   }
   
 
@@ -667,22 +663,21 @@ EL::StatusCode xAODPFlowAna :: execute ()
   xAOD::ElectronContainer::const_iterator el_end = m_Electrons->end();
   for( ; el_itr != el_end; ++el_itr ) {
     
-    Info("Execute () ", "Electron before slecetion/calibration E = %.2f GeV  pt = %.2f GeV eta = %.2f  phi =  %.2f",
-	 (*el_itr)->e()/GEV,(*el_itr)->pt()/GEV, (*el_itr)->eta(), (*el_itr)->phi());
+//    Info("Execute () ", "Electron before slecetion/calibration E = %.2f GeV  pt = %.2f GeV eta = %.2f  phi =  %.2f", (*el_itr)->e()/GEV,(*el_itr)->pt()/GEV, (*el_itr)->eta(), (*el_itr)->phi());
     
     //Reject bad electrons
     if( !(*el_itr)->isGoodOQ(xAOD::EgammaParameters::BADCLUSELECTRON) ) continue;
-    std::cout<<"Pass isGoodOQ"<<std::endl;
+//    std::cout<<"Pass isGoodOQ"<<std::endl;
     // Formally unnecessary because all electrons in the container have these authors by construction
     if ( !(*el_itr)->author(xAOD::EgammaParameters::AuthorElectron) && !(*el_itr)->author(xAOD::EgammaParameters::AuthorAmbiguous) ) continue;
-    std::cout<<"Pass Author"<<std::endl;
+//    std::cout<<"Pass Author"<<std::endl;
     // Calorimeter crack excluded
     if  ( fabs( (*el_itr)->caloCluster()->etaBE(2) ) >1.37 &&  fabs( (*el_itr)->caloCluster()->etaBE(2) ) <1.52) continue;
-    std::cout<<"Is not in the crack region"<<std::endl;
+//    std::cout<<"Is not in the crack region"<<std::endl;
     // Reject electrons outside the kinematic acceptance
     if (( (*el_itr)->pt() < 7000) || (fabs( (*el_itr)->caloCluster()->etaBE(2) ) > 2.47 )) continue;
     
-    std::cout<<"Kinematic region selected"<<std::endl;
+ //   std::cout<<"Kinematic region selected"<<std::endl;
     // // Electron d0 and z0 cut: |d0BL significance |<5 and |Δz0BL*sinθ|<0.5 mm (***still in progress)
     // xAOD::TrackParticle *tp_el = (*el_itr)->trackParticle() ; 
     // double d0sig = xAOD::TrackingHelpers::d0significance( tp_el, m_event->beamPosSigmaX(), m_event->beamPosSigmaY(), m_event->beamPosSigmaXY() );
@@ -693,7 +688,7 @@ EL::StatusCode xAODPFlowAna :: execute ()
     // if(fabs(delta_z0*TMath::sin(tp_el->theta)) >= 0.5) continue;
     // Electron Identification tool
     // std::cout<<"MediumLH = "<<m_MediumLH->accept(*el_itr)<<std::endl;
-    std::cout<<"VeryLooseLHElectron = "<<m_VeryLooseLHElectron->accept(*el_itr)<<std::endl;
+ //   std::cout<<"VeryLooseLHElectron = "<<m_VeryLooseLHElectron->accept(*el_itr)<<std::endl;
     if(!m_VeryLooseLHElectron->accept(*el_itr)) continue; 
     
     //    if(!m_MediumLH->accept(*el_itr)) continue; 
@@ -716,14 +711,13 @@ EL::StatusCode xAODPFlowAna :: execute ()
     // *electrondc= **el_itr; // copies auxdata from one auxstore to the other
   }
   
-  Info("execute()", "  number of good electrons = %lu", goodElectrons->size());
+//  Info("execute()", "  number of good electrons = %lu", goodElectrons->size());
   //Just to check that GoodElectrons has been store properly
   el_itr =  goodElectrons->begin();
   el_end =  goodElectrons->end();
-  for( ; el_itr != el_end; ++el_itr ) {
-    Info("Execute () ", "goodElectrons: E = %.2f GeV  pt = %.2f GeV eta = %.2f  phi =  %.2f",
-	 (*el_itr)->e()/GEV,(*el_itr)->pt()/GEV, (*el_itr)->eta(), (*el_itr)->phi());
-  }
+//  for( ; el_itr != el_end; ++el_itr ) {
+//    Info("Execute () ", "goodElectrons: E = %.2f GeV  pt = %.2f GeV eta = %.2f  phi =  %.2f", (*el_itr)->e()/GEV,(*el_itr)->pt()/GEV, (*el_itr)->eta(), (*el_itr)->phi());
+//  }
   
   
   //*** Problem with corrected copy ; not stored properly! Have a look into the push_back
@@ -739,8 +733,7 @@ EL::StatusCode xAODPFlowAna :: execute ()
   xAOD::MuonContainer::const_iterator mu_end = m_Muons->end();
   for( ; mu_itr != mu_end; ++mu_itr ) {
     
-    Info("Execute () ", "Muons before calibration: E = %.2f GeV  pt = %.2f GeV eta = %.2f  phi =  %.2f",
-	 (*mu_itr)->e()/GEV,(*mu_itr)->pt()/GEV, (*mu_itr)->eta(), (*mu_itr)->phi());
+//    Info("Execute () ", "Muons before calibration: E = %.2f GeV  pt = %.2f GeV eta = %.2f  phi =  %.2f", (*mu_itr)->e()/GEV,(*mu_itr)->pt()/GEV, (*mu_itr)->eta(), (*mu_itr)->phi());
     
     xAOD::Muon* mu = 0;
     m_muonCalibrationAndSmearingTool->correctedCopy(**mu_itr, mu);
@@ -748,8 +741,8 @@ EL::StatusCode xAODPFlowAna :: execute ()
     if (!m_iso->accept( **mu_itr )) continue;
     if ((((*mu_itr)->pt()/GEV)<25) || (fabs((*mu_itr)->eta())>2.4))continue;
 
-    Info("execute()", "corrected muon pt = %.2f GeV", ((*mu_itr)->pt()/GEV));
-    Info("execute()", "corrected muon pt (from copy) = %.2f GeV", (mu->pt()/GEV)); 
+//    Info("execute()", "corrected muon pt = %.2f GeV", ((*mu_itr)->pt()/GEV));
+//    Info("execute()", "corrected muon pt (from copy) = %.2f GeV", (mu->pt()/GEV)); 
      
     goodMuons->push_back( mu ); // jet acquires the goodJets auxstore
     *mu= **mu_itr; // copies auxdata from one auxstore to the other
@@ -757,14 +750,13 @@ EL::StatusCode xAODPFlowAna :: execute ()
   } // end for loop over shallow copied muons
 
   
-  Info("execute()", "  number of good and calibrated muons = %lu", goodMuons->size());
+//  Info("execute()", "  number of good and calibrated muons = %lu", goodMuons->size());
   //Just to check that GoodMuons has been store properly
   mu_itr =  goodMuons->begin();
   mu_end =  goodMuons->end();
-  for( ; mu_itr != mu_end; ++mu_itr ) {
-    Info("Execute () ", "GoodMuons: E = %.2f GeV  pt = %.2f GeV eta = %.2f  phi =  %.2f",
-	 (*mu_itr)->e()/GEV,(*mu_itr)->pt()/GEV, (*mu_itr)->eta(), (*mu_itr)->phi());
-  }
+//  for( ; mu_itr != mu_end; ++mu_itr ) {
+//    Info("Execute () ", "GoodMuons: E = %.2f GeV  pt = %.2f GeV eta = %.2f  phi =  %.2f", (*mu_itr)->e()/GEV,(*mu_itr)->pt()/GEV, (*mu_itr)->eta(), (*mu_itr)->phi());
+//  }
   
 
   
@@ -962,9 +954,8 @@ EL::StatusCode xAODPFlowAna :: histFinalize ()
 
 void xAODPFlowAna :: BadJetsScan (const xAOD::Jet& jet) {
   
-  Info("", "--- Bad Jets Scanning ---");
-  Info("BadJetsScan", "jet E = %.2f GeV  pt  = %.2f GeV eta = %.2f  phi =  %.2f",
-       jet.e()/GEV, jet.pt()/GEV, jet.phi(), jet.eta());
+//  Info("", "--- Bad Jets Scanning ---");
+//  Info("BadJetsScan", "jet E = %.2f GeV  pt  = %.2f GeV eta = %.2f  phi =  %.2f", jet.e()/GEV, jet.pt()/GEV, jet.phi(), jet.eta());
   
   // if(HasPFlowJetMatched(jet)){
   //   Info("BadJetsScan", "PFlow jet matched  %d E = %.2f GeV  pt  = %.2f GeV eta = %.2f  phi =  %.2f",

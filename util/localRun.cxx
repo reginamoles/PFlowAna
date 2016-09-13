@@ -14,7 +14,11 @@ int main( int argc, char* argv[] ) {
 
   // Take the submit directory from the input if provided:
   std::string submitDir = "submitDir";
+  std::string path = "";
+  std::string input = "";
   if( argc > 1 ) submitDir = argv[ 1 ];
+  if( argc > 2 ) path = argv[ 2 ];
+  if( argc > 3 ) input = argv[ 3 ];
 
   // Set up the job for xAOD access:
   xAOD::Init().ignore();
@@ -23,22 +27,12 @@ int main( int argc, char* argv[] ) {
   // use SampleHandler to scan all of the subdirectories of a directory for particular MC single file:
   SH::SampleHandler sh;
   //DiJetSample
-  //const char* inputFilePath = gSystem->ExpandPathName ("/afs/cern.ch/work/z/zhangr/eflowRec/r19.05-53/Run/");
-  //SH::ScanDir().filePattern("AOD.pool.root").scan(sh,inputFilePath); //One indiviudual file
-  const char* inputFilePath = gSystem->ExpandPathName ("/afs/cern.ch/user/z/zhangr/work/eflowRec/data/JZ1W/user.zhangr/");
-  //SH::ScanDir().filePattern("user.zhangr.9367862.AOD._000*.pool.root").scan(sh,inputFilePath);
-  SH::ScanDir().filePattern("user.zhangr.9367862.AOD._000097.pool.root").scan(sh,inputFilePath);
+  //const char* inputFilePath = gSystem->ExpandPathName ("/afs/cern.ch/user/z/zhangr/work/eflowRec/data/JZ1W/user.zhangr/");
+  const char* inputFilePath = gSystem->ExpandPathName (path.c_str());
+  //SH::ScanDir().filePattern("user.zhangr.9367862.AOD._000097.pool.root").scan(sh,inputFilePath);
+  SH::ScanDir().filePattern(input).scan(sh,inputFilePath);
 
-  //SinglePions
-  //const char* inputFilePath = gSystem->ExpandPathName ("$DataFiles/SinglePions/mc15c_piplus/user.moles.mc15_13TeV.428001.ParticleGun_single_piplus_logE0p2to2000.recon.AOD.e3501_s2832_r8014_AOD/");
-  //SH::ScanDir().filePattern("user.moles.8671065.AOD._000411.pool.root").scan(sh,inputFilePath); //One indiviudual file
-  //const char* inputFilePath = gSystem->ExpandPathName ("/afs/cern.ch/user/z/zhangr/work/eflowRec/r19.05-53/Run");
-  //SH::ScanDir().filePattern("AOD.pool.root").scan(sh,inputFilePath); //One indiviudual file
 
-  //SH::DiskListLocal list("/afs/cern.ch/user/z/zhangr/work/eflowRec/data/JZ1W/user.zhangr/");
-  //SH::scanFiles(sh, list);
-
-  
   // Set the name of the input TTree. It's always "CollectionTree"
   // for xAOD files.
   sh.setMetaString( "nc_tree", "CollectionTree" );
@@ -49,7 +43,7 @@ int main( int argc, char* argv[] ) {
   // Create an EventLoop job:
   EL::Job job;
   job.sampleHandler( sh );
-  job.options()->setDouble (EL::Job::optSkipEvents, 99);
+  job.options()->setDouble (EL::Job::optSkipEvents, 0);
   job.options()->setDouble (EL::Job::optMaxEvents, 100);
 
   // Add our analysis to the job:
