@@ -86,3 +86,20 @@ void xAODPFlowAna :: JetRecoil_Zmumu(const xAOD::MuonContainer* goodMuons, const
   return; 
 }
 
+
+/* trigger matchng from irinas code
+ 
+//check whether the given particle matches any of the given triggers
+105	bool hasTriggerMatch(xAOD::IParticle const & particle, std::vector<std::string> const & triggers) {
+106	  std::string key("TRIGMATCH_");
+107	  size_t keyPrefixLength = key.size();
+108	  for (std::string const & trigger : triggers) {
+109	    key.replace(keyPrefixLength, std::string::npos, trigger);
+110	    if (particle.auxdataConst<char>(key))
+111	      return true;
+112	  }
+113	  return false;
+114	}
+
+*/
+
