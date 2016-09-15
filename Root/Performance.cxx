@@ -432,6 +432,7 @@ void xAODPFlowAna::Calculate_Efficiency_Purity(const xAOD::TruthParticleContaine
           }
         }
 
+
         if (_CalHitEPerPar.at(i_mcPart) != 0) {
           float Eff1 = _CalHitEPerClusFromOnePart.at(pos1 * TruthParticles->size() + i_mcPart) / _CalHitEPerPar.at(i_mcPart);
           float Eff2 = _CalHitEPerClusFromOnePart.at(pos2 * TruthParticles->size() + i_mcPart) / _CalHitEPerPar.at(i_mcPart);
@@ -441,7 +442,7 @@ void xAODPFlowAna::Calculate_Efficiency_Purity(const xAOD::TruthParticleContaine
           v_Efficiency.at(1) = Eff2;
           v_Efficiency.at(2) = Effboth;
         }
-//        Info("TwoCluster", " v_Efficicency both = %.3f, %.3f, %.3f ", v_Efficiency.at(0), v_Efficiency.at(1), v_Efficiency.at(2));
+//        Info("TwoCluster", " v_Efficicency both = %d, %d, %.3f, %.3f, %.3f ", pos1, pos2, v_Efficiency.at(0), v_Efficiency.at(1), v_Efficiency.at(2));
 
         if (_CalHitEPerClusFromAllPart.at(pos1) != 0) {
           float Pur1 = _CalHitEPerClusFromOnePart.at(pos1 * TruthParticles->size() + i_mcPart) / _CalHitEPerClusFromAllPart.at(pos1);
@@ -515,7 +516,7 @@ void xAODPFlowAna::fillEffPurHistoMatch(int i_mcPart, xAOD::TruthParticleContain
 //        } //Purity for those clusters with eff>50%
 //
 //      }
-      if (twoClusters) {
+      if (twoClusters && _mc_subtractStatus[i_mcPart] == 1) {
         std::string complete_name = histName(iptbin, ietabin, "EffMatch1", "", _ptRange, _etaRange);
         m_H1Dict[complete_name]->Fill(v_Efficiency[0]);
         complete_name = histName(iptbin, ietabin, "PurMatch1", "", _ptRange, _etaRange);
