@@ -9,3 +9,4 @@ Run*
 *.d
 *dSYM*
 bin
+*test*
