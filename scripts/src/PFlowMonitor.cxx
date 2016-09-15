@@ -118,7 +118,7 @@ void PFlowMonitor::Efficiency()
         std::pair<std::string, std::string> names = histName(ipt, ieta, catagory[icat], "", m_ptRange, m_etaRange);
 
         for(unsigned int ifile = 0; ifile < HistFile.size(); ++ifile) {
-          if (m_debug) std::cout<<HistFile[ifile]->GetName()<<std::endl;
+          if (!m_debug) std::cout<<HistFile[ifile]->GetName()<<std::endl;
           if (ifile == 0) {
             h_pTs[ipt] = (TH1F*) HistFile[ifile]->Get(names.first.c_str());
           } else {
