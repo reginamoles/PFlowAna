@@ -6,13 +6,8 @@
 //////////////////////////
 void xAODPFlowAna :: PerformanceHistos(){
   
-  
-  
   return;
 }
-
-
-
 
 
 /////////////////////////////
@@ -389,7 +384,7 @@ void xAODPFlowAna::Calculate_Efficiency_Purity(const xAOD::TruthParticleContaine
 
     //We rerequire at least 15% of the energy of the true particle
     if (!(_mc_hasEflowTrack.at(i_mcPart) == 1 && (_CalHitEPerPar.at(i_mcPart) / ((*tp_itr)->pt() * cosh((*tp_itr)->eta()))) > 0.15)) continue;
-    std::vector<double> v_Efficiency, v_Purity;
+    std::vector<double> v_Efficiency, v_Purity, full_Efficiency, full_Purity;
 
     if (m_1to2matching) {
 
@@ -460,17 +455,20 @@ void xAODPFlowAna::Calculate_Efficiency_Purity(const xAOD::TruthParticleContaine
         }
 //        Info("TwoCluster", " v_PURITY both = %.3f, %.3f, %.3f ", v_Purity.at(0), v_Purity.at(1), v_Purity.at(2));
       }
-    } else {
-      v_Efficiency.resize(_n_clusters);
-      v_Purity.resize(_n_clusters);
-      fillEffPurVectorDefault(topocluster, i_mcPart, TruthParticles, v_Efficiency, v_Purity);
     }
+      full_Efficiency.resize(_n_clusters);
+      full_Purity.resize(_n_clusters);
+      fillEffPurVectorDefault(topocluster, i_mcPart, TruthParticles, full_Efficiency, full_Purity);
 
     if (m_1to2matching) {
       fillEffPurHistoMatch(i_mcPart, tp_itr, v_Efficiency, v_Purity, (v_Efficiency.size()==3));
     } else {
       fillEffPurHistoDefault(i_mcPart, tp_itr, v_Efficiency, v_Purity);
     }
+
+    // Fill NClusters reach 90% efficiency: need full_Efficiency
+    int NClusters_09 = getNClustersFor90Eff(i_mcPart, full_Efficiency);
+    fillNClustersFor90Eff(i_mcPart, tp_itr, NClusters_09);
   }
   return;
 }
@@ -570,8 +568,48 @@ void xAODPFlowAna::fillEffPurHistoDefault(int i_mcPart, xAOD::TruthParticleConta
   }
 }
 
+int xAODPFlowAna::getNClustersFor90Eff(int i_mcPart, std::vector<double>& full_Efficiency) {
+  //link with cluster index destroyed!
+  std::sort(full_Efficiency.begin(), full_Efficiency.end());
+  int NClusters_09 = 0;
+  unsigned int i(1); double Eff_09(0);
+  while (i <= full_Efficiency.size()) {
+    Eff_09 += full_Efficiency[full_Efficiency.size() - i];
+    if (Eff_09 > 0.9) {
+      NClusters_09 = i;
+      break;
+    } else {
+      i++;
+    }
+  }
+  return NClusters_09;
+}
 
+void xAODPFlowAna::fillNClustersFor90Eff(int i_mcPart, xAOD::TruthParticleContainer::const_iterator tp_itr, int NClusters_09) {
 
+  _mc_hasEflowTrackEtaAtLayer.at(i_mcPart) = (*tp_itr)->eta();
+  for (unsigned iptbin = 0; iptbin < _ptRange.size(); ++iptbin) {
+    for (unsigned ietabin = 0; ietabin < _etaRange.size(); ++ietabin) {
+      bool inRegion[2] = { false, false };
+      if (iptbin == _ptRange.size() - 1 && _mc_hasEflowTrackPt.at(i_mcPart) / GEV > _ptRange.at(iptbin)) {
+        inRegion[0] = true;
+      } else if (_mc_hasEflowTrackPt.at(i_mcPart) / GEV > _ptRange.at(iptbin) && _mc_hasEflowTrackPt.at(i_mcPart) / GEV <= _ptRange.at(iptbin + 1)) {
+        inRegion[0] = true;
+      }
+
+      if (fabs(_mc_hasEflowTrackEtaAtLayer.at(i_mcPart)) > _etaRange.at(ietabin) && ietabin == _etaRange.size() - 1) {
+        inRegion[1] = true;
+      } else if (fabs(_mc_hasEflowTrackEtaAtLayer.at(i_mcPart)) > _etaRange.at(ietabin) && fabs(_mc_hasEflowTrackEtaAtLayer.at(i_mcPart)) <= _etaRange.at(ietabin + 1)) {
+        inRegion[1] = true;
+      }
+
+      if (!(inRegion[0] && inRegion[1])) continue;
+
+      std::string complete_name = histName(iptbin, ietabin, "NClus_09", "", _ptRange, _etaRange);
+      m_H1Dict[complete_name]->Fill(NClusters_09);
+    }
+  }
+}
 
 /////////////////////////////////////
 // Subtraction algorithm

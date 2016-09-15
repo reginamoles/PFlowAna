@@ -50,6 +50,7 @@ private:
   bool m_UseNarrowPtRange;
   bool m_UseNarrowEtaRange;
   bool m_1to2matching;
+  bool m_debug;
 
   std::vector<float> m_ptRange;
   std::vector<float> m_etaRange;

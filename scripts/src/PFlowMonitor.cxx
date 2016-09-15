@@ -7,6 +7,7 @@ PFlowMonitor::PFlowMonitor() {
   m_1to2matching = true;
   m_UseNarrowPtRange = true;
   m_UseNarrowEtaRange = true;
+  m_debug = false;
 }
 
 PFlowMonitor::~PFlowMonitor() {};
@@ -62,7 +63,7 @@ void PFlowMonitor::run(char* inputs)
     m_etaRange.push_back(2.5);
   }
 
-  ifstream inputfiles(inputs);
+  std::ifstream inputfiles(inputs);
   std::string inputfile;
   while (!inputfiles.eof()) {
     inputfiles >> inputfile;
@@ -80,6 +81,7 @@ void PFlowMonitor::run(char* inputs)
 //////////////////////////////
 void PFlowMonitor::Efficiency()
 {
+  bool c_showNumber(!false);
   int tcolor[5] = {4, 2, 8, 6, 28};
 
   std::vector<std::string> catagory;
@@ -88,19 +90,21 @@ void PFlowMonitor::Efficiency()
   catagory.push_back("PurMatch1");
   catagory.push_back("PurMatch2");
   catagory.push_back("SubtractStatus");
+  catagory.push_back("NClus_09");
   std::vector<std::string> xTitle;
   xTitle.push_back("#varepsilon_{1st cluster}");
   xTitle.push_back("#varepsilon_{both clusters}");
   xTitle.push_back("P_{1st cluster}");
   xTitle.push_back("P_{2nd cluster}");
   xTitle.push_back("Stage");
+  xTitle.push_back("N_{cluster}(#Sigma E^{true}>90%)");
 
-  for (int icat = 0; icat < catagory.size(); ++icat) {
+  for (unsigned int icat = 0; icat < (m_debug ? 1 : catagory.size()); ++icat) {
     TCanvas* Can_Efficiency = new TCanvas(catagory[icat].c_str(), catagory[icat].c_str(), 900, 800);
     Can_Efficiency->Divide(2, 2);
     TH1F* h_pTs[5];
 
-    for (int ieta = 0; ieta < m_etaRange.size(); ++ieta) {
+    for (unsigned int ieta = 0; ieta < (m_debug ? 1 : m_etaRange.size()); ++ieta) {
       Can_Efficiency->cd(ieta + 1);
       double xpos(0.25), ypos(0.88);
       TLegend* Legend = new TLegend(xpos, ypos - 0.08 * 3, xpos + 0.3, ypos);
@@ -110,10 +114,11 @@ void PFlowMonitor::Efficiency()
       Legend->SetTextSize(20);
 
       int first(0);
-      for (int ipt = 0; ipt < m_ptRange.size(); ++ipt) {
+      for (unsigned int ipt = 0; ipt < m_ptRange.size(); ++ipt) {
         std::pair<std::string, std::string> names = histName(ipt, ieta, catagory[icat], "", m_ptRange, m_etaRange);
 
         for(unsigned int ifile = 0; ifile < HistFile.size(); ++ifile) {
+          if (m_debug) std::cout<<HistFile[ifile]->GetName()<<std::endl;
           if (ifile == 0) {
             h_pTs[ipt] = (TH1F*) HistFile[ifile]->Get(names.first.c_str());
           } else {
@@ -135,13 +140,17 @@ void PFlowMonitor::Efficiency()
           h_pTs[ipt]->SetTitle(Form("%1.1f < |#eta_{EM2}| < %1.1f", m_etaRange[ieta], m_etaRange[ieta + 1]));
         }
         double entries = h_pTs[ipt]->Integral();
-        std::cout<<ipt<<" "<<entries<<std::endl;
         if (entries > 0) {
           h_pTs[ipt]->Scale(1. / entries);
           first++;
         }
-        h_pTs[ipt]->GetYaxis()->SetRangeUser(0, 1.2);
-        std::string lable = names.second;
+        h_pTs[ipt]->GetYaxis()->SetRangeUser(0, 0.8);
+        std::string lable;
+        if (c_showNumber) {
+          lable = Form("%s (%.0f)", names.second.c_str(), entries);
+        } else {
+          lable = Form("%s", names.second.c_str());
+        }
         Legend->AddEntry(h_pTs[ipt], lable.c_str(), "le");
         if (entries == 0) {
           continue;
@@ -208,15 +217,17 @@ std::pair<std::string, std::string> PFlowMonitor::histName(unsigned i_pt, unsign
                                    std::vector<float>& EtaRange) {
 
   std::string complete_name = "WrongName", legend_name = "WrongName";
-  if (i_pt != PtRange.size()-1 && i_eta != EtaRange.size()-1) {
-    complete_name = (name + matchScheme + "_" + Int_to_String((int) (PtRange.at(i_pt))) + "_" + Int_to_String((int) (PtRange.at(i_pt+1))) + "GeV__eta"
-                     + Int_to_String((int) ((10 * EtaRange.at(i_eta)))) + "_" + Int_to_String((int) ((10 * EtaRange.at(i_eta+1))))).c_str();
-    legend_name = Int_to_String((int) (PtRange.at(i_pt))) + "-" + Int_to_String((int) (PtRange.at(i_pt+1))) + "GeV";
-  }
-  else {
-    complete_name = (name + matchScheme + "_" + Int_to_String((int) (PtRange.at(i_pt))) + "GeV__eta"
-                      + Int_to_String((int) ((10 * EtaRange.at(i_eta)))) ).c_str();
-    legend_name = ">" + Int_to_String((int) (PtRange.at(i_pt))) + "GeV";
+  if (i_pt != PtRange.size() - 1 && i_eta != EtaRange.size() - 1) {
+    complete_name = (name + matchScheme + "_" + Int_to_String((int) (PtRange.at(i_pt))) + "_" + Int_to_String((int) (PtRange.at(i_pt + 1))) + "GeV__eta"
+                     + Int_to_String((int) ((10 * EtaRange.at(i_eta)))) + "_" + Int_to_String((int) ((10 * EtaRange.at(i_eta + 1))))).c_str();
+    legend_name = Int_to_String((int) (PtRange.at(i_pt))) + "-" + Int_to_String((int) (PtRange.at(i_pt + 1))) + "GeV";
+  } else {
+    complete_name = (name + matchScheme + "_" + Int_to_String((int) (PtRange.at(i_pt))) + "GeV__eta" + Int_to_String((int) ((10 * EtaRange.at(i_eta))))).c_str();
+    if (i_pt != PtRange.size() - 1 && i_eta == EtaRange.size() - 1) {
+      legend_name = Int_to_String((int) (PtRange.at(i_pt))) + "-" + Int_to_String((int) (PtRange.at(i_pt + 1))) + "GeV";
+    } else {
+      legend_name = ">" + Int_to_String((int) (PtRange.at(i_pt))) + "GeV";
+    }
   }
 
   return std::make_pair(complete_name, legend_name);

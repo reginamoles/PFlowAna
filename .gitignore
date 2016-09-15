@@ -5,3 +5,7 @@ AutoDict*
 .*swp
 *eps
 Run*
+*.o
+*.d
+*dSYM*
+bin

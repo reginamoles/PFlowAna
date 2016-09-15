@@ -131,6 +131,8 @@ class xAODPFlowAna : public EL::Algorithm
   void Calculate_Efficiency_Purity(const xAOD::TruthParticleContainer*,int,const xAOD::CaloClusterContainer*);
   void FindMatchedClusterIndex(const xAOD::PFOContainer* JetETMissChargedParticleFlowObjects, const xAOD::CaloClusterContainer* topocluster);
   void SubtractionPerf(const xAOD::PFOContainer*,const xAOD::CaloClusterContainer*, const xAOD::TruthParticleContainer*);
+  int getNClustersFor90Eff(int i_mcPart, std::vector<double>& full_Efficiency);
+  void fillNClustersFor90Eff(int i_mcPart, xAOD::TruthParticleContainer::const_iterator tp_itr, int NClusters_09);
 
   void clear_PerformanceVectors();
 
