@@ -173,6 +173,10 @@ EL::StatusCode xAODPFlowAna :: histInitialize ()
     bookH1DPerformanceHistogram("Eff", "", _ptRange, _etaRange, n_effbins, eff_low, eff_up);
     bookH1DPerformanceHistogram("Pur","",_ptRange, _etaRange, n_effbins, eff_low, eff_up);
   }
+  bookH1DPerformanceHistogram("EffClusterboth_total", "", _ptRange, _etaRange, n_effbins, eff_low, eff_up);
+  bookH1DPerformanceHistogram("EffClusterboth_CLS1", "", _ptRange, _etaRange, n_effbins, eff_low, eff_up);
+  bookH1DPerformanceHistogram("EffClusterboth_CLS2", "", _ptRange, _etaRange, n_effbins, eff_low, eff_up);
+  bookH1DPerformanceHistogram("EffClusterboth_RSS", "", _ptRange, _etaRange, n_effbins, eff_low, eff_up);
 
   //====================================
   // 1->2 Matching

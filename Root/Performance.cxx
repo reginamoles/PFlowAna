@@ -494,28 +494,6 @@ void xAODPFlowAna::fillEffPurHistoMatch(int i_mcPart, xAOD::TruthParticleContain
 
       if (!(inRegion[0] && inRegion[1])) continue;
 
-//      std::string complete_name = histName(iptbin, ietabin, "EffMatch", "", _ptRange, _etaRange);
-//      m_H1Dict[complete_name]->Fill(v_Efficiency[0]);
-//      if (v_Efficiency[0] > 0.5) {
-//        std::string complete_name = histName(iptbin, ietabin, "PurMatch", "", _ptRange, _etaRange);
-//        m_H1Dict[complete_name]->Fill(v_Purity[0]);
-//      } //Purity for those clusters with eff>50%
-//      if (twoClusters) {
-//        std::string complete_name = histName(iptbin, ietabin, "EffMatch", "", _ptRange, _etaRange);
-//        m_H1Dict[complete_name]->Fill(v_Efficiency[1]);
-//        if (v_Efficiency[1] > 0.5) {
-//          std::string complete_name = histName(iptbin, ietabin, "PurMatch", "", _ptRange, _etaRange);
-//          m_H1Dict[complete_name]->Fill(v_Purity[1]);
-//        } //Purity for those clusters with eff>50%
-//
-//        complete_name = histName(iptbin, ietabin, "EffMatchboth", "", _ptRange, _etaRange);
-//        m_H1Dict[complete_name]->Fill(v_Efficiency[2]);
-//        if (v_Efficiency[2] > 0.5) {
-//          std::string complete_name = histName(iptbin, ietabin, "PurMatchboth", "", _ptRange, _etaRange);
-//          m_H1Dict[complete_name]->Fill(v_Purity[2]);
-//        } //Purity for those clusters with eff>50%
-//
-//      }
       if (twoClusters && _mc_subtractStatus[i_mcPart] == 1) {
         std::string complete_name = histName(iptbin, ietabin, "EffMatch1", "", _ptRange, _etaRange);
         m_H1Dict[complete_name]->Fill(v_Efficiency[0]);
@@ -527,8 +505,26 @@ void xAODPFlowAna::fillEffPurHistoMatch(int i_mcPart, xAOD::TruthParticleContain
         m_H1Dict[complete_name]->Fill(v_Purity[1]);
 
       }
-      std::string complete_name = histName(iptbin, ietabin, "SubtractStatus", "", _ptRange, _etaRange);
-        m_H1Dict[complete_name]->Fill(_mc_subtractStatus[i_mcPart]);
+      std::string complete_name = histName(iptbin, ietabin, "EffClusterboth_total", "", _ptRange, _etaRange);
+      m_H1Dict[complete_name]->Fill(v_Efficiency[2]);
+
+      if (_mc_subtractStatus[i_mcPart] == 1) {
+        if (twoClusters) {
+          complete_name = histName(iptbin, ietabin, "EffClusterboth_CLS2", "", _ptRange, _etaRange);
+          m_H1Dict[complete_name]->Fill(v_Efficiency[2]);
+          m_H1Dict[complete_name]->SetFillColor(4);
+        } else {
+          complete_name = histName(iptbin, ietabin, "EffClusterboth_CLS1", "", _ptRange, _etaRange);
+          m_H1Dict[complete_name]->Fill(v_Efficiency[2]);
+          m_H1Dict[complete_name]->SetFillColor(9);
+        }
+      } else {
+        complete_name = histName(iptbin, ietabin, "EffClusterboth_RSS", "", _ptRange, _etaRange);
+        m_H1Dict[complete_name]->Fill(v_Efficiency[2]);
+        m_H1Dict[complete_name]->SetFillColor(2);
+      }
+      complete_name = histName(iptbin, ietabin, "SubtractStatus", "", _ptRange, _etaRange);
+      m_H1Dict[complete_name]->Fill(_mc_subtractStatus[i_mcPart]);
     }
   }
 
