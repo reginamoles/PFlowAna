@@ -82,6 +82,7 @@ void PFlowMonitor::run(char* inputs)
 void PFlowMonitor::Efficiency()
 {
   bool c_showNumber(!false);
+  bool c_overlay(true);
   int tcolor[5] = {4, 2, 8, 6, 28};
 
   std::vector<std::string> catagory;
@@ -91,6 +92,8 @@ void PFlowMonitor::Efficiency()
   catagory.push_back("PurMatch2");
   catagory.push_back("SubtractStatus");
   catagory.push_back("NClus_09");
+  catagory.push_back("EffClusterboth_total");
+
   std::vector<std::string> xTitle;
   xTitle.push_back("#varepsilon_{1st cluster}");
   xTitle.push_back("#varepsilon_{both clusters}");
@@ -98,8 +101,10 @@ void PFlowMonitor::Efficiency()
   xTitle.push_back("P_{2nd cluster}");
   xTitle.push_back("Stage");
   xTitle.push_back("N_{cluster}(#Sigma E^{true}>90%)");
+  xTitle.push_back("#varepsilon_{both clusters}");
 
   for (unsigned int icat = 0; icat < (m_debug ? 1 : catagory.size()); ++icat) {
+    if (icat > 5) c_overlay = false;
     TCanvas* Can_Efficiency = new TCanvas(catagory[icat].c_str(), catagory[icat].c_str(), 900, 800);
     Can_Efficiency->Divide(2, 2);
     TH1F* h_pTs[5];
@@ -133,42 +138,71 @@ void PFlowMonitor::Efficiency()
         h_pTs[ipt]->SetStats(kFALSE);
         h_pTs[ipt]->SetLineColor(tcolor[ipt]);
         h_pTs[ipt]->GetXaxis()->SetTitle(xTitle[icat].c_str());
-        h_pTs[ipt]->GetYaxis()->SetTitle("Fraction of particles");
+        if (c_overlay) {
+          h_pTs[ipt]->GetYaxis()->SetTitle("Fraction of particles");
+        } else {
+          h_pTs[ipt]->GetYaxis()->SetTitle("Number of particles");
+        }
         if(ieta == m_etaRange.size()-1) {
           h_pTs[ipt]->SetTitle(Form("%1.1f < |#eta_{EM2}|", m_etaRange[ieta]));
         } else {
           h_pTs[ipt]->SetTitle(Form("%1.1f < |#eta_{EM2}| < %1.1f", m_etaRange[ieta], m_etaRange[ieta + 1]));
         }
         double entries = h_pTs[ipt]->Integral();
-        if (entries > 0) {
+        if (c_overlay && entries > 0) {
           h_pTs[ipt]->Scale(1. / entries);
           first++;
         }
-        h_pTs[ipt]->GetYaxis()->SetRangeUser(0, 0.8);
+        double maxY = h_pTs[ipt]->GetBinCenter(h_pTs[ipt]->GetMaximumBin());
+        if (c_overlay) {
+          std::cout<<"entrif="<<h_pTs[ipt]->Integral()<<std::endl;
+          h_pTs[ipt]->GetYaxis()->SetRangeUser(0, (maxY > 0.8 ? maxY * 1.2 : 0.8));
+        } else {
+//          h_pTs[ipt]->GetYaxis()->SetRangeUser(0, maxY);
+        }
         std::string lable;
         if (c_showNumber) {
           lable = Form("%s (%.0f)", names.second.c_str(), entries);
         } else {
           lable = Form("%s", names.second.c_str());
         }
+
         Legend->AddEntry(h_pTs[ipt], lable.c_str(), "le");
         if (entries == 0) {
+          if (!c_overlay) {
+            Legend->Clear();
+            Can_Efficiency->GetPad(ieta + 1)->Update();
+          }
           continue;
         }
-        if (first == 1) {
-          h_pTs[ipt]->Draw("hist");
+        if (c_overlay) {
+          if (first == 1) {
+            h_pTs[ipt]->Draw("hist");
+          } else {
+            h_pTs[ipt]->Draw("samehist");
+          }
         } else {
-          h_pTs[ipt]->Draw("samehist");
+          std::cout<<"draw"<<std::endl;
+          Can_Efficiency->cd(ieta + 1);
+          h_pTs[ipt]->SetLineColor(1);
+          h_pTs[ipt]->Draw("hist");
+          Legend->Draw();
+          Can_Efficiency->GetPad(ieta + 1)->SaveAs(Form("plots/%s_%d_%d.eps", catagory[icat].c_str(), ieta, ipt));
+          Legend->Clear();
+          Can_Efficiency->GetPad(ieta + 1)->Update();
         }
       }
       if (!first) {
         std::cout << "[WARNING]\t Histograms are empty in eta bin " << ieta << std::endl;
         continue;
       }
+
       Legend->Draw();
       h_pTs[0]->Draw("axissame");
       system("mkdir -vp plots/");
-      Can_Efficiency->GetPad(ieta + 1)->SaveAs(Form("plots/%s_%d.eps", catagory[icat].c_str(), ieta));
+      if (c_overlay) {
+        Can_Efficiency->GetPad(ieta + 1)->SaveAs(Form("plots/%s_%d.eps", catagory[icat].c_str(), ieta));
+      }
     }
   }
   return;
