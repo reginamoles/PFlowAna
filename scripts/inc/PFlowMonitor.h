@@ -38,7 +38,7 @@ public:
 
   void run(char* inputs);
 
-//Store plots in a ps file
+  void Plot();
   void Efficiency();
   void setStyle();
   std::pair<std::string, std::string> histName(unsigned i_pt, unsigned i_eta, const std::string& name, const std::string& matchScheme, std::vector<float>& PtRange,

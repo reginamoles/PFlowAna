@@ -74,12 +74,13 @@ void PFlowMonitor::run(char* inputs)
   }
 
   setStyle();
+  Plot();
   Efficiency();
 }
 
 ////
 //////////////////////////////
-void PFlowMonitor::Efficiency()
+void PFlowMonitor::Plot()
 {
   bool c_showNumber(!false);
   bool c_overlay(true);
@@ -92,7 +93,7 @@ void PFlowMonitor::Efficiency()
   catagory.push_back("PurMatch2");
   catagory.push_back("SubtractStatus");
   catagory.push_back("NClus_09");
-  catagory.push_back("EffClusterboth_total");
+//  catagory.push_back("EffClusterboth_total");
 
   std::vector<std::string> xTitle;
   xTitle.push_back("#varepsilon_{1st cluster}");
@@ -101,7 +102,7 @@ void PFlowMonitor::Efficiency()
   xTitle.push_back("P_{2nd cluster}");
   xTitle.push_back("Stage");
   xTitle.push_back("N_{cluster}(#Sigma E^{true}>90%)");
-  xTitle.push_back("#varepsilon_{both clusters}");
+//  xTitle.push_back("#varepsilon_{both clusters}");
 
   for (unsigned int icat = 0; icat < (m_debug ? 1 : catagory.size()); ++icat) {
     if (icat > 5) c_overlay = false;
@@ -155,7 +156,6 @@ void PFlowMonitor::Efficiency()
         }
         double maxY = h_pTs[ipt]->GetBinCenter(h_pTs[ipt]->GetMaximumBin());
         if (c_overlay) {
-          std::cout<<"entrif="<<h_pTs[ipt]->Integral()<<std::endl;
           h_pTs[ipt]->GetYaxis()->SetRangeUser(0, (maxY > 0.8 ? maxY * 1.2 : 0.8));
         } else {
 //          h_pTs[ipt]->GetYaxis()->SetRangeUser(0, maxY);
@@ -209,6 +209,88 @@ void PFlowMonitor::Efficiency()
 
 }
 
+void PFlowMonitor::Efficiency()
+{
+  bool c_showNumber(!false);
+  int tcolor[4] = {1, 4, 8, 2};
+
+  std::vector<std::string> catagory;
+  catagory.push_back("EffClusterboth_total");
+  catagory.push_back("EffClusterboth_CLS1");
+  catagory.push_back("EffClusterboth_CLS2");
+  catagory.push_back("EffClusterboth_RSS");
+
+  std::string xTitle = "#varepsilon_{both clusters}";
+
+  for (unsigned int ieta = 0; ieta < (m_debug ? 1 : m_etaRange.size()); ++ieta) {
+    for (unsigned int ipt = 0; ipt < m_ptRange.size(); ++ipt) {
+      TCanvas* Can_Efficiency = new TCanvas("Efficiency", "Efficiency", 450, 400);
+      TH1F* h_cats[4];
+
+      double xpos(0.25), ypos(0.88);
+      TLegend* Legend = new TLegend(xpos, ypos - 0.08 * 3, xpos + 0.3, ypos);
+      Legend->SetFillStyle(0);
+      Legend->SetBorderSize(0);
+      Legend->SetTextFont(43);
+      Legend->SetTextSize(20);
+
+      for (unsigned int icat = 0; icat < (m_debug ? 1 : catagory.size()); ++icat) {
+        std::pair<std::string, std::string> names = histName(ipt, ieta, catagory[icat], "", m_ptRange, m_etaRange);
+
+        for (unsigned int ifile = 0; ifile < HistFile.size(); ++ifile) {
+          if (!m_debug) std::cout << HistFile[ifile]->GetName() << std::endl;
+          if (ifile == 0) {
+            h_cats[icat] = (TH1F*) HistFile[ifile]->Get(names.first.c_str());
+          } else {
+            h_cats[icat]->Add((TH1F*) HistFile[ifile]->Get(names.first.c_str()));
+          }
+        }
+
+        if (!h_cats[icat]) {
+          std::cerr << "[ERROR]\t Histogram " << names.first << " not exist!" << std::endl;
+        }
+
+        h_cats[icat]->SetLineWidth(2);
+        h_cats[icat]->Print();
+        h_cats[icat]->SetStats(kFALSE);
+        h_cats[icat]->GetXaxis()->SetTitle(xTitle.c_str());
+        h_cats[icat]->GetYaxis()->SetTitle("Number of particles");
+        if (ieta == m_etaRange.size() - 1 && ipt == m_ptRange.size()) {
+          h_cats[icat]->SetTitle(Form("%1.1f < |#eta_{EM2}| && %.0f GeV < p_{T}", m_etaRange[ieta], m_ptRange[ipt]));
+        } else if (ieta == m_etaRange.size() - 1 && ipt != m_ptRange.size()) {
+          h_cats[icat]->SetTitle(Form("%1.1f < |#eta_{EM2}| && %.0f < p_{T} < %.0f GeV", m_etaRange[ieta], m_ptRange[ipt], m_ptRange[ipt + 1]));
+        } else if (ieta != m_etaRange.size() - 1 && ipt == m_ptRange.size()) {
+          h_cats[icat]->SetTitle(Form("%1.1f < |#eta_{EM2}| < %1.1f && %d GeV < p_{T}", m_etaRange[ieta], m_etaRange[ieta + 1], m_ptRange[ipt]));
+        } else {
+          h_cats[icat]->SetTitle(Form("%1.1f < |#eta_{EM2}| < %1.1f && %.0f < p_{T} < %.0f GeV", m_etaRange[ieta], m_etaRange[ieta + 1], m_ptRange[ipt], m_ptRange[ipt + 1]));
+        }
+        h_cats[icat]->SetLineColor(tcolor[icat]);
+        std::string lable;
+        double entries = h_cats[icat]->Integral();
+        if (c_showNumber) {
+          lable = Form("%s (%.0f)", catagory[icat].c_str(), entries);
+        } else {
+          lable = Form("%s", catagory[icat].c_str());
+        }
+
+        Legend->AddEntry(h_cats[icat], lable.c_str(), "l");
+        if (entries == 0) {
+          continue;
+        }
+        if (icat == 0) {
+          h_cats[icat]->Draw("hist");
+        } else {
+          h_cats[icat]->Draw("samehist");
+        }
+
+        Legend->Draw();
+      }
+      system("mkdir -vp plots/");
+      Can_Efficiency->SaveAs(Form("plots/%s_%d_%d.eps", catagory[0].c_str(), ieta, ipt));
+    }
+  }
+  return;
+}
 
 
 /////////////////////
