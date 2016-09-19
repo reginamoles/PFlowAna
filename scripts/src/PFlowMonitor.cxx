@@ -220,6 +220,12 @@ void PFlowMonitor::Efficiency()
   catagory.push_back("EffClusterboth_CLS2");
   catagory.push_back("EffClusterboth_RSS");
 
+  std::vector<std::string> display;
+  display.push_back("Total");
+  display.push_back("Matched 1 cluster");
+  display.push_back("Matched 2 clusters");
+  display.push_back("Recover split shower");
+
   std::string xTitle = "#varepsilon_{both clusters}";
 
   for (unsigned int ieta = 0; ieta < (m_debug ? 1 : m_etaRange.size()); ++ieta) {
@@ -268,9 +274,9 @@ void PFlowMonitor::Efficiency()
         std::string lable;
         double entries = h_cats[icat]->Integral();
         if (c_showNumber) {
-          lable = Form("%s (%.0f)", catagory[icat].c_str(), entries);
+          lable = Form("%s (%.0f)", display[icat].c_str(), entries);
         } else {
-          lable = Form("%s", catagory[icat].c_str());
+          lable = Form("%s", display[icat].c_str());
         }
 
         Legend->AddEntry(h_cats[icat], lable.c_str(), "l");
@@ -285,6 +291,7 @@ void PFlowMonitor::Efficiency()
 
         Legend->Draw();
       }
+      h_cats[0]->Draw("axissame");
       system("mkdir -vp plots/");
       Can_Efficiency->SaveAs(Form("plots/%s_%d_%d.eps", catagory[0].c_str(), ieta, ipt));
     }
