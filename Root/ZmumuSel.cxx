@@ -58,6 +58,8 @@ void xAODPFlowAna :: FillZmumuHistograms(const xAOD::MuonContainer* goodMuons){
   
 
 void xAODPFlowAna :: JetRecoil_Zmumu(const xAOD::MuonContainer* goodMuons, const xAOD::JetContainer* goodPFlowJets){
+	
+
   
   TLorentzVector Z = goodMuons->at(0)->p4()+goodMuons->at(1)->p4();
   //Loop over jets
@@ -69,6 +71,7 @@ void xAODPFlowAna :: JetRecoil_Zmumu(const xAOD::MuonContainer* goodMuons, const
   for( ; jet_itr != jet_end; ++jet_itr ) {
     if( (*jet_itr)->pt()/GEV < 20 ) continue;
     if( fabs(deltaPhi((*jet_itr)->phi(), Z.Phi())) > (M_PI - 0.4)) continue;
+    //Info("execute", "emf %f", (*jet_itr)->getAttribute<std::vector<float> >("EMFrac")[0]);
     n_RecoilingJets++;
     m_H1Dict["h_jetPt"]->Fill((*jet_itr)->pt()/GEV);
     m_H1Dict["h_jetE"]->Fill((*jet_itr)->e()/GEV);
@@ -77,29 +80,42 @@ void xAODPFlowAna :: JetRecoil_Zmumu(const xAOD::MuonContainer* goodMuons, const
     m_H1Dict["h_jetPhi"]->Fill((*jet_itr)->phi());
     SumPt_RecoilingJets = SumPt_RecoilingJets + (*jet_itr)->pt();
     // *WIP* These distributions has to be crosscheck (odd results for n_RecoilingJets == 1)
+    // I think the distributions look better now. We need more events to confirm. Right now the errors are too great
     if (n_RecoilingJets == 1)  m_H1Dict["h_ZPt_to_JetPt"]->Fill( (*jet_itr)->pt()/Z.Pt() );
     else if (n_RecoilingJets > 1 )  m_H1Dict["h_ZPt_to_JetPt_sum"]->Fill(SumPt_RecoilingJets/Z.Pt());
     
 
   }
+
   
   return; 
 }
-
-
-/* trigger matchng from irinas code
- 
-//check whether the given particle matches any of the given triggers
-105	bool hasTriggerMatch(xAOD::IParticle const & particle, std::vector<std::string> const & triggers) {
-106	  std::string key("TRIGMATCH_");
-107	  size_t keyPrefixLength = key.size();
-108	  for (std::string const & trigger : triggers) {
-109	    key.replace(keyPrefixLength, std::string::npos, trigger);
-110	    if (particle.auxdataConst<char>(key))
-111	      return true;
-112	  }
-113	  return false;
-114	}
-
+/*
+//bool TrigMatchSelector::apply(const xAOD::Event& event) const 
+   //{
+     //bool trigMatch(false);
+bool xAODPFlowAna :: TrigMatching(const xAOD::MuonContainer* goodMuons){
+ // Loop over muons
+    for(const auto* const muPtr : goodMuons) {
+       // Loop over triggers 
+       for (const auto& trigger : m_muonTriggers) {  
+         std::string trig = "TRIGMATCH_" + trigger;
+         if (muPtr->isAvailable<char>(trig)) {
+           if (muPtr->auxdataConst<char>(trig) == 1) {
+             trigMatch = true;
+             return trigMatch;
+           }
+         } // decoration isAvailable
+       } // Loop over triggers
+     } // Loop over muons     
+     
+     return trigMatch;
+   }
+   * 
 */
+
+
+
+
+
 

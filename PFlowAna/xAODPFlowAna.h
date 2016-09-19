@@ -158,6 +158,7 @@ class xAODPFlowAna : public EL::Algorithm
   // Zmumu studies
   //----------------------------
   bool ZmumuSelection(const xAOD::ElectronContainer*,const xAOD::MuonContainer*); //return a true if event pass the selection
+  bool TrigMatching(const xAOD::MuonContainer*);
   void JetRecoil_Zmumu(const xAOD::MuonContainer*, const xAOD::JetContainer*);
   void FillZmumuHistograms(const xAOD::MuonContainer*);
   

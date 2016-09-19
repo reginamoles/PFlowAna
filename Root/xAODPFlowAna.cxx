@@ -469,7 +469,7 @@ EL::StatusCode xAODPFlowAna :: execute ()
   
   
   //trigger tools: here the trigger chain is chosen
-  auto chainGroup = m_trigDecisionTool->getChainGroup("HLT_mu20_iloose_L1MU15, HLT_mu50");
+  auto chainGroup = m_trigDecisionTool->getChainGroup("HLT_mu24_ivarmedium, HLT_mu50");
   std::map<std::string,int> triggerCounts;
   int trigger = 0;
   for(auto &trig : chainGroup->getListOfTriggers()) {
@@ -586,7 +586,7 @@ EL::StatusCode xAODPFlowAna :: execute ()
 
 
   
-  if(m_Zmumu && !trigger){ // I added the trigger here. It seems to be the wrong chain
+  if(m_Zmumu && trigger){ // I added the trigger here. It seems to be the wrong chain
     int numGoodJets = 0;
     
     
@@ -764,7 +764,8 @@ EL::StatusCode xAODPFlowAna :: execute ()
       if ((((*mu_itr)->pt()/GEV)<25) || (fabs((*mu_itr)->eta())>2.4))continue;
       
       Info("execute()", "corrected muon pt = %.2f GeV", ((*mu_itr)->pt()/GEV));
-      Info("execute()", "corrected muon pt (from copy) = %.2f GeV", (mu->pt()/GEV)); 
+      Info("execute()", "corrected muon pt (from copy) = %.2f GeV", (mu->pt()/GEV));
+    
       
       goodMuons->push_back( mu ); // jet acquires the goodJets auxstore
       *mu= **mu_itr; // copies auxdata from one auxstore to the other
@@ -776,9 +777,19 @@ EL::StatusCode xAODPFlowAna :: execute ()
     //Just to check that GoodMuons has been store properly
     mu_itr =  goodMuons->begin();
     mu_end =  goodMuons->end();
+    bool trigMatch = false;
     for( ; mu_itr != mu_end; ++mu_itr ) {
       Info("Execute () ", "GoodMuons: E = %.2f GeV  pt = %.2f GeV eta = %.2f  phi =  %.2f",
 	   (*mu_itr)->e()/GEV,(*mu_itr)->pt()/GEV, (*mu_itr)->eta(), (*mu_itr)->phi());
+	          for (auto &trigger_itr : chainGroup->getListOfTriggers()) { 
+         std::string trig = "TRIGMATCH_" + trigger_itr;
+         if ((*mu_itr)->isAvailable<char>(trig)) {
+           if ((*mu_itr)->auxdataConst<char>(trig) == 1) {
+             trigMatch = true;
+           }
+         } // decoration isAvailable
+       } // Loop over triggers
+       Info("execute()", "trigger matching = %i", trigMatch);
     }
     
     //---------------------------
