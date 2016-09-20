@@ -36,10 +36,10 @@ public:
   PFlowMonitor();
   ~PFlowMonitor();
 
-  void run(char* inputs);
+  void run(char* inputs, char* outfolder);
 
-  void Plot();
-  void Efficiency();
+  void Plot(const char* outfolder);
+  void Efficiency(const char* outfolder);
   void setStyle();
   std::pair<std::string, std::string> histName(unsigned i_pt, unsigned i_eta, const std::string& name, const std::string& matchScheme, std::vector<float>& PtRange,
                                                std::vector<float>& EtaRange);

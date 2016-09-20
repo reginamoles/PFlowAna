@@ -12,7 +12,7 @@ PFlowMonitor::PFlowMonitor() {
 
 PFlowMonitor::~PFlowMonitor() {};
 
-void PFlowMonitor::run(char* inputs)
+void PFlowMonitor::run(char* inputs, char* outfolder)
 {
 
   std::cout<<"=================="<<std::endl;
@@ -73,15 +73,16 @@ void PFlowMonitor::run(char* inputs)
     HistFile.push_back(new TFile(inputfile.c_str()));
   }
 
+  system(Form("mkdir -vp plots/%s/", outfolder));
   setStyle();
-  Plot();
-  Efficiency();
+  Plot(Form("plots/%s/", outfolder));
+  Efficiency(Form("plots/%s/", outfolder));
 }
 
 ////
 //////////////////////////////
-void PFlowMonitor::Plot()
-{
+void PFlowMonitor::Plot(const char* folder) {
+  std::string outfolder = folder;
   bool c_showNumber(!false);
   bool c_overlay(true);
   int tcolor[5] = {4, 2, 8, 6, 28};
@@ -93,7 +94,7 @@ void PFlowMonitor::Plot()
   catagory.push_back("PurMatch2");
   catagory.push_back("SubtractStatus");
   catagory.push_back("NClus_09");
-//  catagory.push_back("EffClusterboth_total");
+  catagory.push_back("EffLeading");
 
   std::vector<std::string> xTitle;
   xTitle.push_back("#varepsilon_{1st cluster}");
@@ -102,7 +103,7 @@ void PFlowMonitor::Plot()
   xTitle.push_back("P_{2nd cluster}");
   xTitle.push_back("Stage");
   xTitle.push_back("N_{cluster}(#Sigma E^{true}>90%)");
-//  xTitle.push_back("#varepsilon_{both clusters}");
+  xTitle.push_back("#varepsilon_{leading cluster}");
 
   for (unsigned int icat = 0; icat < (m_debug ? 1 : catagory.size()); ++icat) {
     if (icat > 5) c_overlay = false;
@@ -124,7 +125,7 @@ void PFlowMonitor::Plot()
         std::pair<std::string, std::string> names = histName(ipt, ieta, catagory[icat], "", m_ptRange, m_etaRange);
 
         for(unsigned int ifile = 0; ifile < HistFile.size(); ++ifile) {
-          if (!m_debug) std::cout<<HistFile[ifile]->GetName()<<std::endl;
+          if (m_debug) std::cout<<HistFile[ifile]->GetName()<<std::endl;
           if (ifile == 0) {
             h_pTs[ipt] = (TH1F*) HistFile[ifile]->Get(names.first.c_str());
           } else {
@@ -135,7 +136,7 @@ void PFlowMonitor::Plot()
           std::cerr << "[ERROR]\t Histogram " << names.first << " not exist!" << std::endl;
         }
         h_pTs[ipt]->SetLineWidth(2);
-        h_pTs[ipt]->Print();
+//        h_pTs[ipt]->Print();
         h_pTs[ipt]->SetStats(kFALSE);
         h_pTs[ipt]->SetLineColor(tcolor[ipt]);
         h_pTs[ipt]->GetXaxis()->SetTitle(xTitle[icat].c_str());
@@ -182,12 +183,11 @@ void PFlowMonitor::Plot()
             h_pTs[ipt]->Draw("samehist");
           }
         } else {
-          std::cout<<"draw"<<std::endl;
           Can_Efficiency->cd(ieta + 1);
           h_pTs[ipt]->SetLineColor(1);
           h_pTs[ipt]->Draw("hist");
           Legend->Draw();
-          Can_Efficiency->GetPad(ieta + 1)->SaveAs(Form("plots/%s_%d_%d.eps", catagory[icat].c_str(), ieta, ipt));
+          Can_Efficiency->GetPad(ieta + 1)->SaveAs(Form("%s%s_%d_%d.eps", outfolder.c_str(), catagory[icat].c_str(), ieta, ipt));
           Legend->Clear();
           Can_Efficiency->GetPad(ieta + 1)->Update();
         }
@@ -199,9 +199,8 @@ void PFlowMonitor::Plot()
 
       Legend->Draw();
       h_pTs[0]->Draw("axissame");
-      system("mkdir -vp plots/");
       if (c_overlay) {
-        Can_Efficiency->GetPad(ieta + 1)->SaveAs(Form("plots/%s_%d.eps", catagory[icat].c_str(), ieta));
+        Can_Efficiency->GetPad(ieta + 1)->SaveAs(Form("%s%s_%d.eps", outfolder.c_str(), catagory[icat].c_str(), ieta));
       }
     }
   }
@@ -209,8 +208,9 @@ void PFlowMonitor::Plot()
 
 }
 
-void PFlowMonitor::Efficiency()
-{
+void PFlowMonitor::Efficiency(const char* folder) {
+  std::string outfolder = folder;
+
   bool c_showNumber(!false);
   int tcolor[4] = {1, 4, 8, 2};
 
@@ -229,6 +229,7 @@ void PFlowMonitor::Efficiency()
   std::string xTitle = "#varepsilon_{both clusters}";
 
   for (unsigned int ieta = 0; ieta < (m_debug ? 1 : m_etaRange.size()); ++ieta) {
+
     for (unsigned int ipt = 0; ipt < m_ptRange.size(); ++ipt) {
       TCanvas* Can_Efficiency = new TCanvas("Efficiency", "Efficiency", 450, 400);
       TH1F* h_cats[4];
@@ -241,10 +242,11 @@ void PFlowMonitor::Efficiency()
       Legend->SetTextSize(20);
 
       for (unsigned int icat = 0; icat < (m_debug ? 1 : catagory.size()); ++icat) {
+
         std::pair<std::string, std::string> names = histName(ipt, ieta, catagory[icat], "", m_ptRange, m_etaRange);
 
         for (unsigned int ifile = 0; ifile < HistFile.size(); ++ifile) {
-          if (!m_debug) std::cout << HistFile[ifile]->GetName() << std::endl;
+          if (m_debug) std::cout << HistFile[ifile]->GetName() << std::endl;
           if (ifile == 0) {
             h_cats[icat] = (TH1F*) HistFile[ifile]->Get(names.first.c_str());
           } else {
@@ -257,7 +259,7 @@ void PFlowMonitor::Efficiency()
         }
 
         h_cats[icat]->SetLineWidth(2);
-        h_cats[icat]->Print();
+//        h_cats[icat]->Print();
         h_cats[icat]->SetStats(kFALSE);
         h_cats[icat]->GetXaxis()->SetTitle(xTitle.c_str());
         h_cats[icat]->GetYaxis()->SetTitle("Number of particles");
@@ -265,8 +267,8 @@ void PFlowMonitor::Efficiency()
           h_cats[icat]->SetTitle(Form("%1.1f < |#eta_{EM2}| && %.0f GeV < p_{T}", m_etaRange[ieta], m_ptRange[ipt]));
         } else if (ieta == m_etaRange.size() - 1 && ipt != m_ptRange.size()) {
           h_cats[icat]->SetTitle(Form("%1.1f < |#eta_{EM2}| && %.0f < p_{T} < %.0f GeV", m_etaRange[ieta], m_ptRange[ipt], m_ptRange[ipt + 1]));
-        } else if (ieta != m_etaRange.size() - 1 && ipt == m_ptRange.size()) {
-          h_cats[icat]->SetTitle(Form("%1.1f < |#eta_{EM2}| < %1.1f && %d GeV < p_{T}", m_etaRange[ieta], m_etaRange[ieta + 1], m_ptRange[ipt]));
+        } else if (ieta != m_etaRange.size() - 1 && ipt == m_ptRange.size() - 1) {
+          h_cats[icat]->SetTitle(Form("%1.1f < |#eta_{EM2}| < %1.1f && %.0f GeV < p_{T}", m_etaRange[ieta], m_etaRange[ieta + 1], m_ptRange[ipt]));
         } else {
           h_cats[icat]->SetTitle(Form("%1.1f < |#eta_{EM2}| < %1.1f && %.0f < p_{T} < %.0f GeV", m_etaRange[ieta], m_etaRange[ieta + 1], m_ptRange[ipt], m_ptRange[ipt + 1]));
         }
@@ -292,8 +294,7 @@ void PFlowMonitor::Efficiency()
         Legend->Draw();
       }
       h_cats[0]->Draw("axissame");
-      system("mkdir -vp plots/");
-      Can_Efficiency->SaveAs(Form("plots/%s_%d_%d.eps", catagory[0].c_str(), ieta, ipt));
+      Can_Efficiency->SaveAs(Form("%s%s_%d_%d.eps", outfolder.c_str(), catagory[0].c_str(), ieta, ipt));
     }
   }
   return;
