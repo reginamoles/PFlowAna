@@ -25,13 +25,13 @@ void PFlowMonitor::run(char* inputs, char* outfolder)
   
   /* WIP  Narrow or Wide eta and pt range */
   if (m_UseNarrowPtRange) {
-    m_ptRange.push_back(0);
-    m_ptRange.push_back(100);
 //    m_ptRange.push_back(0);
-//    m_ptRange.push_back(2);
-//    m_ptRange.push_back(5);
-//    m_ptRange.push_back(10);
-//    m_ptRange.push_back(20);
+//    m_ptRange.push_back(100);
+    m_ptRange.push_back(0);
+    m_ptRange.push_back(2);
+    m_ptRange.push_back(5);
+    m_ptRange.push_back(10);
+    m_ptRange.push_back(20);
   }
   else {
     m_ptRange.push_back(0);
@@ -49,12 +49,12 @@ void PFlowMonitor::run(char* inputs, char* outfolder)
     m_ptRange.push_back(1000);
   }
   if (m_UseNarrowEtaRange) {
-    m_etaRange.push_back(0);
-    m_etaRange.push_back(5);
 //    m_etaRange.push_back(0);
-//    m_etaRange.push_back(1);
-//    m_etaRange.push_back(2);
-//    m_etaRange.push_back(2.5);
+//    m_etaRange.push_back(5);
+    m_etaRange.push_back(0);
+    m_etaRange.push_back(1);
+    m_etaRange.push_back(2);
+    m_etaRange.push_back(2.5);
   } else {
     m_etaRange.push_back(0.0);
     m_etaRange.push_back(0.6);
