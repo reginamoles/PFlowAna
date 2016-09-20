@@ -169,10 +169,9 @@ EL::StatusCode xAODPFlowAna :: histInitialize ()
     bookH1DPerformanceHistogram("PurMatch1","",_ptRange, _etaRange, n_effbins, eff_low, eff_up);
     bookH1DPerformanceHistogram("EffMatchboth","",_ptRange, _etaRange, n_effbins, eff_low, eff_up);
     bookH1DPerformanceHistogram("PurMatch2","",_ptRange, _etaRange, n_effbins, eff_low, eff_up);
-  } else {
-    bookH1DPerformanceHistogram("Eff", "", _ptRange, _etaRange, n_effbins, eff_low, eff_up);
-    bookH1DPerformanceHistogram("Pur","",_ptRange, _etaRange, n_effbins, eff_low, eff_up);
   }
+  bookH1DPerformanceHistogram("EffLeading", "", _ptRange, _etaRange, n_effbins, eff_low, eff_up);
+  bookH1DPerformanceHistogram("PurLeading","",_ptRange, _etaRange, n_effbins, eff_low, eff_up);
   bookH1DPerformanceHistogram("EffClusterboth_total", "", _ptRange, _etaRange, n_effbins, eff_low, eff_up);
   bookH1DPerformanceHistogram("EffClusterboth_CLS1", "", _ptRange, _etaRange, n_effbins, eff_low, eff_up);
   bookH1DPerformanceHistogram("EffClusterboth_CLS2", "", _ptRange, _etaRange, n_effbins, eff_low, eff_up);
@@ -312,7 +311,7 @@ EL::StatusCode xAODPFlowAna :: initialize ()
   // Variable initialization
   m_eventCounter = 0; //Count number of events
   // Printing
-  PrintDebug = false; //Printing message criteria -->  Should be chosen from the ATestRun  
+  PrintDebug = !false; //Printing message criteria -->  Should be chosen from the ATestRun
   
   // Conversion factors
   GEV = 1000.; //Units
@@ -791,6 +790,9 @@ EL::StatusCode xAODPFlowAna :: execute ()
     ComputeCalibHitsPerParticle(m_CalCellInfo_TopoCluster,m_CalCellInfo,m_TruthParticles);
     //associate calibration hits per cluster
     ComputeCalibHitsPerCluster(m_CalCellInfo_TopoCluster,m_topocluster, int(m_TruthParticles->size()));
+
+    FillCaloClusterR(m_topocluster);
+
     //calculate efficieny and purity
     Calculate_Efficiency_Purity(m_TruthParticles, (int)m_topocluster->size(), m_topocluster);    
     //subtraction code
