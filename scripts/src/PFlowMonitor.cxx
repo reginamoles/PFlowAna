@@ -81,6 +81,7 @@ void PFlowMonitor::run(char* inputs, char* outfolder)
   setStyle();
   Plot(Form("plots/%s/", outfolder));
   Efficiency(Form("plots/%s/", outfolder));
+  dRp(Form("plots/%s/", outfolder));
 }
 
 ////
@@ -304,6 +305,94 @@ void PFlowMonitor::Efficiency(const char* folder) {
   return;
 }
 
+void PFlowMonitor::dRp(const char* folder) {
+  std::string outfolder = folder;
+
+  bool c_showNumber(!false);
+  int tcolor[3] = {1, 4, 2};
+
+  std::vector<std::string> catagory;
+  catagory.push_back("dR1");
+  catagory.push_back("dR1_CLS");
+  catagory.push_back("dR1_RSS");
+
+  std::vector<std::string> display;
+  display.push_back("Total");
+  display.push_back("dR' matching");
+  display.push_back("Recover split shower");
+
+  std::string xTitle = "dR'(1st cluster)";
+
+  for (unsigned int ieta = 0; ieta < (m_debug ? 1 : m_etaRange.size()); ++ieta) {
+
+    for (unsigned int ipt = 0; ipt < m_ptRange.size(); ++ipt) {
+      TCanvas* Can_Efficiency = new TCanvas("dR1", "dR1", 450, 400);
+      TH1F* h_cats[4];
+
+      double xpos(0.25), ypos(0.88);
+      TLegend* Legend = new TLegend(xpos, ypos - 0.08 * 3, xpos + 0.3, ypos);
+      Legend->SetFillStyle(0);
+      Legend->SetBorderSize(0);
+      Legend->SetTextFont(43);
+      Legend->SetTextSize(20);
+
+      for (unsigned int icat = 0; icat < (m_debug ? 1 : catagory.size()); ++icat) {
+
+        std::pair<std::string, std::string> names = histName(ipt, ieta, catagory[icat], "", m_ptRange, m_etaRange);
+
+        for (unsigned int ifile = 0; ifile < HistFile.size(); ++ifile) {
+          if (m_debug) std::cout << HistFile[ifile]->GetName() << std::endl;
+          if (ifile == 0) {
+            h_cats[icat] = (TH1F*) HistFile[ifile]->Get(names.first.c_str());
+          } else {
+            h_cats[icat]->Add((TH1F*) HistFile[ifile]->Get(names.first.c_str()));
+          }
+        }
+
+        if (!h_cats[icat]) {
+          std::cerr << "[ERROR]\t Histogram " << names.first << " not exist!" << std::endl;
+        }
+        h_cats[icat]->SetLineWidth(2);
+//        h_cats[icat]->Print();
+        h_cats[icat]->SetStats(kFALSE);
+        h_cats[icat]->GetXaxis()->SetTitle(xTitle.c_str());
+        h_cats[icat]->GetYaxis()->SetTitle("Number of particles");
+        if (ieta == m_etaRange.size() - 1 && ipt == m_ptRange.size()) {
+          h_cats[icat]->SetTitle(Form("%1.1f < |#eta_{EM2}| && %.0f GeV < p_{T}", m_etaRange[ieta], m_ptRange[ipt]));
+        } else if (ieta == m_etaRange.size() - 1 && ipt != m_ptRange.size()) {
+          h_cats[icat]->SetTitle(Form("%1.1f < |#eta_{EM2}| && %.0f < p_{T} < %.0f GeV", m_etaRange[ieta], m_ptRange[ipt], m_ptRange[ipt + 1]));
+        } else if (ieta != m_etaRange.size() - 1 && ipt == m_ptRange.size() - 1) {
+          h_cats[icat]->SetTitle(Form("%1.1f < |#eta_{EM2}| < %1.1f && %.0f GeV < p_{T}", m_etaRange[ieta], m_etaRange[ieta + 1], m_ptRange[ipt]));
+        } else {
+          h_cats[icat]->SetTitle(Form("%1.1f < |#eta_{EM2}| < %1.1f && %.0f < p_{T} < %.0f GeV", m_etaRange[ieta], m_etaRange[ieta + 1], m_ptRange[ipt], m_ptRange[ipt + 1]));
+        }
+        h_cats[icat]->SetLineColor(tcolor[icat]);
+        std::string lable;
+        double entries = h_cats[icat]->Integral();
+        if (c_showNumber) {
+          lable = Form("%s (%.0f)", display[icat].c_str(), entries);
+        } else {
+          lable = Form("%s", display[icat].c_str());
+        }
+
+        Legend->AddEntry(h_cats[icat], lable.c_str(), "l");
+        if (entries == 0) {
+          continue;
+        }
+        if (icat == 0) {
+          h_cats[icat]->Draw("hist");
+        } else {
+          h_cats[icat]->Draw("samehist");
+        }
+
+        Legend->Draw();
+      }
+      h_cats[0]->Draw("axissame");
+      Can_Efficiency->SaveAs(Form("%s%s_%d_%d.eps", outfolder.c_str(), catagory[0].c_str(), ieta, ipt));
+    }
+  }
+  return;
+}
 
 /////////////////////
 void PFlowMonitor::setStyle() {

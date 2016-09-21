@@ -254,6 +254,8 @@ class xAODPFlowAna : public EL::Algorithm
    std::vector<float> _mc_hasEflowTrackEtaAtLayer;    //!
    std::vector<std::pair<long int, long int>> _mc_matchedClusterHash; //!
    std::vector<int> _mc_subtractStatus;    //!
+   std::vector<double> _mc_RpMatchedCluster1;    //!
+   std::vector<double> _mc_RpMatchedCluster2;    //!
 
    std::vector<double> _CalHitEPerClusFromOnePart; //!   //calibration energy per cluster from a certain particle
    std::vector<double> _CalHitEPerClusFromAllPart; //!   //calibration energy per cluster from all particles

@@ -24,6 +24,9 @@ void xAODPFlowAna :: resize_tpVectors(const xAOD::TruthParticleContainer* TruthP
   _mc_hasEflowTrackEtaAtLayer.resize(TruthParticles->size());
   _mc_matchedClusterHash.resize(TruthParticles->size());
   _mc_subtractStatus.resize(TruthParticles->size());
+  _mc_RpMatchedCluster1.resize(TruthParticles->size());
+  _mc_RpMatchedCluster2.resize(TruthParticles->size());
+
   return;
 }
 
@@ -246,9 +249,12 @@ void xAODPFlowAna :: tp_Selection(const xAOD::TruthParticleContainer* TruthParti
 	    _mc_hasEflowTrackIndex.at(tp_index) = cpfo_index; //say us which eflowObject corresponds for each mc particle (not association = 0)
       _mc_hasEflowTrackP.at(tp_index) = fabs(1. / ptrk->qOverP());
       _mc_hasEflowTrackPt.at(tp_index) =  (*cpfo_itr)->pt();
+      _mc_RpMatchedCluster1.at(tp_index) = _pfo_RpMatchedCluster1.at(cpfo_index);
       if(m_1to2matching) {
       _mc_matchedClusterHash.at(tp_index) = std::make_pair(_pfo_hashCluster1.at(cpfo_index), _pfo_hashCluster2.at(cpfo_index));
       _mc_subtractStatus.at(tp_index) = _pfo_SubtractStatus.at(cpfo_index);
+      _mc_RpMatchedCluster1.at(tp_index) = _pfo_RpMatchedCluster1.at(cpfo_index);
+      _mc_RpMatchedCluster2.at(tp_index) = _pfo_RpMatchedCluster2.at(cpfo_index);
 //             std::cout<<tp_index<<" zhangrui m_1to2matching cpfo_index "<<cpfo_index<<std::endl;
       }
 	  }
@@ -552,7 +558,13 @@ void xAODPFlowAna::fillEffPurHistoMatch(int i_mcPart, xAOD::TruthParticleContain
       }
       std::string complete_name = histName(iptbin, ietabin, "EffClusterboth_total", "", _ptRange, _etaRange);
       m_H1Dict[complete_name]->Fill(v_Efficiency[2]);
-//      Info("EffClusterboth_total", " v_Efficicency both fill = %.3f ", v_Efficiency[2]);
+      complete_name = histName(iptbin, ietabin, "SubtractStatus", "", _ptRange, _etaRange);
+      m_H1Dict[complete_name]->Fill(_mc_subtractStatus[i_mcPart]);
+      complete_name = histName(iptbin, ietabin, "dR1", "", _ptRange, _etaRange);
+      m_H1Dict[complete_name]->Fill(_mc_RpMatchedCluster1[i_mcPart]);
+      complete_name = histName(iptbin, ietabin, "dR2", "", _ptRange, _etaRange);
+      m_H1Dict[complete_name]->Fill(_mc_RpMatchedCluster2[i_mcPart]);
+      //      Info("EffClusterboth_total", " v_Efficicency both fill = %.3f ", v_Efficiency[2]);
 
       if (_mc_subtractStatus[i_mcPart] == 1) {
         if (twoClusters) {
@@ -564,13 +576,17 @@ void xAODPFlowAna::fillEffPurHistoMatch(int i_mcPart, xAOD::TruthParticleContain
           m_H1Dict[complete_name]->Fill(v_Efficiency[2]);
           m_H1Dict[complete_name]->SetFillColor(9);
         }
+        complete_name = histName(iptbin, ietabin, "dR1_CLS", "", _ptRange, _etaRange);
+        m_H1Dict[complete_name]->Fill(_mc_RpMatchedCluster1[i_mcPart]);
+        m_H1Dict[complete_name]->SetFillColor(9);
       } else {
         complete_name = histName(iptbin, ietabin, "EffClusterboth_RSS", "", _ptRange, _etaRange);
         m_H1Dict[complete_name]->Fill(v_Efficiency[2]);
         m_H1Dict[complete_name]->SetFillColor(2);
+        complete_name = histName(iptbin, ietabin, "dR1_RSS", "", _ptRange, _etaRange);
+        m_H1Dict[complete_name]->Fill(_mc_RpMatchedCluster1[i_mcPart]);
+        m_H1Dict[complete_name]->SetFillColor(9);
       }
-      complete_name = histName(iptbin, ietabin, "SubtractStatus", "", _ptRange, _etaRange);
-      m_H1Dict[complete_name]->Fill(_mc_subtractStatus[i_mcPart]);
     }
   }
 
@@ -738,6 +754,8 @@ void xAODPFlowAna :: clear_PerformanceVectors(){
   _mc_hasEflowTrackEtaAtLayer.clear();
   _mc_matchedClusterHash.clear();
   _mc_subtractStatus.clear();
+  _mc_RpMatchedCluster1.clear();
+  _mc_RpMatchedCluster2.clear();
 
   //PFOVectors
   _pfo_Pt.clear();
