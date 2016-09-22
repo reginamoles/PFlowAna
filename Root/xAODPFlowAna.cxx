@@ -157,7 +157,7 @@ EL::StatusCode xAODPFlowAna :: histInitialize ()
   //====================================
   // Track cluster matching histograms
   //====================================
-  int n_bins = 100; float x_low = 0.; float x_up = 10.;
+  int n_bins = 100; float x_low = 0.; float x_up = 2.;
   if (m_1to2matching) {
     bookH1DPerformanceHistogram("dR1", "", _ptRange, _etaRange, n_bins, x_low, x_up);
     bookH1DPerformanceHistogram("dR1_CLS", "", _ptRange, _etaRange, n_bins, x_low, x_up);
