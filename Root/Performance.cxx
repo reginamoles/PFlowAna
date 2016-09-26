@@ -815,14 +815,68 @@ void xAODPFlowAna :: clear_PerformanceVectors(){
   _CalHitEPerParAfterSubtraction.clear();
   _CalHitEPerClusFromOnePart.clear();
   _CalHitEPerClusFromAllPart.clear();
+  _CalClusEta.clear();
+  _CalClusPhi.clear();
   
    
   //_mc_LinkedToTruthJets.clear();
   return;
 }
 
+void xAODPFlowAna::getClusterVariance(xAOD::CaloClusterContainer::const_iterator icluster, double& etaVar, double& phiVar) {
+  double m_etaPhiLowerLimit(0.0025);
 
+  /* Sum eta, eta^2, phi and phi^2 of all cells */
+  double sumeta = 0;
+  double sumeta2 = 0;
+  double sumphi = 0;
+  double sumphi2 = 0;
+  double thisCellPhi;
+  int nCells = (*icluster)->size();
 
+    /* Catch empty clusters */
+    if (nCells == 0 || nCells == 1) {
+      std::cout << "setCluster()\tWARNING\tEmpty cluster passed!" << std::endl;
+      etaVar = m_etaPhiLowerLimit;
+      phiVar = m_etaPhiLowerLimit;
+      return;
+    }
+  assert(nCells > 0);
+
+  CaloClusterCellLink::const_iterator it_cell = (*icluster)->begin();
+  CaloClusterCellLink::const_iterator end_cell = (*icluster)->end();
+
+  for (; it_cell != end_cell; ++it_cell) {
+    sumeta += (*it_cell)->eta();
+    sumeta2 +=  (*it_cell)->eta()*  (*it_cell)->eta();
+    eflowAzimuth tmp;
+    tmp.m_value =  (*it_cell)->phi();
+    thisCellPhi = tmp.cycle((*it_cell)->phi());
+    sumphi += thisCellPhi;
+    sumphi2 += thisCellPhi * thisCellPhi;
+  }
+
+  /* Calculate mean eta and phi */
+  double etaMean = sumeta / ((double) nCells);
+  double phiMean = sumphi / ((double) nCells);
+
+  /* Calculate variance of eta and phi (but don't let them go below the lower limit) */
+  double varianceCorrection = (double) nCells / (double) (nCells - 1);
+  etaVar = std::max(m_etaPhiLowerLimit, (sumeta2 / (double) nCells - etaMean * etaMean) * varianceCorrection);
+  phiVar = std::max(m_etaPhiLowerLimit, (sumphi2 / (double) nCells - phiMean * phiMean) * varianceCorrection);
+
+  return;
+}
+
+double xAODPFlowAna::distanceRprime(double tr_eta, double tr_phi, xAOD::CaloClusterContainer::const_iterator cluster) {
+  double etaVar, phiVar;
+  getClusterVariance(cluster, etaVar, phiVar);
+  double dEta = tr_eta - (*cluster)->eta();
+  double dPhi = fabs(tr_phi - (*cluster)->phi());
+  dPhi = dPhi <= M_PI ? dPhi : 2*M_PI - dPhi;
+
+  return dEta * dEta / etaVar + dPhi * dPhi / phiVar;
+}
 
 // Some variable definitions;
 // mc_hasEflowTrack[i] - this is 1 if there is a charged eflow object associated with that mc particle
