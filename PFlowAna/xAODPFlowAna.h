@@ -261,6 +261,10 @@ class xAODPFlowAna : public EL::Algorithm
    std::vector<double> _CalHitEPerClusFromAllPart; //!   //calibration energy per cluster from all particles
    std::vector<double> _CalClusEta; //!
    std::vector<double> _CalClusPhi; //!
+   std::vector<double> _CalHitClusEta; //!
+   std::vector<double> _CalHitClusPhi; //!
+   std::vector<double> _CalHitClusEtaVar; //!
+   std::vector<double> _CalHitClusPhiVar; //!
 
    std::vector< std::pair<int,int> > _mc_MinDeltaREflowTrackPair;//! //indices for tp and cpfo with MinDeltaR
   
@@ -311,11 +315,42 @@ class xAODPFlowAna : public EL::Algorithm
                                std::vector<double>& v_Purity, double tketa, double tkphi);
   void fillEffPurHistoMatch(int i_mcPart, xAOD::TruthParticleContainer::const_iterator tp_itr, const std::vector<double>& v_Efficiency, const std::vector<double>& v_Purity, bool twoClusters);
   void fillEffPurHistoDefault(int i_mcPart, xAOD::TruthParticleContainer::const_iterator tp_itr, const std::vector<double>& v_Efficiency, const std::vector<double>& v_Purity);
+  void filldRpHistoLeading(xAOD::TruthParticleContainer::const_iterator tp_itr, const xAOD::CaloClusterContainer* topocluster, const std::vector<double>& full_Efficiency);
+
+  void getClusterVariance(const std::vector<double>& cellEta, const std::vector<double>& cellPhi, double& etaVar, double& phiVar);
+  double distanceRprime(double tr_eta, double tr_phi, int i_cluster);
+  void ComputeVariancePerCluster(const xAOD::CalCellInfoContainer* CalCellInfo_TopoCluster, const xAOD::CaloClusterContainer* topocluster);
+
+
+
 
 public:
 
   // this is needed to distribute the algorithm to the workers
   ClassDef(xAODPFlowAna, 1);
+};
+
+struct eflowAzimuth {
+  double m_value;
+
+  double cycle(double phi) {
+    double plainDifference = phi - m_value;
+    if (plainDifference > M_PI) {
+      return m_value + 2.0 * M_PI;
+    } else if (plainDifference < -M_PI) {
+      return m_value - 2.0 * M_PI;
+    } else {
+      return m_value;
+    }
+  }
+
+  void adjustRange() {
+    if (m_value <= -M_PI) {
+      m_value += (2 * M_PI * floor(-(m_value - M_PI) / (2 * M_PI)));
+    } else if (m_value > M_PI) {
+      m_value -= (2 * M_PI * floor((m_value + M_PI) / (2 * M_PI)));
+    }
+  }
 };
 
 #endif
