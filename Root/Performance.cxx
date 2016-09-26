@@ -108,10 +108,8 @@ void xAODPFlowAna :: initialise_PFOVectors(int n_mcParticles, int n_clusters, in
   for (int i_clus=0; i_clus < n_clusters; i_clus++){_CalHitEPerClusFromAllPart.push_back(0);}
   for (int i_clus=0; i_clus < n_clusters; i_clus++){_CalClusEta.push_back(0);}
   for (int i_clus=0; i_clus < n_clusters; i_clus++){_CalClusPhi.push_back(0);}
-  for (int i_clus=0; i_clus < n_clusters; i_clus++){_CalHitClusEta.push_back(0);}
-  for (int i_clus=0; i_clus < n_clusters; i_clus++){_CalHitClusPhi.push_back(0);}
-  for (int i_clus=0; i_clus < n_clusters; i_clus++){_CalHitClusEtaVar.push_back(0);}
-  for (int i_clus=0; i_clus < n_clusters; i_clus++){_CalHitClusPhiVar.push_back(0);}
+  for (int i_clus=0; i_clus < n_clusters; i_clus++){_CalClusPhiVar.push_back(0);}
+  for (int i_clus=0; i_clus < n_clusters; i_clus++){_CalClusPhiVar.push_back(0);}
   
   for (int i_cpfo=0; i_cpfo<n_cPFO; i_cpfo++) {_pfo_hasClusterMatched_E.at(i_cpfo) = -1;}
 
@@ -358,49 +356,6 @@ void xAODPFlowAna :: ComputeCalibHitsPerCluster(const xAOD::CalCellInfoContainer
 }
 
 
-void xAODPFlowAna :: ComputeVariancePerCluster(const xAOD::CalCellInfoContainer* CalCellInfo_TopoCluster, const xAOD::CaloClusterContainer* topocluster){
-
-
-    xAOD::CaloClusterContainer::const_iterator CaloCluster_itr = topocluster->begin();
-    xAOD::CaloClusterContainer::const_iterator CaloCluster_end = topocluster->end();
-    for( ; CaloCluster_itr != CaloCluster_end; ++CaloCluster_itr  ) {
-      int i_clus = std::distance(topocluster->begin(),CaloCluster_itr);
-
-      std::vector<double> cell_phi, cell_eta;
-
-  xAOD::CalCellInfoContainer::const_iterator CalCellInfoTopoCl_itr = CalCellInfo_TopoCluster->begin();
-  xAOD::CalCellInfoContainer::const_iterator CalCellInfoTopoCl_end = CalCellInfo_TopoCluster->end();
-  for( ; CalCellInfoTopoCl_itr != CalCellInfoTopoCl_end; ++CalCellInfoTopoCl_itr ) {
-    int i_CalCell = std::distance(CalCellInfo_TopoCluster->begin(),CalCellInfoTopoCl_itr);
-
-      if (fabs((*CalCellInfoTopoCl_itr)->cellEta() - (*CaloCluster_itr)->rawEta()) < 0.4){
-  if (fabs((*CalCellInfoTopoCl_itr)->clusterRecoEnergy()-(*CaloCluster_itr)->rawE())/fabs((*CalCellInfoTopoCl_itr)->clusterRecoEnergy())<0.00001){
-      if( (_CalCellInfo_index.at(i_CalCell)) != -1){
-        //Calibration hits E from ALL particle in one cluster
-        cell_eta.push_back((*CalCellInfoTopoCl_itr)->cellEta());
-        cell_phi.push_back((*CalCellInfoTopoCl_itr)->cellPhi());
-        std::cout<<"cell_eta.at("<<i_clus<<").pushback("<<(*CalCellInfoTopoCl_itr)->cellEta()<<")"<<std::endl;
-      }
-    }
-      }
-    }
-  }
-
-  std::cout<<"zhangrui ComputeVariancePerCluster"<<std::endl;
-  xAOD::CaloClusterContainer::const_iterator CaloCluster_itr = topocluster->begin();
-  xAOD::CaloClusterContainer::const_iterator CaloCluster_end = topocluster->end();
-  for (; CaloCluster_itr != CaloCluster_end; ++CaloCluster_itr) {
-    int i_clus = std::distance(topocluster->begin(), CaloCluster_itr);
-    double eta_var(-1), phi_var(-1);
-    getClusterVariance(cell_eta.at(i_clus), cell_phi.at(i_clus), eta_var, phi_var);
-    _CalHitClusEtaVar.at(i_clus) = eta_var;
-    _CalHitClusPhiVar.at(i_clus) = phi_var;
-    std::cout<<"zhangrui i_clus="<<i_clus<<" "<<eta_var<<" "<<phi_var<<std::endl;
-
-  }
-
-  return;
-}
 
 void xAODPFlowAna :: FillCaloClusterR(const xAOD::CaloClusterContainer* topocluster){
   xAOD::CaloClusterContainer::const_iterator CaloCluster_itr = topocluster->begin();
@@ -528,15 +483,11 @@ void xAODPFlowAna::Calculate_Efficiency_Purity(const xAOD::TruthParticleContaine
         }
       if (pos1 != -1) {
         xAOD::CaloClusterContainer::const_iterator CaloCluster_itr = topocluster->begin() + pos1;
-        double dRp1 = distanceRprime((*tp_itr)->eta(), (*tp_itr)->phi(), pos1);
-        std::cout<<"zhangrui dRp1="<<dRp1<<" pos1="<<pos1<<std::endl;
-
+        double dRp1 = distanceRprime((*tp_itr)->eta(), (*tp_itr)->phi(), CaloCluster_itr);
       }
       if (pos2 != -1) {
         xAOD::CaloClusterContainer::const_iterator CaloCluster_itr = topocluster->begin() + pos2;
-        double dRp2 = distanceRprime((*tp_itr)->eta(), (*tp_itr)->phi(), pos2);
-        std::cout<<"zhangrui dRp2="<<dRp2<<" pos2="<<pos2<<std::endl;
-
+        double dRp2 = distanceRprime((*tp_itr)->eta(), (*tp_itr)->phi(), CaloCluster_itr);
       }
 
 //        Info("TwoCluster", " v_PURITY both = %.3f, %.3f, %.3f ", v_Purity.at(0), v_Purity.at(1), v_Purity.at(2));
@@ -677,8 +628,8 @@ void xAODPFlowAna::filldRpHistoLeading(xAOD::TruthParticleContainer::const_itera
   double i_max_eff = distance(full_Efficiency.begin(), max_element(full_Efficiency.begin(), full_Efficiency.end()));
 
   if (i_max_eff != -1) {
-    double leadingdRp = distanceRprime((*tp_itr)->eta(), (*tp_itr)->phi(), i_max_eff);
-    std::cout<<"zhangrui leadingdRp="<<leadingdRp<<" i_max_eff="<<i_max_eff<<std::endl;
+    xAOD::CaloClusterContainer::const_iterator CaloCluster_itr = topocluster->begin() + i_max_eff;
+    double leadingdRp = distanceRprime((*tp_itr)->eta(), (*tp_itr)->phi(), CaloCluster_itr);
 
     for (unsigned iptbin = 0; iptbin < _ptRange.size(); ++iptbin) {
       for (unsigned ietabin = 0; ietabin < _etaRange.size(); ++ietabin) {
@@ -880,17 +831,16 @@ void xAODPFlowAna :: clear_PerformanceVectors(){
   _CalHitEPerClusFromAllPart.clear();
   _CalClusEta.clear();
   _CalClusPhi.clear();
-  _CalHitClusEta.clear();
-  _CalHitClusPhi.clear();
-  _CalHitClusEtaVar.clear();
-  _CalHitClusPhiVar.clear();
+  _CalClusEtaVar.clear();
+  _CalClusPhiVar.clear();
+
    
   //_mc_LinkedToTruthJets.clear();
   return;
 }
 
 
-void xAODPFlowAna::getClusterVariance(const std::vector<double>& cellEta, const std::vector<double>& cellPhi, double& etaVar, double& phiVar) {
+void xAODPFlowAna::getClusterVariance(xAOD::CaloClusterContainer::const_iterator icluster, double& etaVar, double& phiVar) {
   double m_etaPhiLowerLimit(0.0025);
 
 
@@ -900,8 +850,9 @@ void xAODPFlowAna::getClusterVariance(const std::vector<double>& cellEta, const 
   double sumphi = 0;
   double sumphi2 = 0;
   double thisCellPhi;
-  int nCells = cellEta.size();
-  std::cout<<"zhangrui nCell="<<nCells<<std::endl;
+  int nCells = (*icluster)->size();
+
+  for(int iCell = 0; iCell < nCells; ++iCell) {
 
   /* Catch empty clusters */
   if (nCells == 0 || nCells == 1){
@@ -913,7 +864,6 @@ void xAODPFlowAna::getClusterVariance(const std::vector<double>& cellEta, const 
   assert(nCells > 0);
 
   for(int iCell = 0; iCell < nCells; ++iCell) {
-    std::cout<<"cellEta["<<iCell<<"]="<<cellEta[iCell]<<std::endl;
     sumeta  += cellEta[iCell];
     sumeta2 += cellEta[iCell]*cellEta[iCell];
     eflowAzimuth tmp;
@@ -931,21 +881,18 @@ void xAODPFlowAna::getClusterVariance(const std::vector<double>& cellEta, const 
   double varianceCorrection = (double)nCells / (double)(nCells-1);
   etaVar = std::max(m_etaPhiLowerLimit, (sumeta2/(double)nCells - etaMean*etaMean) * varianceCorrection);
   phiVar = std::max(m_etaPhiLowerLimit, (sumphi2/(double)nCells - phiMean*phiMean) * varianceCorrection);
-  std::cout<<"zhangrui variance "<<(sumeta2/(double)nCells - etaMean*etaMean) * varianceCorrection<<","<<(sumphi2/(double)nCells - phiMean*phiMean) * varianceCorrection<<std::endl;
 
   return;
 }
 
-double xAODPFlowAna::distanceRprime(double tr_eta, double tr_phi, int i_cluster) {
+double xAODPFlowAna::distanceRprime(double tr_eta, double tr_phi, xAOD::CaloClusterContainer::const_iterator cluster) {
   double etaVar, phiVar;
-
-//  getClusterVariance(cluster, etaVar, phiVar);
-  double dEta = tr_eta - _CalHitClusEta.at(i_cluster);
-  double dPhi = fabs(tr_phi - _CalHitClusPhi.at(i_cluster));
+  getClusterVariance(cluster, etaVar, phiVar);
+  double dEta = tr_eta - (*cluster)->eta();
+  double dPhi = fabs(tr_phi - (*cluster)->phi());
   dPhi = dPhi <= M_PI ? dPhi : 2*M_PI - dPhi;
 
-  std::cout<<"zhangrui distanceRprime dEta="<<dEta<<"/"<<_CalHitClusEtaVar.at(i_cluster)<<"+"<< dPhi<<"/"<< _CalHitClusPhiVar.at(i_cluster)<<std::endl;
-  return dEta * dEta / _CalHitClusEtaVar.at(i_cluster) + dPhi * dPhi / _CalHitClusPhiVar.at(i_cluster);
+  return dEta * dEta / etaVar + dPhi * dPhi / phiVar;
 }
 
 // Some variable definitions;

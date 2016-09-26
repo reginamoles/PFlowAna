@@ -261,10 +261,8 @@ class xAODPFlowAna : public EL::Algorithm
    std::vector<double> _CalHitEPerClusFromAllPart; //!   //calibration energy per cluster from all particles
    std::vector<double> _CalClusEta; //!
    std::vector<double> _CalClusPhi; //!
-   std::vector<double> _CalHitClusEta; //!
-   std::vector<double> _CalHitClusPhi; //!
-   std::vector<double> _CalHitClusEtaVar; //!
-   std::vector<double> _CalHitClusPhiVar; //!
+   std::vector<double> _CalClusEtaVar; //!
+   std::vector<double> _CalClusPhiVar; //!
 
    std::vector< std::pair<int,int> > _mc_MinDeltaREflowTrackPair;//! //indices for tp and cpfo with MinDeltaR
   
@@ -317,9 +315,8 @@ class xAODPFlowAna : public EL::Algorithm
   void fillEffPurHistoDefault(int i_mcPart, xAOD::TruthParticleContainer::const_iterator tp_itr, const std::vector<double>& v_Efficiency, const std::vector<double>& v_Purity);
   void filldRpHistoLeading(xAOD::TruthParticleContainer::const_iterator tp_itr, const xAOD::CaloClusterContainer* topocluster, const std::vector<double>& full_Efficiency);
 
-  void getClusterVariance(const std::vector<double>& cellEta, const std::vector<double>& cellPhi, double& etaVar, double& phiVar);
-  double distanceRprime(double tr_eta, double tr_phi, int i_cluster);
-  void ComputeVariancePerCluster(const xAOD::CalCellInfoContainer* CalCellInfo_TopoCluster, const xAOD::CaloClusterContainer* topocluster);
+  void getClusterVariance(xAOD::CaloClusterContainer::const_iterator icluster, double& etaVar, double& phiVar);
+  double distanceRprime(double tr_eta, double tr_phi, xAOD::CaloClusterContainer::const_iterator cluster);
 
 
 

@@ -797,9 +797,6 @@ EL::StatusCode xAODPFlowAna :: execute ()
     ComputeCalibHitsPerParticle(m_CalCellInfo_TopoCluster,m_CalCellInfo,m_TruthParticles);
     //associate calibration hits per cluster
     ComputeCalibHitsPerCluster(m_CalCellInfo_TopoCluster,m_topocluster, int(m_TruthParticles->size()));
-    std::cout<<"before"<<std::endl;
-    ComputeVariancePerCluster(m_CalCellInfo_TopoCluster,m_topocluster);
-    std::cout<<"after"<<std::endl;
 
     FillCaloClusterR(m_topocluster);
 
