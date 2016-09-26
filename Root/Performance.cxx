@@ -1,5 +1,4 @@
 #include <PFlowAna/xAODPFlowAna.h>
-#include "xAODCaloEvent/CaloCluster.h"
 
 
 //////////////////////////
@@ -108,8 +107,6 @@ void xAODPFlowAna :: initialise_PFOVectors(int n_mcParticles, int n_clusters, in
   for (int i_clus=0; i_clus < n_clusters; i_clus++){_CalHitEPerClusFromAllPart.push_back(0);}
   for (int i_clus=0; i_clus < n_clusters; i_clus++){_CalClusEta.push_back(0);}
   for (int i_clus=0; i_clus < n_clusters; i_clus++){_CalClusPhi.push_back(0);}
-  for (int i_clus=0; i_clus < n_clusters; i_clus++){_CalClusPhiVar.push_back(0);}
-  for (int i_clus=0; i_clus < n_clusters; i_clus++){_CalClusPhiVar.push_back(0);}
   
   for (int i_cpfo=0; i_cpfo<n_cPFO; i_cpfo++) {_pfo_hasClusterMatched_E.at(i_cpfo) = -1;}
 
@@ -355,8 +352,6 @@ void xAODPFlowAna :: ComputeCalibHitsPerCluster(const xAOD::CalCellInfoContainer
   return;
 }
 
-
-
 void xAODPFlowAna :: FillCaloClusterR(const xAOD::CaloClusterContainer* topocluster){
   xAOD::CaloClusterContainer::const_iterator CaloCluster_itr = topocluster->begin();
    xAOD::CaloClusterContainer::const_iterator CaloCluster_end = topocluster->end();
@@ -425,7 +420,6 @@ void xAODPFlowAna::Calculate_Efficiency_Purity(const xAOD::TruthParticleContaine
     //We rerequire at least 15% of the energy of the true particle
     if (!(_mc_hasEflowTrack.at(i_mcPart) == 1 && (_CalHitEPerPar.at(i_mcPart) / ((*tp_itr)->pt() * cosh((*tp_itr)->eta()))) > 0.20)) continue;
     std::vector<double> v_Efficiency, v_Purity, full_Efficiency, full_Purity;
-    std::vector<double> v_dRp;
     bool twoClusters(false);
 //    n2++;
 
@@ -434,6 +428,32 @@ void xAODPFlowAna::Calculate_Efficiency_Purity(const xAOD::TruthParticleContaine
       long int clusterHash1 = _mc_matchedClusterHash.at(i_mcPart).first;
       long int clusterHash2 = _mc_matchedClusterHash.at(i_mcPart).second;
 
+//      if (clusterHash2 == -1) {
+//        twoClusters = false;
+//        v_Efficiency.resize(1); // cluster1, cluster2, cluster1+2
+//        v_Purity.resize(1); // cluster1, cluster2, cluster1+2
+//        xAOD::CaloClusterContainer::const_iterator CaloCluster_itr = topocluster->begin();
+//        xAOD::CaloClusterContainer::const_iterator CaloCluster_end = topocluster->end();
+//        for (; CaloCluster_itr != CaloCluster_end; ++CaloCluster_itr) {
+//          int i_clus = std::distance(topocluster->begin(), CaloCluster_itr);
+//          long int hash = (*CaloCluster_itr)->rawE() * 1000 * (*CaloCluster_itr)->rawEta() * 10 * (*CaloCluster_itr)->rawPhi() * 10;
+//          if (clusterHash1 != hash) continue;
+//
+//          if (_CalHitEPerPar.at(i_mcPart) != 0) {
+//            float Eff1 = _CalHitEPerClusFromOnePart.at(i_clus * TruthParticles->size() + i_mcPart) / _CalHitEPerPar.at(i_mcPart);
+//            v_Efficiency.at(0) = Eff1;
+//          }
+////          Info("TwoCluster", " v_Efficicency.at(%i)  = %.3f ", i_clus, v_Efficiency.at(0));
+//
+//          if (_CalHitEPerClusFromAllPart.at(i_clus) != 0) {
+//            float Pur1 = _CalHitEPerClusFromOnePart.at(i_clus * TruthParticles->size() + i_mcPart) / _CalHitEPerClusFromAllPart.at(i_clus);
+//
+//            v_Purity.at(0) = Pur1;
+//          }
+////          Info("TwoCluster", " v_PURITY.at(%i)  = %.3f ", i_clus, v_Purity.at(0));
+//        }
+//
+//      } else {
         twoClusters = ((clusterHash2 == -1) ? false : true);
         v_Efficiency.resize(3); // cluster1, cluster2, cluster1+2
         v_Purity.resize(3); // cluster1, cluster2, cluster1+2
@@ -481,15 +501,6 @@ void xAODPFlowAna::Calculate_Efficiency_Purity(const xAOD::TruthParticleContaine
           v_Purity.at(1) = Pur2;
           v_Purity.at(2) = Purboth;
         }
-      if (pos1 != -1) {
-        xAOD::CaloClusterContainer::const_iterator CaloCluster_itr = topocluster->begin() + pos1;
-        double dRp1 = distanceRprime((*tp_itr)->eta(), (*tp_itr)->phi(), CaloCluster_itr);
-      }
-      if (pos2 != -1) {
-        xAOD::CaloClusterContainer::const_iterator CaloCluster_itr = topocluster->begin() + pos2;
-        double dRp2 = distanceRprime((*tp_itr)->eta(), (*tp_itr)->phi(), CaloCluster_itr);
-      }
-
 //        Info("TwoCluster", " v_PURITY both = %.3f, %.3f, %.3f ", v_Purity.at(0), v_Purity.at(1), v_Purity.at(2));
 //      }
 //        n3++;
@@ -503,7 +514,6 @@ void xAODPFlowAna::Calculate_Efficiency_Purity(const xAOD::TruthParticleContaine
     }
 
     fillEffPurHistoDefault(i_mcPart, tp_itr, full_Efficiency, full_Purity);
-    filldRpHistoLeading(tp_itr, topocluster, full_Efficiency);
 
     // Fill NClusters reach 90% efficiency: need full_Efficiency
     int NClusters_09 = getNClustersFor90Eff(i_mcPart, full_Efficiency);
@@ -619,27 +629,6 @@ void xAODPFlowAna::fillEffPurHistoDefault(int i_mcPart, xAOD::TruthParticleConta
     }
   }
 //  std::cout<<"fillDefault end "<<max_eff<<" "<<i_max_eff<<std::endl;
-
-}
-
-
-void xAODPFlowAna::filldRpHistoLeading(xAOD::TruthParticleContainer::const_iterator tp_itr, const xAOD::CaloClusterContainer* topocluster, const std::vector<double>& full_Efficiency) {
-  assert(full_Efficiency.size() == topocluster->size());
-  double i_max_eff = distance(full_Efficiency.begin(), max_element(full_Efficiency.begin(), full_Efficiency.end()));
-
-  if (i_max_eff != -1) {
-    xAOD::CaloClusterContainer::const_iterator CaloCluster_itr = topocluster->begin() + i_max_eff;
-    double leadingdRp = distanceRprime((*tp_itr)->eta(), (*tp_itr)->phi(), CaloCluster_itr);
-
-    for (unsigned iptbin = 0; iptbin < _ptRange.size(); ++iptbin) {
-      for (unsigned ietabin = 0; ietabin < _etaRange.size(); ++ietabin) {
-
-
-    std::string complete_name = histName(iptbin, ietabin, "dRpLeading", "", _ptRange, _etaRange);
-    m_H1Dict[complete_name]->Fill(leadingdRp);
-      }
-    }
-  }
 }
 
 int xAODPFlowAna::getNClustersFor90Eff(int i_mcPart, std::vector<double>& full_Efficiency) {
@@ -684,9 +673,6 @@ void xAODPFlowAna::fillNClustersFor90Eff(int i_mcPart, xAOD::TruthParticleContai
     }
   }
 }
-
-
-
 
 /////////////////////////////////////
 // Subtraction algorithm
@@ -829,71 +815,14 @@ void xAODPFlowAna :: clear_PerformanceVectors(){
   _CalHitEPerParAfterSubtraction.clear();
   _CalHitEPerClusFromOnePart.clear();
   _CalHitEPerClusFromAllPart.clear();
-  _CalClusEta.clear();
-  _CalClusPhi.clear();
-  _CalClusEtaVar.clear();
-  _CalClusPhiVar.clear();
-
+  
    
   //_mc_LinkedToTruthJets.clear();
   return;
 }
 
 
-void xAODPFlowAna::getClusterVariance(xAOD::CaloClusterContainer::const_iterator icluster, double& etaVar, double& phiVar) {
-  double m_etaPhiLowerLimit(0.0025);
 
-
-  /* Sum eta, eta^2, phi and phi^2 of all cells */
-  double sumeta = 0;
-  double sumeta2 = 0;
-  double sumphi = 0;
-  double sumphi2 = 0;
-  double thisCellPhi;
-  int nCells = (*icluster)->size();
-
-  for(int iCell = 0; iCell < nCells; ++iCell) {
-
-  /* Catch empty clusters */
-  if (nCells == 0 || nCells == 1){
-    std::cout << "setCluster()\tWARNING\tEmpty cluster passed!" << std::endl;
-    etaVar = m_etaPhiLowerLimit;
-    phiVar = m_etaPhiLowerLimit;
-    return;
-  }
-  assert(nCells > 0);
-
-  for(int iCell = 0; iCell < nCells; ++iCell) {
-    sumeta  += cellEta[iCell];
-    sumeta2 += cellEta[iCell]*cellEta[iCell];
-    eflowAzimuth tmp;
-    tmp.m_value = cellPhi[iCell];
-    thisCellPhi = tmp.cycle(cellPhi[iCell]);
-    sumphi  += thisCellPhi;
-    sumphi2 += thisCellPhi*thisCellPhi;
-  }
-
-  /* Calculate mean eta and phi */
-  double etaMean = sumeta/((double)nCells);
-  double phiMean = sumphi/((double)nCells);
-
-  /* Calculate variance of eta and phi (but don't let them go below the lower limit) */
-  double varianceCorrection = (double)nCells / (double)(nCells-1);
-  etaVar = std::max(m_etaPhiLowerLimit, (sumeta2/(double)nCells - etaMean*etaMean) * varianceCorrection);
-  phiVar = std::max(m_etaPhiLowerLimit, (sumphi2/(double)nCells - phiMean*phiMean) * varianceCorrection);
-
-  return;
-}
-
-double xAODPFlowAna::distanceRprime(double tr_eta, double tr_phi, xAOD::CaloClusterContainer::const_iterator cluster) {
-  double etaVar, phiVar;
-  getClusterVariance(cluster, etaVar, phiVar);
-  double dEta = tr_eta - (*cluster)->eta();
-  double dPhi = fabs(tr_phi - (*cluster)->phi());
-  dPhi = dPhi <= M_PI ? dPhi : 2*M_PI - dPhi;
-
-  return dEta * dEta / etaVar + dPhi * dPhi / phiVar;
-}
 
 // Some variable definitions;
 // mc_hasEflowTrack[i] - this is 1 if there is a charged eflow object associated with that mc particle

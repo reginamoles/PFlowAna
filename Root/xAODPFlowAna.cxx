@@ -191,7 +191,6 @@ EL::StatusCode xAODPFlowAna :: histInitialize ()
   bookH1DPerformanceHistogram("EOPtotal","",_ptRange, _etaRange, 5, 0, 1.5);
   bookH1DPerformanceHistogram("Energy1st","",_ptRange, _etaRange, 20, 0, 20);
   bookH1DPerformanceHistogram("Energy2rd","",_ptRange, _etaRange, 20, 0, 20);
-  bookH1DPerformanceHistogram("dRpLeading", "", _ptRange, _etaRange, 50, 0, 2);
 
   //====================================
   // Cluster with 90% of energy
