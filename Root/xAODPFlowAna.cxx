@@ -412,7 +412,12 @@ EL::StatusCode xAODPFlowAna :: initialize ()
   ANA_CHECK(m_jetsf->setProperty("WorkingPoint","Tight") );
   //ANA_CHECK(m_jetsf->setProperty("SFFile","JetJvtEfficiency/JvtSFFile.root") );
   ANA_CHECK(m_jetsf->initialize() ); 
-
+  
+  //Pileup-Reweighting Tool
+  
+  m_pileuptool = new CP::PileupReweightingTool("m_pileuptool");
+  //ANA_CHECK( m_pileuptool->setProperty(
+  ANA_CHECK(m_pileuptool->initialize() );
   
  return EL::StatusCode::SUCCESS;
 }
@@ -442,6 +447,11 @@ EL::StatusCode xAODPFlowAna :: execute ()
   //--------------------------- 
   m_EventInfo = 0;
   ANA_CHECK(m_event->retrieve( m_EventInfo, "EventInfo"));  
+  
+  
+  //pileup reweighting
+  
+  m_pileuptool->apply( *m_EventInfo );
   
   // check if the event is data or MC
   bool isMC = false;

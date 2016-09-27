@@ -71,7 +71,7 @@ void xAODPFlowAna :: JetRecoil_Zmumu(const xAOD::MuonContainer* goodMuons, const
   for( ; jet_itr != jet_end; ++jet_itr ) {
     if( (*jet_itr)->pt()/GEV < 20 ) continue;
     if( fabs(deltaPhi((*jet_itr)->phi(), Z.Phi())) > (M_PI - 0.4)) continue;
-    //Info("execute", "emf %f", (*jet_itr)->getAttribute<std::vector<float> >("EMFrac")[0]);
+    Info("execute", "emf %f", (*jet_itr)->auxdata< float >("EMFrac"));
     n_RecoilingJets++;
     m_H1Dict["h_jetPt"]->Fill((*jet_itr)->pt()/GEV);
     m_H1Dict["h_jetE"]->Fill((*jet_itr)->e()/GEV);

@@ -58,6 +58,10 @@
 //-------
 #include "GoodRunsLists/GoodRunsListSelectionTool.h"
 
+//pileup
+#include "PileupReweighting/IPileupReweightingTool.h"
+#include "PileupReweighting/PileupReweightingTool.h"
+
 
 //----------------
 // EDM containers
@@ -120,6 +124,10 @@ CP::JetJvtEfficiency *m_jetsf;
 
 //GRL
 GoodRunsListSelectionTool *m_grl;
+
+//Pileup
+
+CP::PileupReweightingTool *m_pileuptool;
 
 #endif
 
