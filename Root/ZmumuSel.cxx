@@ -14,7 +14,7 @@ bool xAODPFlowAna :: ZmumuSelection(const xAOD::ElectronContainer* goodElectrons
   std::cout<<"no electrons"<<std::endl;
   if (goodMuons->size()!=2) return false;
   std::cout<<"two muons"<<std::endl;
-  if (goodMuons->at(0)->charge() * (goodMuons->at(1)->charge())!=-1) return false;
+  if ((goodMuons->at(0)->charge()) * (goodMuons->at(1)->charge())!=-1) return false;
   std::cout<<"two muons with opposite charge"<<std::endl;
   if ((goodMuons->at(0)->pt()/GEV) < 25 || (goodMuons->at(1)->pt()/GEV)<25) return false;
   std::cout<<"two muons with pt>25 GeV"<<std::endl;

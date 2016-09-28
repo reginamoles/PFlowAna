@@ -415,9 +415,9 @@ EL::StatusCode xAODPFlowAna :: initialize ()
   
   //Pileup-Reweighting Tool
   
-  m_pileuptool = new CP::PileupReweightingTool("m_pileuptool");
-  //ANA_CHECK( m_pileuptool->setProperty(
-  ANA_CHECK(m_pileuptool->initialize() );
+  //m_pileuptool = new CP::PileupReweightingTool("m_pileuptool");
+  //ANA_CHECK( m_pileuptool->setProperty("DataScaleFactor",1.0/1.16));
+  //ANA_CHECK(m_pileuptool->initialize() );
   
  return EL::StatusCode::SUCCESS;
 }
@@ -451,7 +451,10 @@ EL::StatusCode xAODPFlowAna :: execute ()
   
   //pileup reweighting
   
-  m_pileuptool->apply( *m_EventInfo );
+  //m_pileuptool->getCombinedWeight( *m_EventInfo );
+  //m_pileuptool->getCorrectedMu( *m_EventInfo );
+  //m_pileuptool->getRandomRunNumber( *m_EventInfo );
+  //m_pileuptool->GetRandomLumiBlockNumber( *m_EventInfo );
   
   // check if the event is data or MC
   bool isMC = false;
@@ -596,7 +599,7 @@ EL::StatusCode xAODPFlowAna :: execute ()
 
 
   
-  if(m_Zmumu && trigger){ // I added the trigger here. It seems to be the wrong chain
+  if(m_Zmumu && !trigger){ // I added the trigger here. It seems to be the wrong chain
     int numGoodJets = 0;
     
     
@@ -627,8 +630,8 @@ EL::StatusCode xAODPFlowAna :: execute ()
     xAOD::JetContainer::const_iterator jet_end =  m_PFlowJets->end();
     for( ; jet_itr != jet_end; ++jet_itr ) {
       
-      Info("Execute () ", "Jet before calibration E = %.2f GeV  pt = %.2f GeV eta = %.2f  phi =  %.2f",
-	   (*jet_itr)->e()/GEV,(*jet_itr)->pt()/GEV, (*jet_itr)->eta(), (*jet_itr)->phi());
+      //Info("Execute () ", "Jet before calibration E = %.2f GeV  pt = %.2f GeV eta = %.2f  phi =  %.2f",
+	  // (*jet_itr)->e()/GEV,(*jet_itr)->pt()/GEV, (*jet_itr)->eta(), (*jet_itr)->phi());
       
       //Cleaning TOOL
       
@@ -637,8 +640,8 @@ EL::StatusCode xAODPFlowAna :: execute ()
       xAOD::Jet* jet = 0;//new xAOD::Jet();
       m_akt4EMPFlowCalibrationTool->calibratedCopy(**jet_itr,jet); //make a calibrated copy, assuming a copy hasn't been made already
       
-      Info("Execute () ", "Jet after Calibration E = %.10f GeV  pt = %.10f GeV eta = %.2f  phi =  %.2f",
-	   jet->e()/GEV, jet->pt()/GEV, jet->eta(), jet->phi());
+      //Info("Execute () ", "Jet after Calibration E = %.10f GeV  pt = %.10f GeV eta = %.2f  phi =  %.2f",
+	   //jet->e()/GEV, jet->pt()/GEV, jet->eta(), jet->phi());
       goodPFlowJets->push_back(jet); // jet acquires the m_akt4CalibEMTopo auxstore
       //JER Tool (Jet Energy Resolution)
       double resMC = m_JERTool->getRelResolutionMC(jet);
@@ -651,8 +654,8 @@ EL::StatusCode xAODPFlowAna :: execute ()
       
       if(!(m_jetsf->passesJvtCut(*jet))) continue; //*** Does it have to be applied to all jets or only those with pt < 40GeV ?
       
-      Info("Execute () ", "Jet after Smearing E = %.10f GeV  pt = %.10f GeV eta = %.2f  phi =  %.2f",
-	   jet->e()/GEV, jet->pt()/GEV, jet->eta(), jet->phi());
+      //Info("Execute () ", "Jet after Smearing E = %.10f GeV  pt = %.10f GeV eta = %.2f  phi =  %.2f",
+	   //jet->e()/GEV, jet->pt()/GEV, jet->eta(), jet->phi());
 	   
 	   
      //*jet= **jet_itr; // copies auxdata from one auxstore to the other
@@ -664,8 +667,8 @@ EL::StatusCode xAODPFlowAna :: execute ()
     jet_itr =  goodPFlowJets->begin();
     jet_end =  goodPFlowJets->end();
     for( ; jet_itr != jet_end; ++jet_itr ) {
-      Info("Execute () ", "goodEMTopoJets: E = %.2f GeV  pt = %.2f GeV eta = %.2f  phi =  %.2f",
-	   (*jet_itr)->e()/GEV,(*jet_itr)->pt()/GEV, (*jet_itr)->eta(), (*jet_itr)->phi());
+      //Info("Execute () ", "goodEMTopoJets: E = %.2f GeV  pt = %.2f GeV eta = %.2f  phi =  %.2f",
+	  // (*jet_itr)->e()/GEV,(*jet_itr)->pt()/GEV, (*jet_itr)->eta(), (*jet_itr)->phi());
     }
     
     Info("execute()", "Number of good Jets: %i", numGoodJets);
@@ -692,8 +695,8 @@ EL::StatusCode xAODPFlowAna :: execute ()
     xAOD::ElectronContainer::const_iterator el_end = m_Electrons->end();
     for( ; el_itr != el_end; ++el_itr ) {
       
-      Info("Execute () ", "Electron before slecetion/calibration E = %.2f GeV  pt = %.2f GeV eta = %.2f  phi =  %.2f",
-	   (*el_itr)->e()/GEV,(*el_itr)->pt()/GEV, (*el_itr)->eta(), (*el_itr)->phi());
+      //Info("Execute () ", "Electron before slecetion/calibration E = %.2f GeV  pt = %.2f GeV eta = %.2f  phi =  %.2f",
+	  // (*el_itr)->e()/GEV,(*el_itr)->pt()/GEV, (*el_itr)->eta(), (*el_itr)->phi());
       
       //Reject bad electrons
       if( !(*el_itr)->isGoodOQ(xAOD::EgammaParameters::BADCLUSELECTRON) ) continue;
@@ -746,8 +749,8 @@ EL::StatusCode xAODPFlowAna :: execute ()
     el_itr =  goodElectrons->begin();
     el_end =  goodElectrons->end();
     for( ; el_itr != el_end; ++el_itr ) {
-      Info("Execute () ", "goodElectrons: E = %.2f GeV  pt = %.2f GeV eta = %.2f  phi =  %.2f",
-	   (*el_itr)->e()/GEV,(*el_itr)->pt()/GEV, (*el_itr)->eta(), (*el_itr)->phi());
+      //Info("Execute () ", "goodElectrons: E = %.2f GeV  pt = %.2f GeV eta = %.2f  phi =  %.2f",
+	  // (*el_itr)->e()/GEV,(*el_itr)->pt()/GEV, (*el_itr)->eta(), (*el_itr)->phi());
     }
     
     
@@ -773,8 +776,8 @@ EL::StatusCode xAODPFlowAna :: execute ()
       if (!m_iso->accept( **mu_itr )) continue;
       if ((((*mu_itr)->pt()/GEV)<25) || (fabs((*mu_itr)->eta())>2.4))continue;
       
-      Info("execute()", "corrected muon pt = %.2f GeV", ((*mu_itr)->pt()/GEV));
-      Info("execute()", "corrected muon pt (from copy) = %.2f GeV", (mu->pt()/GEV));
+      //Info("execute()", "corrected muon pt = %.2f GeV", ((*mu_itr)->pt()/GEV));
+      //Info("execute()", "corrected muon pt (from copy) = %.2f GeV", (mu->pt()/GEV));
     
       
       goodMuons->push_back( mu ); // jet acquires the goodJets auxstore
@@ -806,6 +809,7 @@ EL::StatusCode xAODPFlowAna :: execute ()
     // Zmumu selection
     //---------------------------
     if (ZmumuSelection(goodElectrons, goodMuons)){
+		Info("execute()", "here it is __________________________________________________________________________________________________________________________________");
       FillZmumuHistograms(goodMuons);
       JetRecoil_Zmumu(goodMuons, goodPFlowJets);
     }
