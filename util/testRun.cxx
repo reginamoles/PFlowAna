@@ -27,7 +27,7 @@ int main( int argc, char* argv[] ) {
   bool DijetSubtraction = false;
   bool Zmumu = true;
   //data or MC
-  bool data = true;
+  bool data = false;
   bool MC = !data;
   std::string matchScheme = (std::string)"_EM2";
   bool UseNarrowPtRange = false;
@@ -58,8 +58,8 @@ int main( int argc, char* argv[] ) {
   
   if(Zmumu){
 	if(MC){	
-		const char* inputFilePath = gSystem->ExpandPathName ("$DataFiles/Zmumu/mc15_13TeV.361107.PowhegPythia8EvtGen_AZNLOCTEQ6L1_Zmumu.merge.DAOD_JETM3.e3601_s2576_s2132_r7725_r7676_p2666_tid08619356_00/");
-		SH::ScanDir().filePattern("DAOD_JETM3.08619356._000027.pool.root.1").scan(sh,inputFilePath); //One indiviudual file
+		const char* inputFilePath = gSystem->ExpandPathName ("~/Desktop/");
+		SH::ScanDir().filePattern("DAOD_JETM3.08619382._000015.pool.root.1").scan(sh,inputFilePath); //One indiviudual file
 	}
 	if(data){
 		const char* inputFilePath = gSystem->ExpandPathName ("~/Desktop/data/");
@@ -86,7 +86,7 @@ int main( int argc, char* argv[] ) {
   EL::Job job;
   job.sampleHandler( sh );
   job.options()->setDouble (EL::Job::optSkipEvents, 0);
-  job.options()->setDouble (EL::Job::optMaxEvents, -1);
+  job.options()->setDouble (EL::Job::optMaxEvents, 10000);
 
   //-------------------------
   // Check duplicates

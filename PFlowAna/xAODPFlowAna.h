@@ -96,6 +96,7 @@ class xAODPFlowAna : public EL::Algorithm
 
   xAOD::TEvent *m_event;//!
   int m_eventCounter; //!
+  int m_goodevents; //!
 
   double m_EvtWeight; //!
   // Tree *myTree; //!

@@ -223,6 +223,10 @@ EL::StatusCode xAODPFlowAna :: histInitialize ()
     //Z+jet system
     bookH1DHistogram("h_ZPt_to_JetPt", 20, 0, 5);
     bookH1DHistogram("h_ZPt_to_JetPt_sum", 20, 0, 5);
+    
+    //Christian's histogram's
+    bookH1DHistogram("h_trackcount", 30, 0, 30);
+    bookH1DHistogram("h_chfrac", 10, 0, 1);
   }
 
   return EL::StatusCode::SUCCESS;
@@ -272,6 +276,7 @@ EL::StatusCode xAODPFlowAna :: initialize ()
 
   // Variable initialization
   m_eventCounter = 0; //Count number of events
+  m_goodevents = 0;
   
   // Conversion factors
   GEV = 1000.; //Units
@@ -599,7 +604,7 @@ EL::StatusCode xAODPFlowAna :: execute ()
 
 
   
-  if(m_Zmumu && !trigger){ // I added the trigger here. It seems to be the wrong chain
+  if(m_Zmumu && trigger){ // I added the trigger here. It seems to be the wrong chain
     int numGoodJets = 0;
     
     
@@ -767,14 +772,14 @@ EL::StatusCode xAODPFlowAna :: execute ()
     xAOD::MuonContainer::const_iterator mu_end = m_Muons->end();
     for( ; mu_itr != mu_end; ++mu_itr ) {
       
-      Info("Execute () ", "Muons before calibration: E = %.2f GeV  pt = %.2f GeV eta = %.2f  phi =  %.2f",
-	   (*mu_itr)->e()/GEV,(*mu_itr)->pt()/GEV, (*mu_itr)->eta(), (*mu_itr)->phi());
+      //Info("Execute () ", "Muons before calibration: E = %.2f GeV  pt = %.2f GeV eta = %.2f  phi =  %.2f",
+	   //(*mu_itr)->e()/GEV,(*mu_itr)->pt()/GEV, (*mu_itr)->eta(), (*mu_itr)->phi());
       
       xAOD::Muon* mu = 0;
       m_muonCalibrationAndSmearingTool->correctedCopy(**mu_itr, mu);
       
-      if (!m_iso->accept( **mu_itr )) continue;
-      if ((((*mu_itr)->pt()/GEV)<25) || (fabs((*mu_itr)->eta())>2.4))continue;
+      if (!m_iso->accept( *mu )) continue;
+      if ((((mu)->pt()/GEV)<25) || (fabs((mu)->eta())>2.4))continue;
       
       //Info("execute()", "corrected muon pt = %.2f GeV", ((*mu_itr)->pt()/GEV));
       //Info("execute()", "corrected muon pt (from copy) = %.2f GeV", (mu->pt()/GEV));
@@ -787,13 +792,15 @@ EL::StatusCode xAODPFlowAna :: execute ()
     
     
     Info("execute()", "  number of good and calibrated muons = %lu", goodMuons->size());
+    
+    
     //Just to check that GoodMuons has been store properly
     mu_itr =  goodMuons->begin();
     mu_end =  goodMuons->end();
     bool trigMatch = false;
     for( ; mu_itr != mu_end; ++mu_itr ) {
-      Info("Execute () ", "GoodMuons: E = %.2f GeV  pt = %.2f GeV eta = %.2f  phi =  %.2f",
-	   (*mu_itr)->e()/GEV,(*mu_itr)->pt()/GEV, (*mu_itr)->eta(), (*mu_itr)->phi());
+      //Info("Execute () ", "GoodMuons: E = %.2f GeV  pt = %.2f GeV eta = %.2f  phi =  %.2f",
+	   //(*mu_itr)->e()/GEV,(*mu_itr)->pt()/GEV, (*mu_itr)->eta(), (*mu_itr)->phi());
 	          for (auto &trigger_itr : chainGroup->getListOfTriggers()) { 
          std::string trig = "TRIGMATCH_" + trigger_itr;
          if ((*mu_itr)->isAvailable<char>(trig)) {
@@ -804,7 +811,7 @@ EL::StatusCode xAODPFlowAna :: execute ()
        } // Loop over triggers
        Info("execute()", "trigger matching = %i", trigMatch);
     }
-    
+    if(ZmumuSelection(goodElectrons, goodMuons)) m_goodevents++;
     //---------------------------
     // Zmumu selection
     //---------------------------
@@ -983,6 +990,9 @@ EL::StatusCode xAODPFlowAna :: finalize ()
     delete m_jetsf;
     m_jetsf = 0;
   }
+  
+  
+  Info("finalize()", "number of good events %i", m_goodevents);
 
   return EL::StatusCode::SUCCESS;
 }

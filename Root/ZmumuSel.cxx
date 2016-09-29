@@ -71,13 +71,15 @@ void xAODPFlowAna :: JetRecoil_Zmumu(const xAOD::MuonContainer* goodMuons, const
   for( ; jet_itr != jet_end; ++jet_itr ) {
     if( (*jet_itr)->pt()/GEV < 20 ) continue;
     if( fabs(deltaPhi((*jet_itr)->phi(), Z.Phi())) > (M_PI - 0.4)) continue;
-    Info("execute", "emf %f", (*jet_itr)->auxdata< float >("EMFrac"));
+    Info("execute", "gtc %i", (*jet_itr)->auxdata< int >("GhostTrackCount"));
     n_RecoilingJets++;
     m_H1Dict["h_jetPt"]->Fill((*jet_itr)->pt()/GEV);
     m_H1Dict["h_jetE"]->Fill((*jet_itr)->e()/GEV);
     m_H1Dict["h_jetM"]->Fill((*jet_itr)->m()/GEV);
     m_H1Dict["h_jetEta"]->Fill((*jet_itr)->eta());
     m_H1Dict["h_jetPhi"]->Fill((*jet_itr)->phi());
+    m_H1Dict["h_trackcount"]->Fill( (*jet_itr)->getAttribute<std::vector<int> >("NumTrkPt500")[0]);
+    m_H1Dict["h_chfrac"]->Fill( ((*jet_itr)->getAttribute<std::vector<float> >("SumPtTrkPt500")[0])/((*jet_itr)->pt()));
     SumPt_RecoilingJets = SumPt_RecoilingJets + (*jet_itr)->pt();
     // *WIP* These distributions has to be crosscheck (odd results for n_RecoilingJets == 1)
     // I think the distributions look better now. We need more events to confirm. Right now the errors are too great
