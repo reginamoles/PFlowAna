@@ -1,5 +1,5 @@
 #include <PFlowAna/xAODPFlowAna.h>
-
+#include "xAODCaloEvent/CaloCluster.h"
 
 //////////////////////////
 // Performance Histograms
@@ -823,7 +823,7 @@ void xAODPFlowAna :: clear_PerformanceVectors(){
   return;
 }
 
-void xAODPFlowAna::getClusterVariance(xAOD::CaloClusterContainer::const_iterator icluster, double& etaVar, double& phiVar) {
+void xAODPFlowAna::getClusterVariance(xAOD::CaloClusterContainer::const_iterator icluster, double& etaVar, double& phiVar, const xAOD::CalCellInfoContainer* CalCellInfo_TopoCluster) {
   double m_etaPhiLowerLimit(0.0025);
 
   /* Sum eta, eta^2, phi and phi^2 of all cells */
@@ -832,7 +832,7 @@ void xAODPFlowAna::getClusterVariance(xAOD::CaloClusterContainer::const_iterator
   double sumphi = 0;
   double sumphi2 = 0;
   double thisCellPhi;
-  int nCells = (*icluster)->size();
+  int nCells = getNCells(icluster, CalCellInfo_TopoCluster);
 
     /* Catch empty clusters */
     if (nCells == 0 || nCells == 1) {
@@ -843,15 +843,15 @@ void xAODPFlowAna::getClusterVariance(xAOD::CaloClusterContainer::const_iterator
     }
   assert(nCells > 0);
 
-  CaloClusterCellLink::const_iterator it_cell = (*icluster)->begin();
-  CaloClusterCellLink::const_iterator end_cell = (*icluster)->end();
+  const std::vector<float> cellEta = getCellEta(icluster, CalCellInfo_TopoCluster, nCells);
+  const std::vector<float> cellPhi = getCellPhi(icluster, CalCellInfo_TopoCluster, nCells);
 
-  for (; it_cell != end_cell; ++it_cell) {
-    sumeta += (*it_cell)->eta();
-    sumeta2 +=  (*it_cell)->eta()*  (*it_cell)->eta();
+  for (unsigned int icell=0; icell < cellEta.size(); ++icell) {
+    sumeta += cellEta[icell];
+    sumeta2 += cellEta[icell] * cellEta[icell];
     eflowAzimuth tmp;
-    tmp.m_value =  (*it_cell)->phi();
-    thisCellPhi = tmp.cycle((*it_cell)->phi());
+    tmp.m_value = cellPhi[icell];
+    thisCellPhi = tmp.cycle(cellPhi[icell]);
     sumphi += thisCellPhi;
     sumphi2 += thisCellPhi * thisCellPhi;
   }
@@ -868,9 +868,9 @@ void xAODPFlowAna::getClusterVariance(xAOD::CaloClusterContainer::const_iterator
   return;
 }
 
-double xAODPFlowAna::distanceRprime(double tr_eta, double tr_phi, xAOD::CaloClusterContainer::const_iterator cluster) {
+double xAODPFlowAna::distanceRprime(double tr_eta, double tr_phi, xAOD::CaloClusterContainer::const_iterator cluster, const xAOD::CalCellInfoContainer* CalCellInfo_TopoCluster) {
   double etaVar, phiVar;
-  getClusterVariance(cluster, etaVar, phiVar);
+  getClusterVariance(cluster, etaVar, phiVar, CalCellInfo_TopoCluster);
   double dEta = tr_eta - (*cluster)->eta();
   double dPhi = fabs(tr_phi - (*cluster)->phi());
   dPhi = dPhi <= M_PI ? dPhi : 2*M_PI - dPhi;
@@ -878,39 +878,64 @@ double xAODPFlowAna::distanceRprime(double tr_eta, double tr_phi, xAOD::CaloClus
   return dEta * dEta / etaVar + dPhi * dPhi / phiVar;
 }
 
-// Some variable definitions;
-// mc_hasEflowTrack[i] - this is 1 if there is a charged eflow object associated with that mc particle
-// mc_hasEflowTrackIndex[i] - the index of the eflow charged object associated with the ith mc particle.
-// mc_trueE[i] - the sum of all calibration hits in topoclusters for the ith mc particle
-// mc_trueEafter[i] - the sum of all calibration hits in neutral eflow objects for the ith mc particle
-// clMatchedEflow[p] - the index of the cluster matched to the pth charged eflow object
-// eflow_eflow_iniEoPexp[p] - the expected E/p value of the pth charged object
-// eflow_eflow_inisigmaEoPexp[p] - the expected width of E/p value of the pth charged object
-// clMatchedEflowEcone10[q] - the sum of cluster energies in a cone of radius 0.1 around the qth charged eflow object
-// mc_LinkedToTruthJets[i] - the index of the truth jet the mc particle belongs to
+unsigned int xAODPFlowAna::getNCells(xAOD::CaloClusterContainer::const_iterator icluster, const xAOD::CalCellInfoContainer* CalCellInfoTopoCluster) const {
+  unsigned int nCells = 0;
+  xAOD::CalCellInfoContainer::const_iterator CalCellInfoTopoCl_itr =  CalCellInfoTopoCluster->begin();
+  xAOD::CalCellInfoContainer::const_iterator CalCellInfoTopoCl_end =  CalCellInfoTopoCluster->end();
+  for( ; CalCellInfoTopoCl_itr != CalCellInfoTopoCl_end; ++CalCellInfoTopoCl_itr ) {
+    if((*icluster)->rawE()==(*CalCellInfoTopoCl_itr)->clusterRecoEnergy()){
+  nCells++;
+    }
+  }
+  return nCells;
+}
 
-//  //turnOff TProfiles
-//  for (unsigned int i=0; i<mc_pt->size(); i++){
+const std::vector<float> xAODPFlowAna::getCellE(xAOD::CaloClusterContainer::const_iterator icluster, const xAOD::CalCellInfoContainer* CalCellInfoTopoCluster) const{
+  std::vector<float> _cellE(getNCells(icluster,CalCellInfoTopoCluster));
+  xAOD::CalCellInfoContainer::const_iterator CalCellInfoTopoCl_itr =  CalCellInfoTopoCluster->begin();
+  xAOD::CalCellInfoContainer::const_iterator CalCellInfoTopoCl_end =  CalCellInfoTopoCluster->end();
+  int index = 0;
+  for( ; CalCellInfoTopoCl_itr != CalCellInfoTopoCl_end; ++CalCellInfoTopoCl_itr ) {
+    if((*icluster)->rawE()==(*CalCellInfoTopoCl_itr)->clusterRecoEnergy()){
+  _cellE.at(index)=(*CalCellInfoTopoCl_itr)->e();
+  index++;
+    }
+  }
+  /* std::cout << "_cellEta size ="<< _cellEta.size()<<std::endl; */
+  /* for (unsigned int i=0;i<_cellEta.size();i++) */
+  /* std::cout << " *** CellEta["<<i<<"]" << _cellEta[i]; */
+  /* std::cout << '\n'; */
+  return _cellE;
+}
 
-//    if (mc_hasEflowTrack[i]==1){
+const std::vector<float> xAODPFlowAna::getCellEta(xAOD::CaloClusterContainer::const_iterator icluster, const xAOD::CalCellInfoContainer* _CalCellInfoTopoCluster, const unsigned int nCells) const{
+  std::vector<float> _cellEta(nCells);
+  xAOD::CalCellInfoContainer::const_iterator CalCellInfoTopoCl_itr =  _CalCellInfoTopoCluster->begin();
+  xAOD::CalCellInfoContainer::const_iterator CalCellInfoTopoCl_end =  _CalCellInfoTopoCluster->end();
+  int index = 0;
+  for( ; CalCellInfoTopoCl_itr != CalCellInfoTopoCl_end; ++CalCellInfoTopoCl_itr ) {
+    if((*icluster)->rawE()==(*CalCellInfoTopoCl_itr)->clusterRecoEnergy()){
+  _cellEta.at(index)=(*CalCellInfoTopoCl_itr)->cellEta();
+  index++;
+    }
+  }
+  /* std::cout << "_cellEta size ="<< _cellEta.size()<<std::endl; */
+  /* for (unsigned int i=0;i<_cellEta.size();i++) */
+  /* std::cout << " *** CellEta["<<i<<"]" << _cellEta[i]; */
+  /* std::cout << '\n'; */
+  return _cellEta;
+}
 
-//      if (std::fabs((eflow_eflow_pt->at(mc_hasEflowTrackIndex[i])-mc_pt->at(i))/mc_pt->at(i))<0.05){
-
-//        if (std::fabs(mc_eta->at(i))>0.0 && std::fabs(mc_eta->at(i))<0.4){
-
-//        hTurnOff_CalHitsOverPt_eta_00_04_hist->Fill(mc_pt->at(i),mc_trueE[i]/(mc_pt->at(i)*cosh(mc_eta->at(i))),EvtWeight);
-
-//          if (clMatchedEflow[mc_hasEflowTrackIndex[i]]>=0 && eflow_eflow_iniLFIindex->at(mc_hasEflowTrackIndex[i])!=8){
-
-//            float pull=(cl_em_E->at(clMatchedEflow[mc_hasEflowTrackIndex[i]])-eflow_eflow_iniEoPexp->at(mc_hasEflowTrackIndex[i]))/eflow_eflow_inisigmaEoPexp->at(mc_hasEflowTrackIndex[i]);
-//            float pull10=(clMatchedEflowEcone10[mc_hasEflowTrackIndex[i]]-eflow_eflow_iniEoPexp->at(mc_hasEflowTrackIndex[i]))/eflow_eflow_inisigmaEoPexp->at(mc_hasEflowTrackIndex[i]);
-//            float pull15=(clMatchedEflowEcone15[mc_hasEflowTrackIndex[i]]-eflow_eflow_iniEoPexp->at(mc_hasEflowTrackIndex[i]))/eflow_eflow_inisigmaEoPexp->at(mc_hasEflowTrackIndex[i]);
-//            float pull20=(clMatchedEflowEcone20[mc_hasEflowTrackIndex[i]]-eflow_eflow_iniEoPexp->at(mc_hasEflowTrackIndex[i]))/eflow_eflow_inisigmaEoPexp->at(mc_hasEflowTrackIndex[i]);
-// hTurnOff_CalHitsRemainingOverPt_vs_Pull_eta_00_04_hist->Fill(mc_pt->at(i),pull,mc_trueEafter[i]/(mc_pt->at(i)*cosh(mc_eta->at(i))),EvtWeight);
-// hTurnOff_Entries_vs_Pull_eta_00_04_hist->Fill(mc_pt->at(i),pull,EvtWeight);
-
-// -------------------
-
-//            if (mc_LinkedToTruthJets[i]>=0){
-//              if (MyJetsAreaTruth[mc_LinkedToTruthJets[i]].Pt()>20.*1000. && MyJetsAreaTruth[mc_LinkedToTruthJets[i]].Pt()<30.*1000.) hTurnOff_Entries_vs_Pull_pT_20_30_eta_00_04_hist->Fill(mc_pt->at(i),pull,EvtWeight);
-//              if (MyJetsAreaTruth[mc_LinkedToTruthJets[i]].Pt()>20.*1000. && MyJetsAreaTruth[mc_LinkedToTruthJets[i]].Pt()<30.*1000.) hTurnOff_CalHitsRemainingOverPt_vs_Pull_pT_20_30_eta_00_04_hist->Fill(mc_pt->at(i),pull,mc_trueEafter[i]/(mc_pt->at(i)*cosh(mc_eta->at(i))),EvtWeight);
+const std::vector<float>  xAODPFlowAna::getCellPhi(xAOD::CaloClusterContainer::const_iterator icluster, const xAOD::CalCellInfoContainer* _CalCellInfoTopoCluster, const unsigned int nCells) const{
+  std::vector<float> _cellPhi(nCells);
+  xAOD::CalCellInfoContainer::const_iterator CalCellInfoTopoCl_itr =  _CalCellInfoTopoCluster->begin();
+  xAOD::CalCellInfoContainer::const_iterator CalCellInfoTopoCl_end =  _CalCellInfoTopoCluster->end();
+  int index = 0;
+  for( ; CalCellInfoTopoCl_itr != CalCellInfoTopoCl_end; ++CalCellInfoTopoCl_itr ) {
+    if((*icluster)->rawE()==(*CalCellInfoTopoCl_itr)->clusterRecoEnergy()){
+  _cellPhi[index]=(*CalCellInfoTopoCl_itr)->cellPhi();
+  index++;
+    }
+  }
+  return _cellPhi;
+}

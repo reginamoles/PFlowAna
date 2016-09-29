@@ -316,8 +316,13 @@ class xAODPFlowAna : public EL::Algorithm
   void fillEffPurHistoDefault(int i_mcPart, xAOD::TruthParticleContainer::const_iterator tp_itr, const std::vector<double>& v_Efficiency, const std::vector<double>& v_Purity);
   void filldRpHistoLeading(xAOD::TruthParticleContainer::const_iterator tp_itr, const xAOD::CaloClusterContainer* topocluster, const std::vector<double>& full_Efficiency);
 
-  void getClusterVariance(xAOD::CaloClusterContainer::const_iterator icluster, double& etaVar, double& phiVar);
-  double distanceRprime(double tr_eta, double tr_phi, xAOD::CaloClusterContainer::const_iterator cluster);
+  void getClusterVariance(xAOD::CaloClusterContainer::const_iterator icluster, double& etaVar, double& phiVar, const xAOD::CalCellInfoContainer* CalCellInfo_TopoCluster);
+  double distanceRprime(double tr_eta, double tr_phi, xAOD::CaloClusterContainer::const_iterator cluster, const xAOD::CalCellInfoContainer* CalCellInfo_TopoCluster);
+  unsigned int getNCells(xAOD::CaloClusterContainer::const_iterator icluster, const xAOD::CalCellInfoContainer* _CalCellInfoTopoCluster) const;
+  const std::vector<float> getCellE(xAOD::CaloClusterContainer::const_iterator icluster, const xAOD::CalCellInfoContainer* CalCellInfoTopoCluster) const;
+  const std::vector<float> getCellEta(xAOD::CaloClusterContainer::const_iterator icluster, const xAOD::CalCellInfoContainer* _CalCellInfoTopoCluster, const unsigned int nCells) const;
+  const std::vector<float>  getCellPhi(xAOD::CaloClusterContainer::const_iterator icluster, const xAOD::CalCellInfoContainer* _CalCellInfoTopoCluster, const unsigned int nCells) const;
+
 
 
 public:
