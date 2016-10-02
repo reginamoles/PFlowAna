@@ -164,7 +164,11 @@ EL::StatusCode xAODPFlowAna :: histInitialize ()
     bookH1DPerformanceHistogram("dR1_RSS","", _ptRange, _etaRange, n_bins, x_low, x_up);
     bookH1DPerformanceHistogram("dR2","", _ptRange, _etaRange, n_bins, x_low, x_up);
   }
-
+  if (m_1to2matching) {
+    bookH1DPerformanceHistogram("dRp_leading", "", _ptRange, _etaRange, n_bins, x_low, 20);
+    bookH1DPerformanceHistogram("dRp_1st", "", _ptRange, _etaRange, n_bins, x_low, 20);
+    bookH1DPerformanceHistogram("dR1_2nd","", _ptRange, _etaRange, n_bins, x_low, x_up);
+  }
   
   //====================================
   // Efficiency and purity
@@ -800,7 +804,7 @@ EL::StatusCode xAODPFlowAna :: execute ()
     FillCaloClusterR(m_topocluster);
 
     //calculate efficieny and purity
-    Calculate_Efficiency_Purity(m_TruthParticles, (int)m_topocluster->size(), m_topocluster);    
+    Calculate_Efficiency_Purity(m_TruthParticles, (int)m_topocluster->size(), m_topocluster, m_CalCellInfo_TopoCluster);
     //subtraction code
     if(m_DijetSubtraction)SubtractionPerf(m_JetETMissChargedParticleFlowObjects,m_topocluster, m_TruthParticles);
     //fill histograms

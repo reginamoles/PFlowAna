@@ -130,7 +130,7 @@ class xAODPFlowAna : public EL::Algorithm
   void ComputeCalibHitsPerParticle(const xAOD::CalCellInfoContainer* ,const xAOD::CalCellInfoContainer*, const xAOD::TruthParticleContainer*);
   void ComputeCalibHitsPerCluster(const xAOD::CalCellInfoContainer*, const xAOD::CaloClusterContainer*, int);
   void FillCaloClusterR(const xAOD::CaloClusterContainer* topocluster);
-  void Calculate_Efficiency_Purity(const xAOD::TruthParticleContainer*,int,const xAOD::CaloClusterContainer*);
+  void Calculate_Efficiency_Purity(const xAOD::TruthParticleContainer*,int,const xAOD::CaloClusterContainer*,const xAOD::CalCellInfoContainer*);
   void FindMatchedClusterIndex(const xAOD::PFOContainer* JetETMissChargedParticleFlowObjects, const xAOD::CaloClusterContainer* topocluster);
   void SubtractionPerf(const xAOD::PFOContainer*,const xAOD::CaloClusterContainer*, const xAOD::TruthParticleContainer*);
   int getNClustersFor90Eff(int i_mcPart, std::vector<double>& full_Efficiency);
@@ -313,15 +313,16 @@ class xAODPFlowAna : public EL::Algorithm
   void fillEffPurVectorDefault(const xAOD::CaloClusterContainer* topocluster, int i_mcPart, const xAOD::TruthParticleContainer* TruthParticles, std::vector<double>& v_Efficiency,
                                std::vector<double>& v_Purity, double tketa, double tkphi);
   void fillEffPurHistoMatch(int i_mcPart, xAOD::TruthParticleContainer::const_iterator tp_itr, const std::vector<double>& v_Efficiency, const std::vector<double>& v_Purity, bool twoClusters);
-  void fillEffPurHistoDefault(int i_mcPart, xAOD::TruthParticleContainer::const_iterator tp_itr, const std::vector<double>& v_Efficiency, const std::vector<double>& v_Purity);
+  int fillEffPurHistoDefault(int i_mcPart, xAOD::TruthParticleContainer::const_iterator tp_itr, const std::vector<double>& v_Efficiency, const std::vector<double>& v_Purity);
   void filldRpHistoLeading(xAOD::TruthParticleContainer::const_iterator tp_itr, const xAOD::CaloClusterContainer* topocluster, const std::vector<double>& full_Efficiency);
 
+  double distanceRprime(double tr_eta, double tr_phi, xAOD::CaloClusterContainer::const_iterator& cluster, const xAOD::CalCellInfoContainer* CalCellInfo_TopoCluster);
   void getClusterVariance(xAOD::CaloClusterContainer::const_iterator icluster, double& etaVar, double& phiVar, const xAOD::CalCellInfoContainer* CalCellInfo_TopoCluster);
-  double distanceRprime(double tr_eta, double tr_phi, xAOD::CaloClusterContainer::const_iterator cluster, const xAOD::CalCellInfoContainer* CalCellInfo_TopoCluster);
   unsigned int getNCells(xAOD::CaloClusterContainer::const_iterator icluster, const xAOD::CalCellInfoContainer* _CalCellInfoTopoCluster) const;
-  const std::vector<float> getCellE(xAOD::CaloClusterContainer::const_iterator icluster, const xAOD::CalCellInfoContainer* CalCellInfoTopoCluster) const;
   const std::vector<float> getCellEta(xAOD::CaloClusterContainer::const_iterator icluster, const xAOD::CalCellInfoContainer* _CalCellInfoTopoCluster, const unsigned int nCells) const;
   const std::vector<float>  getCellPhi(xAOD::CaloClusterContainer::const_iterator icluster, const xAOD::CalCellInfoContainer* _CalCellInfoTopoCluster, const unsigned int nCells) const;
+  void filldRpHisto(int i_mcPart, xAOD::TruthParticleContainer::const_iterator tp_itr, std::vector<double>& v_dRp);
+
 
 
 

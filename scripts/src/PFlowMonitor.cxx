@@ -99,7 +99,7 @@ void PFlowMonitor::Plot(const char* folder) {
   catagory.push_back("PurMatch2");
   catagory.push_back("dRp_leading");
   catagory.push_back("dRp_1st");
-  catagory.push_back("dR1_2nd");
+  catagory.push_back("dRp_2nd");
   catagory.push_back("SubtractStatus");
   catagory.push_back("NClus_09");
 
