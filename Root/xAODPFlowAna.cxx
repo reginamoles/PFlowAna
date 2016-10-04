@@ -411,9 +411,8 @@ EL::StatusCode xAODPFlowAna :: initialize ()
   ANA_CHECK(m_trigDecisionTool->setProperty( "ConfigTool", trigConfigHandle ) ); // connect the TrigDecisionTool to the ConfigTool
   ANA_CHECK(m_trigDecisionTool->setProperty( "TrigDecisionKey", "xTrigDecision" ) );
   ANA_CHECK(m_trigDecisionTool->initialize() );
-  ToolHandle< Trig::TrigDecisionTool > trigDecisionHandle( m_trigDecisionTool );
   m_trigmatchingtool = new  Trig::MatchingTool("MatchingTool");
-  ANA_CHECK(m_trigmatchingtool->setProperty("TrigDecisionTool", trigConfigHandle );
+  ANA_CHECK(m_trigmatchingtool->setProperty("TrigDecisionTool", trigConfigHandle ));
   ANA_CHECK(m_trigmatchingtool->setProperty("OutputLevel", MSG::WARNING));
   ANA_CHECK(m_trigmatchingtool->initialize() );
   
@@ -823,9 +822,10 @@ EL::StatusCode xAODPFlowAna :: execute ()
     
         bool match_found = false;
     for( const auto& mu : *goodMuons ) {
-       for (const auto& trigger : chainGroup->getListOfTriggers()) {
-        if (m_trigmatchingtool->Trig::MatchingTool::match(mu, trigger)) match_found = true;
-       }
+       //for (const auto& trigger : chainGroup->getListOfTriggers()) {
+       const std::string& chaintest = "HLT_mu24_ivarmedium";
+        if (m_trigmatchingtool->match({mu}, chaintest )) match_found = true;
+       //}
        if (match_found) break;
       }
      if (!match_found) {
