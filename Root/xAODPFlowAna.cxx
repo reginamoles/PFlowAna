@@ -411,6 +411,11 @@ EL::StatusCode xAODPFlowAna :: initialize ()
   ANA_CHECK(m_trigDecisionTool->setProperty( "ConfigTool", trigConfigHandle ) ); // connect the TrigDecisionTool to the ConfigTool
   ANA_CHECK(m_trigDecisionTool->setProperty( "TrigDecisionKey", "xTrigDecision" ) );
   ANA_CHECK(m_trigDecisionTool->initialize() );
+  ToolHandle< Trig::TrigDecisionTool > trigDecisionHandle( m_trigDecisionTool );
+  m_trigmatchingtool = new  Trig::MatchingTool("MatchingTool");
+  ANA_CHECK(m_trigmatchingtool->setProperty("TrigDecisionTool", trigConfigHandle );
+  ANA_CHECK(m_trigmatchingtool->setProperty("OutputLevel", MSG::WARNING));
+  ANA_CHECK(m_trigmatchingtool->initialize() );
   
   //JVT Tool
   m_jetsf = new CP::JetJvtEfficiency("m_jetsf");
@@ -420,9 +425,14 @@ EL::StatusCode xAODPFlowAna :: initialize ()
   
   //Pileup-Reweighting Tool
   
-  //m_pileuptool = new CP::PileupReweightingTool("m_pileuptool");
-  //ANA_CHECK( m_pileuptool->setProperty("DataScaleFactor",1.0/1.16));
-  //ANA_CHECK(m_pileuptool->initialize() );
+  m_pileuptool = new CP::PileupReweightingTool("PileupRewTool");
+  std::vector<std::string> lumicalcFiles {"~/git_project_test/PFlowAna/lumi-files/physics_25ns_20.7.lumicalc.OflLumi-13TeV-001.root"};
+  ANA_CHECK(m_pileuptool->setProperty("LumiCalcFiles",lumicalcFiles));  
+  ANA_CHECK(m_pileuptool->setProperty("DataScaleFactor",1.0/1.16));
+  ANA_CHECK(m_pileuptool->setProperty("DataScaleFactorUP",1.0/1.0));
+  ANA_CHECK(m_pileuptool->setProperty("DataScaleFactorDOWN",1.0/1.23));
+  
+  ANA_CHECK(m_pileuptool->initialize() );
   
  return EL::StatusCode::SUCCESS;
 }
@@ -454,12 +464,11 @@ EL::StatusCode xAODPFlowAna :: execute ()
   ANA_CHECK(m_event->retrieve( m_EventInfo, "EventInfo"));  
   
   
-  //pileup reweighting
-  
-  //m_pileuptool->getCombinedWeight( *m_EventInfo );
-  //m_pileuptool->getCorrectedMu( *m_EventInfo );
-  //m_pileuptool->getRandomRunNumber( *m_EventInfo );
-  //m_pileuptool->GetRandomLumiBlockNumber( *m_EventInfo );
+	m_pileuptool->apply(*m_EventInfo, true);
+	float pileupWeight = m_pileuptool->getCombinedWeight( *m_EventInfo);
+	std::cout<<" pileupWeight = " <<pileupWeight<<std::endl; 
+	Info("execute()", "pileupweight = %f", m_pileuptool->getCombinedWeight( *m_EventInfo )); 
+
   
   // check if the event is data or MC
   bool isMC = false;
@@ -811,6 +820,20 @@ EL::StatusCode xAODPFlowAna :: execute ()
        } // Loop over triggers
        Info("execute()", "trigger matching = %i", trigMatch);
     }
+    
+        bool match_found = false;
+    for( const auto& mu : *goodMuons ) {
+       for (const auto& trigger : chainGroup->getListOfTriggers()) {
+        if (m_trigmatchingtool->Trig::MatchingTool::match(mu, trigger)) match_found = true;
+       }
+       if (match_found) break;
+      }
+     if (!match_found) {
+       ATH_MSG_INFO( "No trigger match found.");
+      return false;
+     }
+    
+    
     if(ZmumuSelection(goodElectrons, goodMuons)) m_goodevents++;
     //---------------------------
     // Zmumu selection

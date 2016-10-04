@@ -48,6 +48,7 @@
 #include "ElectronPhotonSelectorTools/AsgElectronLikelihoodTool.h"
 #include "TrigConfxAOD/xAODConfigTool.h"
 #include "TrigDecisionTool/TrigDecisionTool.h"
+#include "TriggerMatchingTool/MatchingTool.h"
 #include "JetJvtEfficiency/JetJvtEfficiency.h"
 #include "PATInterfaces/CorrectionCode.h"
 #include "PATInterfaces/SystematicRegistry.h"
@@ -118,6 +119,7 @@ AsgElectronLikelihoodTool *m_VeryLooseLHElectron;
 //trigger tools
 Trig::TrigDecisionTool *m_trigDecisionTool; 
 TrigConf::xAODConfigTool *m_trigConfigTool; 
+Trig::MatchingTool *m_trigmatchingtool;
 
 //JVT
 CP::JetJvtEfficiency *m_jetsf; 

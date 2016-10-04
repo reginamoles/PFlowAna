@@ -4,6 +4,8 @@
 // Zmumu Selection
 //////////////////////////
 
+//declareProperty( "SUSYTools",       m_SUSYTools                   );
+
 bool xAODPFlowAna :: ZmumuSelection(const xAOD::ElectronContainer* goodElectrons,const xAOD::MuonContainer* goodMuons){
   
   Info("", "------------------- ");
@@ -27,6 +29,8 @@ bool xAODPFlowAna :: ZmumuSelection(const xAOD::ElectronContainer* goodElectrons
 
   if (Z.M()/GEV<82 || Z.M()/GEV>102) return false; //Mass widow - to be checked by Christian
   if (Z.Pt()/GEV < 30) return false;
+  
+    
 
   return true;
 }
@@ -92,30 +96,8 @@ void xAODPFlowAna :: JetRecoil_Zmumu(const xAOD::MuonContainer* goodMuons, const
   
   return; 
 }
-/*
-//bool TrigMatchSelector::apply(const xAOD::Event& event) const 
-   //{
-     //bool trigMatch(false);
-bool xAODPFlowAna :: TrigMatching(const xAOD::MuonContainer* goodMuons){
- // Loop over muons
-    for(const auto* const muPtr : goodMuons) {
-       // Loop over triggers 
-       for (const auto& trigger : m_muonTriggers) {  
-         std::string trig = "TRIGMATCH_" + trigger;
-         if (muPtr->isAvailable<char>(trig)) {
-           if (muPtr->auxdataConst<char>(trig) == 1) {
-             trigMatch = true;
-             return trigMatch;
-           }
-         } // decoration isAvailable
-       } // Loop over triggers
-     } // Loop over muons     
-     
-     return trigMatch;
-   }
-   * 
-*/
-
+  // Require a trigger match
+   
 
 
 
