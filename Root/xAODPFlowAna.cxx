@@ -126,10 +126,10 @@ EL::StatusCode xAODPFlowAna :: histInitialize ()
   bool m_UseNarrowPtRange = true;
   bool m_UseNarrowEtaRange = true;
   
-  if (m_UseNarrowPtRange) _ptRange= {0, 100}; //_ptRange= {0, 2, 5, 10, 20};
+  if (m_UseNarrowPtRange) _ptRange= {0, 2, 5, 10, 20};
   else _ptRange = {0, 2, 5, 10, 20, 40, 60, 80, 100, 150, 200, 500, 1000};
   
-  if (m_UseNarrowEtaRange) _etaRange = {0, 100}; //_etaRange= {0, 1, 2, 2.5};
+  if (m_UseNarrowEtaRange) _etaRange= {0, 1, 2, 2.5};
   else _etaRange= {0.0, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 2.0, 2.5};
 
   
