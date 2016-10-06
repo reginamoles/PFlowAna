@@ -412,7 +412,7 @@ EL::StatusCode xAODPFlowAna :: initialize ()
   ANA_CHECK(m_trigDecisionTool->setProperty( "TrigDecisionKey", "xTrigDecision" ) );
   ANA_CHECK(m_trigDecisionTool->initialize() );
   m_trigmatchingtool = new  Trig::MatchingTool("MatchingTool");
-  ANA_CHECK(m_trigmatchingtool->setProperty("TrigDecisionTool", trigConfigHandle ));
+  //ANA_CHECK(m_trigmatchingtool->setProperty("TrigDecisionTool", trigConfigHandle ));
   ANA_CHECK(m_trigmatchingtool->setProperty("OutputLevel", MSG::WARNING));
   ANA_CHECK(m_trigmatchingtool->initialize() );
   
@@ -495,7 +495,7 @@ EL::StatusCode xAODPFlowAna :: execute ()
   
   
   //trigger tools: here the trigger chain is chosen
-  auto chainGroup = m_trigDecisionTool->getChainGroup("HLT_mu24_ivarmedium, HLT_mu50");
+  auto chainGroup = m_trigDecisionTool->getChainGroup("HLT_mu26_ivarmedium, HLT_mu50");
   std::map<std::string,int> triggerCounts;
   int trigger = 0;
   for(auto &trig : chainGroup->getListOfTriggers()) {
@@ -590,25 +590,6 @@ EL::StatusCode xAODPFlowAna :: execute ()
   ANA_CHECK(m_event->retrieve( m_Muons, "Muons" ));
   Info("execute()", "  number of muons = %lu", m_Muons->size());
   PrintMuonInfo(m_Muons, true);
-
-
-  //------------------------------
-  // Trigger (Efficiency and SF)
-  //------------------------------
-  
-  //--------------------
-  // Pileup Reweighting 
-  //--------------------
-  //Code to be added
-
-  //-------------------------
-  // Tool for muons
-  //-------------------------
-
-  //---------------------------
-  // Tools for Jets
-  //--------------------------- 
-  //the order for the tools has to be checked!
 
 
   
@@ -821,17 +802,18 @@ EL::StatusCode xAODPFlowAna :: execute ()
     }
     
         bool match_found = false;
-    for( const auto& mu : *goodMuons ) {
+    //for( const auto& mu : *goodMuons ) {
        //for (const auto& trigger : chainGroup->getListOfTriggers()) {
-       const std::string& chaintest = "HLT_mu24_ivarmedium";
-        if (m_trigmatchingtool->match({mu}, chaintest )) match_found = true;
+       const std::string& chain1 = "HLT_mu26_ivarmedium";
+        //if (m_trigmatchingtool->match({goodMuons->at(0)}, chain1 )) match_found = true;
+        //if (m_trigmatchingtool->match({goodMuons->at(1)}, chain1 )) match_found = true;
        //}
-       if (match_found) break;
-      }
-     if (!match_found) {
-       ATH_MSG_INFO( "No trigger match found.");
-      return false;
-     }
+       //if (match_found) break;
+      //}
+     //if (!match_found) {
+     //  ATH_MSG_INFO( "No trigger match found.");
+     // return false;
+     //}
     
     
     if(ZmumuSelection(goodElectrons, goodMuons)) m_goodevents++;
@@ -839,9 +821,11 @@ EL::StatusCode xAODPFlowAna :: execute ()
     // Zmumu selection
     //---------------------------
     if (ZmumuSelection(goodElectrons, goodMuons)){
+		if( (m_trigmatchingtool->match({goodMuons->at(0)}, chain1 )) || (m_trigmatchingtool->match({goodMuons->at(1)}, chain1 ))){
 		Info("execute()", "here it is __________________________________________________________________________________________________________________________________");
       FillZmumuHistograms(goodMuons);
       JetRecoil_Zmumu(goodMuons, goodPFlowJets);
+	}
     }
   }
   
