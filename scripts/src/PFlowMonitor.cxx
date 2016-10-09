@@ -25,13 +25,13 @@ void PFlowMonitor::run(char* inputs, char* outfolder)
   
   /* WIP  Narrow or Wide eta and pt range */
   if (m_UseNarrowPtRange) {
-    m_ptRange.push_back(0);
-    m_ptRange.push_back(100);
 //    m_ptRange.push_back(0);
-//    m_ptRange.push_back(2);
-//    m_ptRange.push_back(5);
-//    m_ptRange.push_back(10);
-//    m_ptRange.push_back(20);
+//    m_ptRange.push_back(100);
+    m_ptRange.push_back(0);
+    m_ptRange.push_back(2);
+    m_ptRange.push_back(5);
+    m_ptRange.push_back(10);
+    m_ptRange.push_back(20);
   }
   else {
     m_ptRange.push_back(0);
@@ -49,12 +49,12 @@ void PFlowMonitor::run(char* inputs, char* outfolder)
     m_ptRange.push_back(1000);
   }
   if (m_UseNarrowEtaRange) {
-    m_etaRange.push_back(0);
-    m_etaRange.push_back(100);
 //    m_etaRange.push_back(0);
-//    m_etaRange.push_back(1);
-//    m_etaRange.push_back(2);
-//    m_etaRange.push_back(2.5);
+//    m_etaRange.push_back(100);
+    m_etaRange.push_back(0);
+    m_etaRange.push_back(1);
+    m_etaRange.push_back(2);
+    m_etaRange.push_back(2.5);
   } else {
     m_etaRange.push_back(0.0);
     m_etaRange.push_back(0.6);
@@ -81,7 +81,8 @@ void PFlowMonitor::run(char* inputs, char* outfolder)
   setStyle();
   Plot(Form("plots/%s/", outfolder));
   Efficiency(Form("plots/%s/", outfolder));
-  dRp(Form("plots/%s/", outfolder));
+  eflowdRp(Form("plots/%s/", outfolder), 0);
+  eflowdRp(Form("plots/%s/", outfolder), 1);
 }
 
 ////
@@ -142,6 +143,7 @@ void PFlowMonitor::Plot(const char* folder) {
             h_pTs[ipt] = (TH1F*) HistFile[ifile]->Get(names.first.c_str());
           } else {
             h_pTs[ipt]->Add((TH1F*) HistFile[ifile]->Get(names.first.c_str()));
+            std::cout<<__LINE__<<" Add: "<<names.first<<std::endl;
           }
         }
         if (!h_pTs[ipt]) {
@@ -263,6 +265,7 @@ void PFlowMonitor::Efficiency(const char* folder) {
             h_cats[icat] = (TH1F*) HistFile[ifile]->Get(names.first.c_str());
           } else {
             h_cats[icat]->Add((TH1F*) HistFile[ifile]->Get(names.first.c_str()));
+            std::cout<<__LINE__<<" Add: "<<names.first<<std::endl;
           }
         }
 
@@ -312,23 +315,33 @@ void PFlowMonitor::Efficiency(const char* folder) {
   return;
 }
 
-void PFlowMonitor::dRp(const char* folder) {
+void PFlowMonitor::eflowdRp(const char* folder, const int mode) {
   std::string outfolder = folder;
 
   bool c_showNumber(!false);
   int tcolor[3] = {1, 4, 2};
 
-  std::vector<std::string> catagory;
-  catagory.push_back("dR1");
-  catagory.push_back("dR1_CLS");
-  catagory.push_back("dR1_RSS");
+  std::vector<std::string> catagory; catagory.clear();
+  catagory.push_back("eflowdR1");
+  if (mode == 0) {
+      catagory.push_back("eflowdR1_CLS");
+      catagory.push_back("eflowdR1_RSS");
+  } else if (mode == 1) {
+      catagory.push_back("eflowdR1_correct");
+      catagory.push_back("eflowdR1_wrong");
+  }
 
   std::vector<std::string> display;
   display.push_back("Total");
-  display.push_back("dR' matching");
-  display.push_back("Recover split shower");
+  if (mode == 0) {
+      display.push_back("dR' matching");
+      display.push_back("Recover split shower");
+  } else if (mode == 1) {
+      display.push_back("correct matching");
+      display.push_back("wrong matching");
+  }
 
-  std::string xTitle = "dR'(1st cluster)";
+  std::string xTitle = "eflowRec dR'(1st cluster)";
 
   for (unsigned int ieta = 0; ieta < (m_debug ? 1 : m_etaRange.size()); ++ieta) {
 
@@ -353,6 +366,7 @@ void PFlowMonitor::dRp(const char* folder) {
             h_cats[icat] = (TH1F*) HistFile[ifile]->Get(names.first.c_str());
           } else {
             h_cats[icat]->Add((TH1F*) HistFile[ifile]->Get(names.first.c_str()));
+            std::cout<<__LINE__<<" Add: "<<names.first<<std::endl;
           }
         }
 
@@ -395,7 +409,7 @@ void PFlowMonitor::dRp(const char* folder) {
         Legend->Draw();
       }
       h_cats[0]->Draw("axissame");
-      Can_Efficiency->SaveAs(Form("%s%s_%d_%d.eps", outfolder.c_str(), catagory[0].c_str(), ieta, ipt));
+      Can_Efficiency->SaveAs(Form("%s%s%d_%d_%d.eps", outfolder.c_str(), catagory[0].c_str(), mode, ieta, ipt));
     }
   }
   return;

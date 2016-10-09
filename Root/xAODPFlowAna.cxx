@@ -163,13 +163,13 @@ EL::StatusCode xAODPFlowAna :: histInitialize ()
     bookH1DPerformanceHistogram("eflowdR1_CLS", "", _ptRange, _etaRange, n_bins, x_low, x_up);
     bookH1DPerformanceHistogram("eflowdR1_RSS","", _ptRange, _etaRange, n_bins, x_low, x_up);
     bookH1DPerformanceHistogram("eflowdR2","", _ptRange, _etaRange, n_bins, x_low, x_up);
-    bookH1DPerformanceHistogram("eflowdR1_correct", "", _ptRange, _etaRange, n_bins, x_low, 20);
-    bookH1DPerformanceHistogram("eflowdR1_wrong", "", _ptRange, _etaRange, n_bins, x_low, 20);
+    bookH1DPerformanceHistogram("eflowdR1_correct", "", _ptRange, _etaRange, n_bins, x_low, x_up);
+    bookH1DPerformanceHistogram("eflowdR1_wrong", "", _ptRange, _etaRange, n_bins, x_low, x_up);
   }
   if (m_1to2matching) {
-    bookH1DPerformanceHistogram("dRp_leading", "", _ptRange, _etaRange, n_bins, x_low, 20);
-    bookH1DPerformanceHistogram("dRp_1st", "", _ptRange, _etaRange, n_bins, x_low, 20);
-    bookH1DPerformanceHistogram("dRp_2nd","", _ptRange, _etaRange, n_bins, x_low, x_up);
+    bookH1DPerformanceHistogram("dRp_leading", "", _ptRange, _etaRange, n_bins, x_low, 5);
+    bookH1DPerformanceHistogram("dRp_1st", "", _ptRange, _etaRange, n_bins, x_low, 5);
+    bookH1DPerformanceHistogram("dRp_2nd","", _ptRange, _etaRange, n_bins, x_low, 5);
   }
   
   //====================================
