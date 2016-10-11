@@ -495,7 +495,8 @@ EL::StatusCode xAODPFlowAna :: execute ()
   
   
   //trigger tools: here the trigger chain is chosen
-  auto chainGroup = m_trigDecisionTool->getChainGroup("HLT_mu26_ivarmedium, HLT_mu50");
+//  auto chainGroup = m_trigDecisionTool->getChainGroup("HLT_mu26_ivarmedium, HLT_mu50");
+  auto chainGroup = m_trigDecisionTool->getChainGroup("HLT_mu50"); //zhangrui
   std::map<std::string,int> triggerCounts;
   int trigger = 0;
   for(auto &trig : chainGroup->getListOfTriggers()) {
@@ -790,42 +791,50 @@ EL::StatusCode xAODPFlowAna :: execute ()
     for( ; mu_itr != mu_end; ++mu_itr ) {
       //Info("Execute () ", "GoodMuons: E = %.2f GeV  pt = %.2f GeV eta = %.2f  phi =  %.2f",
 	   //(*mu_itr)->e()/GEV,(*mu_itr)->pt()/GEV, (*mu_itr)->eta(), (*mu_itr)->phi());
-	          for (auto &trigger_itr : chainGroup->getListOfTriggers()) { 
-         std::string trig = "TRIGMATCH_" + trigger_itr;
-         if ((*mu_itr)->isAvailable<char>(trig)) {
-           if ((*mu_itr)->auxdataConst<char>(trig) == 1) {
-             trigMatch = true;
            }
          } // decoration isAvailable
        } // Loop over triggers
-       Info("execute()", "trigger matching = %i", trigMatch);
     }
     
+    
+/* to work with for matching
+ * auto chainGroup = m_trigDecisionTool->getChainGroup("HLT_mu26_ivarmedium, HLT_mu50");
+  std::map<std::string,int> triggerCounts;
+  int trigger = 0;
+  for(auto &trig : chainGroup->getListOfTriggers()) {
+    auto cg = m_trigDecisionTool->getChainGroup(trig);
+    */    
+
         bool match_found = false;
-    //for( const auto& mu : *goodMuons ) {
-       //for (const auto& trigger : chainGroup->getListOfTriggers()) {
-       const std::string& chain1 = "HLT_mu26_ivarmedium";
-        //if (m_trigmatchingtool->match({goodMuons->at(0)}, chain1 )) match_found = true;
-        //if (m_trigmatchingtool->match({goodMuons->at(1)}, chain1 )) match_found = true;
-       //}
-       //if (match_found) break;
-      //}
-     //if (!match_found) {
-     //  ATH_MSG_INFO( "No trigger match found.");
-     // return false;
-     //}
+    //const std::string& chaintest = m_trigDecisionTool->getChainGroup(trig);
+    const std::string chaintest = "HLT_mu50";
+    if(goodMuons->size() <=1)break;
+    int i(0);
+    for( const auto& mu : *goodMuons ) {
+		std::cout<<"i="<<i++<<std::endl;
+        if (m_trigmatchingtool->match({mu}, chaintest)) match_found = true;
+       if (match_found) break;
+      }
+
+      
+      
+    /*if (!match_found) {
+       ATH_MSG_INFO( "No trigger match found.");
+      return false;
+     }*/
+
     
     
-    if(ZmumuSelection(goodElectrons, goodMuons)) m_goodevents++;
+    if(ZmumuSelection(goodElectrons, goodMuons) && match_found) m_goodevents++;
     //---------------------------
     // Zmumu selection
     //---------------------------
     if (ZmumuSelection(goodElectrons, goodMuons)){
-		if( (m_trigmatchingtool->match({goodMuons->at(0)}, chain1 )) || (m_trigmatchingtool->match({goodMuons->at(1)}, chain1 ))){
+		
 		Info("execute()", "here it is __________________________________________________________________________________________________________________________________");
       FillZmumuHistograms(goodMuons);
       JetRecoil_Zmumu(goodMuons, goodPFlowJets);
-	}
+	
     }
   }
   
