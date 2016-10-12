@@ -85,32 +85,32 @@ xAOD::TStore* m_store;
 //----------------
 // CP Tools
 //----------------
-JetCleaningTool *m_jetCleaning; 
+JetCleaningTool *m_jetCleaning;
 
 JetCalibrationTool* m_akt4EMTopoCalibrationTool;
 JetCalibrationTool* m_akt4EMPFlowCalibrationTool;
 
-JERTool *m_JERTool; 
-JERSmearingTool *m_SmearTool; 
+JERTool *m_JERTool;
+JERSmearingTool *m_SmearTool;
 
 //Tool for Muon-Calibration (+systematics)
-CP::MuonCalibrationAndSmearingTool *m_muonCalibrationAndSmearingTool; 
-std::vector<CP::SystematicSet> m_sysList; 
+CP::MuonCalibrationAndSmearingTool *m_muonCalibrationAndSmearingTool;
+std::vector<CP::SystematicSet> m_sysList;
 
 //Tool for electron calibration
 CP::IEgammaCalibrationAndSmearingTool *m_electronCalibrationAndSmearingTool;
 //Isolation Tool
-CP::IsolationSelectionTool *m_iso; 
+CP::IsolationSelectionTool *m_iso;
 //AsgElectronLikelihoodTool, name refers to property chosen
 AsgElectronLikelihoodTool *m_MediumLH;
 AsgElectronLikelihoodTool *m_VeryLooseLHElectron;
 	
 //trigger tools
-Trig::TrigDecisionTool *m_trigDecisionTool; 
-TrigConf::xAODConfigTool *m_trigConfigTool; 
+Trig::TrigDecisionTool *m_trigDecisionTool;
+TrigConf::xAODConfigTool *m_trigConfigTool;
 
 //JVT
-CP::JetJvtEfficiency *m_jetsf; 
+CP::JetJvtEfficiency *m_jetsf;
 
 
 #endif

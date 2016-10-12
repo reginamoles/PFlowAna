@@ -28,6 +28,8 @@ void xAODPFlowAna :: resize_tpVectors(const xAOD::TruthParticleContainer* TruthP
   _mc_RpMatchedCluster2.resize(TruthParticles->size());
   _mc_etaExtra.resize(TruthParticles->size());
   _mc_phiExtra.resize(TruthParticles->size());
+  _mc_pos1.resize(TruthParticles->size());
+  _mc_imax.resize(TruthParticles->size());
 
   return;
 }
@@ -259,6 +261,7 @@ void xAODPFlowAna :: tp_Selection(const xAOD::TruthParticleContainer* TruthParti
       _mc_hasEflowTrackPt.at(tp_index) =  (*cpfo_itr)->pt();
       _mc_etaExtra.at(tp_index) = _pfo_etaExtra.at(cpfo_index);
       _mc_phiExtra.at(tp_index) = _pfo_phiExtra.at(cpfo_index);
+
       if(m_1to2matching) {
       _mc_matchedClusterHash.at(tp_index) = std::make_pair(_pfo_hashCluster1.at(cpfo_index), _pfo_hashCluster2.at(cpfo_index));
       _mc_subtractStatus.at(tp_index) = _pfo_SubtractStatus.at(cpfo_index);
@@ -282,7 +285,7 @@ void xAODPFlowAna :: tp_Selection(const xAOD::TruthParticleContainer* TruthParti
 //The sum of all calibration hits in topoclusters for the ith mc particle
 
 void xAODPFlowAna :: ComputeCalibHitsPerParticle(const xAOD::CalCellInfoContainer* CalCellInfo_TopoCluster,const xAOD::CalCellInfoContainer* CalCellInfo,
-						 const xAOD::TruthParticleContainer* TruthParticles){  
+						 const xAOD::TruthParticleContainer* TruthParticles){
   
   xAOD::CalCellInfoContainer::const_iterator CalCellInfoTopoCl_itr = CalCellInfo_TopoCluster->begin();
   xAOD::CalCellInfoContainer::const_iterator CalCellInfoTopoCl_end = CalCellInfo_TopoCluster->end();
@@ -421,17 +424,15 @@ void xAODPFlowAna::Calculate_Efficiency_Purity(const xAOD::TruthParticleContaine
   xAOD::TruthParticleContainer::const_iterator tp_itr = TruthParticles->begin();
   xAOD::TruthParticleContainer::const_iterator tp_end = TruthParticles->end();
 
-//  int n1(0), n2(0), n3(0), n4(0);
   for (; tp_itr != tp_end; ++tp_itr) {
     int i_mcPart = std::distance(TruthParticles->begin(), tp_itr);
-//    n1++;
+    _mc_pos1.at(i_mcPart) = -1;
+    _mc_imax.at(i_mcPart) = -1;
 
     //We rerequire at least 20% of the energy of the true particle
-    if (!(_mc_hasEflowTrack.at(i_mcPart) == 1 && (_CalHitEPerPar.at(i_mcPart) / ((*tp_itr)->pt() * cosh((*tp_itr)->eta()))) > 0.20)) continue;
-    std::vector<double> v_Efficiency, v_Purity, full_Efficiency, full_Purity;
-    std::vector<double> v_dRp;
+    if(trackQuality(i_mcPart, tp_itr)) continue;
+
     bool twoClusters(false);
-//    n2++;
     int pos1(-1), pos2(-1);
 
     if (m_1to2matching) {
@@ -439,130 +440,110 @@ void xAODPFlowAna::Calculate_Efficiency_Purity(const xAOD::TruthParticleContaine
       long int clusterHash1 = _mc_matchedClusterHash.at(i_mcPart).first;
       long int clusterHash2 = _mc_matchedClusterHash.at(i_mcPart).second;
 
-//      if (clusterHash2 == -1) {
-//        twoClusters = false;
-//        v_Efficiency.resize(1); // cluster1, cluster2, cluster1+2
-//        v_Purity.resize(1); // cluster1, cluster2, cluster1+2
-//        xAOD::CaloClusterContainer::const_iterator CaloCluster_itr = topocluster->begin();
-//        xAOD::CaloClusterContainer::const_iterator CaloCluster_end = topocluster->end();
-//        for (; CaloCluster_itr != CaloCluster_end; ++CaloCluster_itr) {
-//          int i_clus = std::distance(topocluster->begin(), CaloCluster_itr);
-//          long int hash = (*CaloCluster_itr)->rawE() * 1000 * (*CaloCluster_itr)->rawEta() * 10 * (*CaloCluster_itr)->rawPhi() * 10;
-//          if (clusterHash1 != hash) continue;
-//
-//          if (_CalHitEPerPar.at(i_mcPart) != 0) {
-//            float Eff1 = _CalHitEPerClusFromOnePart.at(i_clus * TruthParticles->size() + i_mcPart) / _CalHitEPerPar.at(i_mcPart);
-//            v_Efficiency.at(0) = Eff1;
-//          }
-////          Info("TwoCluster", " v_Efficicency.at(%i)  = %.3f ", i_clus, v_Efficiency.at(0));
-//
-//          if (_CalHitEPerClusFromAllPart.at(i_clus) != 0) {
-//            float Pur1 = _CalHitEPerClusFromOnePart.at(i_clus * TruthParticles->size() + i_mcPart) / _CalHitEPerClusFromAllPart.at(i_clus);
-//
-//            v_Purity.at(0) = Pur1;
-//          }
-////          Info("TwoCluster", " v_PURITY.at(%i)  = %.3f ", i_clus, v_Purity.at(0));
-//        }
-//
-//      } else {
-        twoClusters = ((clusterHash2 == -1) ? false : true);
-        v_Efficiency.resize(3); // cluster1, cluster2, cluster1+2
-        v_Purity.resize(3); // cluster1, cluster2, cluster1+2
-        v_dRp.resize(3); // cluster1, cluster2, leading
-        xAOD::CaloClusterContainer::const_iterator CaloCluster_itr = topocluster->begin();
-        xAOD::CaloClusterContainer::const_iterator CaloCluster_end = topocluster->end();
-        for (; CaloCluster_itr != CaloCluster_end; ++CaloCluster_itr) {
-          int i_clus = std::distance(topocluster->begin(), CaloCluster_itr);
+      twoClusters = ((clusterHash2 == -1) ? false : true);
+      _v_Efficiency.resize(3); // cluster1, cluster2, cluster1+2
+      _v_Purity.resize(3); // cluster1, cluster2, cluster1+2
+      _v_dRp.resize(3); // cluster1, cluster2, leading
+      xAOD::CaloClusterContainer::const_iterator CaloCluster_itr = topocluster->begin();
+      xAOD::CaloClusterContainer::const_iterator CaloCluster_end = topocluster->end();
+      for (; CaloCluster_itr != CaloCluster_end; ++CaloCluster_itr) {
+        int i_clus = std::distance(topocluster->begin(), CaloCluster_itr);
 
-          long int hash = (*CaloCluster_itr)->rawE() * 1000 * (*CaloCluster_itr)->rawEta() * 10 * (*CaloCluster_itr)->rawPhi() * 10;
-//          std::cout<<"i_clus="<<i_clus<<" zhangrui Print "<<(*CaloCluster_itr)->rawE()<<","<<(*CaloCluster_itr)->rawEta()<<","<<(*CaloCluster_itr)->rawPhi()<<" hash="<<hash<<std::endl;
-          if (clusterHash1 == hash) {
-            pos1 = i_clus;
-//            std::cout<<"i_clus="<<i_clus<<" clusterHash1="<<clusterHash1<<" CaloCluster_itr "<<(*CaloCluster_itr)->rawPhi()<<","<<(*CaloCluster_itr)->rawEta()<<","<<(*CaloCluster_itr)->rawE()<<std::endl;
-          }
-          if (clusterHash2 != -1 && clusterHash2 == hash) {
-//            std::cout<<"i_clus="<<i_clus<<" clusterHash2="<<clusterHash2<<" CaloCluster_itr "<<(*CaloCluster_itr)->rawPhi()<<","<<(*CaloCluster_itr)->rawEta()<<","<<(*CaloCluster_itr)->rawE()<<std::endl;
-            pos2 = i_clus;
-          }
+        long int hash = (*CaloCluster_itr)->rawE() * 1000 * (*CaloCluster_itr)->rawEta() * 10 * (*CaloCluster_itr)->rawPhi() * 10;
+        if (clusterHash1 == hash) {
+          pos1 = i_clus;
         }
-        if (_CalHitEPerPar.at(i_mcPart) != 0) {
-          float Eff1 = (pos1 == -1 ? -1 : _CalHitEPerClusFromOnePart.at(pos1 * TruthParticles->size() + i_mcPart) / _CalHitEPerPar.at(i_mcPart));
-          float Eff2 = (pos2 == -1 ? (pos1 == -1 ? -1 : 0) : _CalHitEPerClusFromOnePart.at(pos2 * TruthParticles->size() + i_mcPart) / _CalHitEPerPar.at(i_mcPart));
-          float Effboth = (pos2 == -1 ? Eff1 : (_CalHitEPerClusFromOnePart.at(pos1 * TruthParticles->size() + i_mcPart) + _CalHitEPerClusFromOnePart.at(pos2 * TruthParticles->size() + i_mcPart))
-              / _CalHitEPerPar.at(i_mcPart));
-          v_Efficiency.at(0) = Eff1;
-          v_Efficiency.at(1) = Eff2;
-          v_Efficiency.at(2) = Effboth;
+        if (clusterHash2 != -1 && clusterHash2 == hash) {
+          pos2 = i_clus;
         }
+      }
+
+      CaloCluster_itr = topocluster->begin() + pos1;
+      _v_dRp.at(0) = (pos1 == -1 ? -1 : distanceRprime(_mc_etaExtra[i_mcPart], _mc_phiExtra[i_mcPart], CaloCluster_itr, CalCellInfo_TopoCluster));
+      CaloCluster_itr = topocluster->begin() + pos2;
+      _v_dRp.at(1) = (pos2 == -1 ? -1 : distanceRprime(_mc_etaExtra[i_mcPart], _mc_phiExtra[i_mcPart], CaloCluster_itr, CalCellInfo_TopoCluster));
+
+      if (_CalHitEPerPar.at(i_mcPart) != 0) {
+        float Eff1 = (pos1 == -1 ? -1 : _CalHitEPerClusFromOnePart.at(pos1 * TruthParticles->size() + i_mcPart) / _CalHitEPerPar.at(i_mcPart));
+        float Eff2 = (pos2 == -1 ? (pos1 == -1 ? -1 : 0) : _CalHitEPerClusFromOnePart.at(pos2 * TruthParticles->size() + i_mcPart) / _CalHitEPerPar.at(i_mcPart));
+        float Effboth =
+            (pos2 == -1 ?
+                Eff1 :
+                (_CalHitEPerClusFromOnePart.at(pos1 * TruthParticles->size() + i_mcPart) + _CalHitEPerClusFromOnePart.at(pos2 * TruthParticles->size() + i_mcPart)) / _CalHitEPerPar.at(
+                    i_mcPart));
+        _v_Efficiency.at(0) = (_v_dRp.at(0) < 0 ? -1 : Eff1);
+        _v_Efficiency.at(1) = (_v_dRp.at(1) < 0 ? -1 : Eff2);
+        _v_Efficiency.at(2) = (_v_dRp.at(0) > 0 || _v_dRp.at(1) > 0 ? Effboth : -1);
+      }
 //        Info("TwoCluster", " v_Efficicency both = %d, %d, %.3f, %.3f, %.3f ", pos1, pos2, v_Efficiency.at(0), v_Efficiency.at(1), v_Efficiency.at(2));
 
-        CaloCluster_itr = topocluster->begin() + pos1;
-//        std::cout<<"tp_itr energy = "<<(*tp_itr)->e()<<std::endl;
-//        std::cout<<"zhangrui extrapolate eta="<<_mc_etaExtra[i_mcPart]<<" phi="<<_mc_phiExtra[i_mcPart]<<" truth eta="<<(*tp_itr)->eta()<<" phi="<< (*tp_itr)->phi()<<std::endl;
-        v_dRp.at(0) = (pos1 == -1 ? -1 : distanceRprime(_mc_etaExtra[i_mcPart], _mc_phiExtra[i_mcPart], CaloCluster_itr, CalCellInfo_TopoCluster));
-        std::cout<<"zhangrui "<<_mc_RpMatchedCluster1[i_mcPart]<<" eflow == v_dRp.at(0) "<<v_dRp.at(0)<<std::endl;
-        CaloCluster_itr = topocluster->begin() + pos2;
-        v_dRp.at(1) = (pos2 == -1 ? -1 : distanceRprime(_mc_etaExtra[i_mcPart], _mc_phiExtra[i_mcPart], CaloCluster_itr, CalCellInfo_TopoCluster));
+      if (pos1 != -1 && _CalHitEPerClusFromAllPart.at(pos1) != 0) {
+        float Pur1 = (pos1 == -1 ? -1 : _CalHitEPerClusFromOnePart.at(pos1 * TruthParticles->size() + i_mcPart) / _CalHitEPerClusFromAllPart.at(pos1));
+        float Pur2 = (pos2 == -1 ? (pos1 == -1 ? -1 : 0) : _CalHitEPerClusFromOnePart.at(pos2 * TruthParticles->size() + i_mcPart) / _CalHitEPerClusFromAllPart.at(pos2));
+        float Purboth =
+            (pos2 == -1 ?
+                Pur1 :
+                (_CalHitEPerClusFromOnePart.at(pos1 * TruthParticles->size() + i_mcPart) + _CalHitEPerClusFromOnePart.at(pos2 * TruthParticles->size() + i_mcPart)) / (_CalHitEPerClusFromAllPart.at(
+                    pos1)
+                                                                                                                                                                       + _CalHitEPerClusFromAllPart.at(
+                                                                                                                                                                           pos2)));
 
-//        Info("TwoCluster", " v_dRp both = %d, %d, %.3f, %.3f ", pos1, pos2, v_dRp.at(0), v_dRp.at(1));
-
-//        if(pos1!=-1) std::cout<<"pos1="<<pos1<<" eta="<<_CalClusEta.at(pos1)<<" phi="<<_CalClusPhi.at(pos1)<<std::endl;
-//        if(pos2!=-1) std::cout<<"pos2="<<pos2<<" eta="<<_CalClusEta.at(pos2)<<" phi="<<_CalClusPhi.at(pos2)<<std::endl;
-//        if(pos1!=-1) std::cout<<"track pos1 dist "<<(*tp_itr)->eta()<<","<<(*tp_itr)->phi()<<" R2="<<((*tp_itr)->eta()-_CalClusEta.at(pos1))*((*tp_itr)->eta()-_CalClusEta.at(pos1)) + ((*tp_itr)->phi()-_CalClusPhi.at(pos1))*((*tp_itr)->phi()-_CalClusPhi.at(pos1))<<std::endl;
-//        if(pos2!=-1) std::cout<<"track pos2 dist "<<(*tp_itr)->eta()<<","<<(*tp_itr)->phi()<<" R2="<<((*tp_itr)->eta()-_CalClusEta.at(pos2))*((*tp_itr)->eta()-_CalClusEta.at(pos2)) + ((*tp_itr)->phi()-_CalClusPhi.at(pos2))*((*tp_itr)->phi()-_CalClusPhi.at(pos2))<<std::endl;
-
-        if (pos1 != -1 && _CalHitEPerClusFromAllPart.at(pos1) != 0) {
-          float Pur1 = (pos1 == -1 ? -1 : _CalHitEPerClusFromOnePart.at(pos1 * TruthParticles->size() + i_mcPart) / _CalHitEPerClusFromAllPart.at(pos1));
-          float Pur2 = (pos2 == -1 ? (pos1 == -1 ? -1 : 0) : _CalHitEPerClusFromOnePart.at(pos2 * TruthParticles->size() + i_mcPart) / _CalHitEPerClusFromAllPart.at(pos2));
-          float Purboth = (pos2 == -1 ? Pur1 : (_CalHitEPerClusFromOnePart.at(pos1 * TruthParticles->size() + i_mcPart) + _CalHitEPerClusFromOnePart.at(pos2 * TruthParticles->size() + i_mcPart))
-              / (_CalHitEPerClusFromAllPart.at(pos1) + _CalHitEPerClusFromAllPart.at(pos2)) );
-
-          v_Purity.at(0) = Pur1;
-          v_Purity.at(1) = Pur2;
-          v_Purity.at(2) = Purboth;
-        }
-//        Info("TwoCluster", " v_PURITY both = %.3f, %.3f, %.3f ", v_Purity.at(0), v_Purity.at(1), v_Purity.at(2));
-//      }
-//        n3++;
+        _v_Purity.at(0) = Pur1;
+        _v_Purity.at(1) = Pur2;
+        _v_Purity.at(2) = Purboth;
+      }
     }
-      full_Efficiency.resize(_n_clusters);
-      full_Purity.resize(_n_clusters);
-      fillEffPurVectorDefault(topocluster, i_mcPart, TruthParticles, full_Efficiency, full_Purity, (*tp_itr)->eta(), (*tp_itr)->phi());
+    _full_Efficiency.resize(_n_clusters);
+    _full_Purity.resize(_n_clusters);
+    fillEffPurVectorDefault(topocluster, i_mcPart, TruthParticles, _full_Efficiency, _full_Purity, (*tp_itr)->eta(), (*tp_itr)->phi());
 
-    int imax = fillEffPurHistoDefault(i_mcPart, tp_itr, full_Efficiency, full_Purity);
+    int imax = fillEffPurHistoDefault(i_mcPart, tp_itr, _full_Efficiency, _full_Purity);
     if (m_1to2matching) {
       xAOD::CaloClusterContainer::const_iterator CaloCluster_itr = topocluster->begin() + imax;
-      v_dRp.at(2) = distanceRprime(_mc_etaExtra[i_mcPart], _mc_phiExtra[i_mcPart], CaloCluster_itr, CalCellInfo_TopoCluster);
-      filldRpHisto(i_mcPart, tp_itr, v_dRp);
+      _v_dRp.at(2) = distanceRprime(_mc_etaExtra[i_mcPart], _mc_phiExtra[i_mcPart], CaloCluster_itr, CalCellInfo_TopoCluster);
+      filldRpHisto(i_mcPart, tp_itr, _v_dRp);
     }
 
-
     if (m_1to2matching) {
-      const double max_eff = *max_element(full_Efficiency.begin(), full_Efficiency.end());
-      fillEffPurHistoMatch(i_mcPart, tp_itr, v_Efficiency, v_Purity, twoClusters, (pos1==imax), max_eff);
-      Info("CheckMatch", "1.(pt: imax == pos1, effmax, effpos1): %.2f: %d, %d, %.3f, %.3f ", _mc_hasEflowTrackPt.at(i_mcPart)/GEV, imax, pos1, full_Efficiency.at(imax), v_Efficiency.at(0));
-      xAOD::CaloClusterContainer::const_iterator pos1cluster = topocluster->begin() + pos1, maxcluster = topocluster->begin() + imax;
+      const double max_eff = *max_element(_full_Efficiency.begin(), _full_Efficiency.end());
+      fillEffPurHistoMatch(i_mcPart, tp_itr, _v_Efficiency, _v_Purity, twoClusters, (pos1 == imax), max_eff);
+      Info("CheckMatch", "1.(pt: imax == pos1, effmax, effpos1): %.2f: %d == %d, %.3f, %.3f , pflow index = %d", _mc_hasEflowTrackPt.at(i_mcPart) / GEV, imax, pos1, _full_Efficiency.at(imax),
+           _v_Efficiency.at(0), _mc_hasEflowTrackIndex.at(i_mcPart));
 
-      double pos1rawetatmp, pos1rawphitmp;
-      if (pos1 == -1) {
+      _mc_pos1.at(i_mcPart) = pos1;
+      _mc_imax.at(i_mcPart) = imax;
+
+      double pos1rawetatmp, pos1rawphitmp, pos1rawEtmp;
+      if (pos1 != -1) {
+        xAOD::CaloClusterContainer::const_iterator pos1cluster = topocluster->begin() + pos1;
         pos1rawetatmp = (*pos1cluster)->rawEta();
         pos1rawphitmp = (*pos1cluster)->rawPhi();
+        pos1rawEtmp = (*pos1cluster)->rawE() / GEV;
       } else {
         pos1rawetatmp = -99;
         pos1rawphitmp = -99;
+        pos1rawEtmp = -99;
       }
-        Info("CheckMatch", "2.trackEtaPhiE: (%.3f, %.3f, %.1f); leadingEtaPhiE,dRp: (%.3f, %.3f, %.1f): %.3f; pos1EtaPhiE,dRp_cal_eflow: (%.3f, %.3f, %.1f): %.3f, %.3f;", _mc_etaExtra[i_mcPart], _mc_phiExtra[i_mcPart], _mc_hasEflowTrackP[i_mcPart]/GEV,
-             (*maxcluster)->rawEta(), (*maxcluster)->rawPhi(), (*maxcluster)->rawE()/GEV, v_dRp.at(2), (*pos1cluster)->rawEta(), (*pos1cluster)->rawPhi(), (*pos1cluster)->rawE()/GEV, v_dRp.at(0), _mc_RpMatchedCluster1[i_mcPart]);
+
+      xAOD::CaloClusterContainer::const_iterator maxcluster = topocluster->begin() + imax;
+      Info("CheckMatch", "2.trackEtaPhiE: (%.3f, %.3f, %.1f); leadingEtaPhiE,dRp: (%.3f, %.3f, %.1f): %.3f; pos1EtaPhiE,dRp_cal_eflow: (%.3f, %.3f, %.1f): %.3f, %.3f;",
+           _mc_etaExtra[i_mcPart], _mc_phiExtra[i_mcPart], _mc_hasEflowTrackP[i_mcPart] / GEV, (*maxcluster)->rawEta(), (*maxcluster)->rawPhi(), (*maxcluster)->rawE() / GEV,
+           _v_dRp.at(2), pos1rawetatmp, pos1rawphitmp, pos1rawEtmp, _v_dRp.at(0), _mc_RpMatchedCluster1[i_mcPart]);
 //      std::cout<<"((*tp_itr)->pt() * cosh((*tp_itr)->eta())"<<(*tp_itr)->pt() * cosh((*tp_itr)->eta())<<" "<<_mc_hasEflowTrackPt[i_mcPart]*cosh(_mc_hasEflowTrackEtaAtLayer[i_mcPart])<<"  _mc_hasEflowTrackP[i_mcPart]="<< _mc_hasEflowTrackP[i_mcPart]<<"  (*maxcluster)E="<< (*maxcluster)->rawE()<<" (_CalHitEPerPar.at(i_mcPart) / ((*tp_itr)->pt() * cosh((*tp_itr)->eta())))="<<(_CalHitEPerPar.at(i_mcPart) / ((*tp_itr)->pt() * cosh((*tp_itr)->eta())))<<std::endl;
 
     }
 
     // Fill NClusters reach 90% efficiency: need full_Efficiency
-    int NClusters_09 = getNClustersFor90Eff(i_mcPart, full_Efficiency);
+    int NClusters_09 = getNClustersFor90Eff(i_mcPart, _full_Efficiency);
     fillNClustersFor90Eff(i_mcPart, tp_itr, NClusters_09);
-//    n4++;
   }
-//  std::cout<<"n1234="<<n1<<","<<n2<<","<<n3<<","<<n4<<std::endl;
+
+
+  for (int i_mcPart = 0; i_mcPart < _mc_pos1.size(); ++i_mcPart) {
+    std::cout<<"aaaaa i_mcPart="<<i_mcPart<<" _mc_hasEflowTrackIndex.at(i_mcPart)="<<_mc_hasEflowTrackIndex.at(i_mcPart)<<std::endl;
+  }
+
+
   return;
 }
 
@@ -840,6 +821,10 @@ void xAODPFlowAna :: clear_PerformanceVectors(){
   _mc_subtractStatus.clear();
   _mc_RpMatchedCluster1.clear();
   _mc_RpMatchedCluster2.clear();
+  _mc_etaExtra.clear();
+  _mc_phiExtra.clear();
+  _mc_pos1.clear();
+  _mc_imax.clear();
 
   //PFOVectors
   _pfo_Pt.clear();
@@ -910,20 +895,23 @@ void xAODPFlowAna :: clear_PerformanceVectors(){
 }
 
 double xAODPFlowAna::distanceRprime(double tr_eta, double tr_phi, xAOD::CaloClusterContainer::const_iterator& icluster, const xAOD::CalCellInfoContainer* CalCellInfo_TopoCluster) {
+  if(tr_eta<-100) return -2;
+
   double etaVar, phiVar;
-  getClusterVariance(icluster, etaVar, phiVar, CalCellInfo_TopoCluster);
-  double dEta = tr_eta - (*icluster)->rawEta();
-  double dPhi = fabs(tr_phi - (*icluster)->rawPhi());
+  double etaMean, phiMean;
+  getClusterVariance(icluster, etaMean, phiMean, etaVar, phiVar, CalCellInfo_TopoCluster);
+  double dEta = tr_eta - etaMean;
+  double dPhi = fabs(tr_phi - phiMean);
   dPhi = dPhi <= M_PI ? dPhi : 2*M_PI - dPhi;
 
   double dRp = dEta * dEta / etaVar + dPhi * dPhi / phiVar;
-  Info("TwoCluster", " calculate Rp both = (%.5f-%.5f) / %.5f, ((%.5f-%.5f)=%.5f) / %.5f = %.5f", tr_eta, (*icluster)->rawEta(), etaVar, tr_phi, (*icluster)->rawPhi(), dPhi, phiVar, dRp);
+//  Info("TwoCluster", " calculate Rp both = (%.5f-%.5f) / %.5f, ((%.5f-%.5f)=%.5f) / %.5f = %.5f", tr_eta, (*icluster)->rawEta(), etaVar, tr_phi, (*icluster)->rawPhi(), dPhi, phiVar, dRp);
 //  std::cout<<"zhangrui "<<getNCells(icluster, CalCellInfo_TopoCluster)<<" cells; eta "<<(*icluster)->rawEta()<<"-"<<(*icluster)->eta()<<" phi "<< (*icluster)->rawPhi()<<"-"<< (*icluster)->phi()<<" track tr_eta="<<tr_eta<<" tr_phi="<<tr_phi<<std::endl;
 
   return dRp;
 }
 
-void xAODPFlowAna::getClusterVariance(xAOD::CaloClusterContainer::const_iterator icluster, double& etaVar, double& phiVar, const xAOD::CalCellInfoContainer* CalCellInfo_TopoCluster) {
+void xAODPFlowAna::getClusterVariance(xAOD::CaloClusterContainer::const_iterator icluster, double& etaMean, double& phiMean, double& etaVar, double& phiVar, const xAOD::CalCellInfoContainer* CalCellInfo_TopoCluster) {
   double m_etaPhiLowerLimit(0.0025);
 
   /* Sum eta, eta^2, phi and phi^2 of all cells */
@@ -957,14 +945,16 @@ void xAODPFlowAna::getClusterVariance(xAOD::CaloClusterContainer::const_iterator
   }
 
   /* Calculate mean eta and phi */
-  double etaMean = sumeta / ((double) nCells);
-  double phiMean = sumphi / ((double) nCells);
+  etaMean = sumeta / ((double) nCells);
+  phiMean = sumphi / ((double) nCells);
 
   /* Calculate variance of eta and phi (but don't let them go below the lower limit) */
   double varianceCorrection = (double) nCells / (double) (nCells - 1);
   etaVar = std::max(m_etaPhiLowerLimit, (sumeta2 / (double) nCells - etaMean * etaMean) * varianceCorrection);
   phiVar = std::max(m_etaPhiLowerLimit, (sumphi2 / (double) nCells - phiMean * phiMean) * varianceCorrection);
-//  std::cout<<"zhangrui etaVar="<<etaVar<<" =>"<<sumeta2<<"/("<<nCells<<"-"<<etaMean<<"*"<<etaMean<<")  *  "<<varianceCorrection<<std::endl;
+//  etaVar = m_etaPhiLowerLimit;
+//  phiVar = m_etaPhiLowerLimit;
+  //  std::cout<<"zhangrui etaVar="<<etaVar<<" =>"<<sumeta2<<"/("<<nCells<<"-"<<etaMean<<"*"<<etaMean<<")  *  "<<varianceCorrection<<std::endl;
 //  std::cout<<"zhangrui phiVar="<<phiVar<<" =>"<<sumphi2<<"/("<<nCells<<"-"<<phiMean<<"*"<<phiMean<<")  *  "<<varianceCorrection<<std::endl;
 
   return;

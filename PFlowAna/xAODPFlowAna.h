@@ -263,6 +263,9 @@ class xAODPFlowAna : public EL::Algorithm
    std::vector<double> _mc_RpMatchedCluster2;    //!
    std::vector<double> _mc_etaExtra;    //!
    std::vector<double> _mc_phiExtra;    //!
+   // position of matched and leading clusters
+   std::vector<double> _mc_pos1;    //!
+   std::vector<double> _mc_imax;    //!
 
 
    std::vector<double> _CalHitEPerClusFromOnePart; //!   //calibration energy per cluster from a certain particle
@@ -301,7 +304,14 @@ class xAODPFlowAna : public EL::Algorithm
    //The index of the truth jet the mc particle belongs to
    std::vector<int> _mc_LinkedToTruthJets;//!  
 
-  
+   std::vector<double> _v_Efficiency;//!
+   std::vector<double> _v_Purity;//!
+   std::vector<double> _full_Efficiency;//!
+   std::vector<double> _full_Purity;//!
+   std::vector<double> _v_dRp;//!
+
+   void eventDisplay(const xAOD::CaloClusterContainer* topocluster, int EventNumber, int pflowNo);
+
    // DeltaR calculation
    void CalculateMatrix_MinDeltaR (const xAOD::TruthParticleContainer*, const xAOD::PFOContainer*, float);
    bool AreBothTracksMatched (int, int);
@@ -324,12 +334,19 @@ class xAODPFlowAna : public EL::Algorithm
   void filldRpHistoLeading(xAOD::TruthParticleContainer::const_iterator tp_itr, const xAOD::CaloClusterContainer* topocluster, const std::vector<double>& full_Efficiency);
 
   double distanceRprime(double tr_eta, double tr_phi, xAOD::CaloClusterContainer::const_iterator& cluster, const xAOD::CalCellInfoContainer* CalCellInfo_TopoCluster);
-  void getClusterVariance(xAOD::CaloClusterContainer::const_iterator icluster, double& etaVar, double& phiVar, const xAOD::CalCellInfoContainer* CalCellInfo_TopoCluster);
+  void getClusterVariance(xAOD::CaloClusterContainer::const_iterator icluster, double& etaMean, double& phiMean, double& etaVar, double& phiVar, const xAOD::CalCellInfoContainer* CalCellInfo_TopoCluster);
   unsigned int getNCells(xAOD::CaloClusterContainer::const_iterator icluster, const xAOD::CalCellInfoContainer* _CalCellInfoTopoCluster) const;
   const std::vector<float> getCellEta(xAOD::CaloClusterContainer::const_iterator icluster, const xAOD::CalCellInfoContainer* _CalCellInfoTopoCluster, const unsigned int nCells) const;
   const std::vector<float>  getCellPhi(xAOD::CaloClusterContainer::const_iterator icluster, const xAOD::CalCellInfoContainer* _CalCellInfoTopoCluster, const unsigned int nCells) const;
   void filldRpHisto(int i_mcPart, xAOD::TruthParticleContainer::const_iterator tp_itr, std::vector<double>& v_dRp);
 
+  bool trackQuality(int i_mcPart, xAOD::TruthParticleContainer::const_iterator tp_itr) {
+    //We rerequire at least 20% of the energy of the true particle
+    if (!(_mc_hasEflowTrack.at(i_mcPart) == 1 && (_CalHitEPerPar.at(i_mcPart) / ((*tp_itr)->pt() * cosh((*tp_itr)->eta()))) > 0.20))
+      return true;
+    else
+      return false;
+  }
 
 
 

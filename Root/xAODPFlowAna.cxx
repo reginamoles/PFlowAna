@@ -157,7 +157,7 @@ EL::StatusCode xAODPFlowAna :: histInitialize ()
   //====================================
   // Track cluster matching histograms
   //====================================
-  int n_bins = 100; float x_low = 0.; float x_up = 2.;
+  int n_bins = 100; float x_low = 0.; float x_up = 3.;
   if (m_1to2matching) {
     bookH1DPerformanceHistogram("eflowdR1", "", _ptRange, _etaRange, n_bins, x_low, x_up);
     bookH1DPerformanceHistogram("eflowdR1_CLS", "", _ptRange, _etaRange, n_bins, x_low, x_up);
@@ -811,6 +811,9 @@ EL::StatusCode xAODPFlowAna :: execute ()
     if(m_DijetSubtraction)SubtractionPerf(m_JetETMissChargedParticleFlowObjects,m_topocluster, m_TruthParticles);
     //fill histograms
     fill_RPlus_R0(m_TruthParticles);
+    if (m_eventCounter-1 == 0) {
+    eventDisplay(m_topocluster, m_eventCounter-1,36);
+    }
   }
   
 

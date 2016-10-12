@@ -111,9 +111,9 @@ void PFlowMonitor::Plot(const char* folder) {
   xTitle.push_back("#varepsilon_{both clusters}");
   xTitle.push_back("P_{1st cluster}");
   xTitle.push_back("P_{2nd cluster}");
-  xTitle.push_back("#Delta R'_{leading cluster}");
-  xTitle.push_back("#Delta R'_{1st cluster}");
-  xTitle.push_back("#Delta R'_{2nd cluster}");
+  xTitle.push_back("#Delta R'_{leading cluster}^2");
+  xTitle.push_back("#Delta R'_{1st cluster}^2");
+  xTitle.push_back("#Delta R'_{2nd cluster}^2");
   xTitle.push_back("Stage");
   xTitle.push_back("N_{cluster}(#Sigma E^{true}>90%)");
   xTitle.push_back("#varepsilon_{leading cluster}");
@@ -310,6 +310,7 @@ void PFlowMonitor::Efficiency(const char* folder) {
       }
       h_cats[0]->Draw("axissame");
       Can_Efficiency->SaveAs(Form("%s%s_%d_%d.eps", outfolder.c_str(), catagory[0].c_str(), ieta, ipt));
+      delete Efficiency;
     }
   }
   return;
@@ -341,7 +342,7 @@ void PFlowMonitor::eflowdRp(const char* folder, const int mode) {
       display.push_back("wrong matching");
   }
 
-  std::string xTitle = "eflowRec dR'(1st cluster)";
+  std::string xTitle = "eflowRec dR'(1st cluster)^2";
 
   for (unsigned int ieta = 0; ieta < (m_debug ? 1 : m_etaRange.size()); ++ieta) {
 
@@ -364,9 +365,10 @@ void PFlowMonitor::eflowdRp(const char* folder, const int mode) {
           if (m_debug) std::cout << HistFile[ifile]->GetName() << std::endl;
           if (ifile == 0) {
             h_cats[icat] = (TH1F*) HistFile[ifile]->Get(names.first.c_str());
+            std::cout<<__LINE__<<" Get: "<<names.first<<" "<<h_cats[icat]->Integral()<<std::endl;
           } else {
             h_cats[icat]->Add((TH1F*) HistFile[ifile]->Get(names.first.c_str()));
-            std::cout<<__LINE__<<" Add: "<<names.first<<std::endl;
+            std::cout<<__LINE__<<" Add: "<<names.first<<" "<<h_cats[icat]->Integral()<<std::endl;
           }
         }
 
@@ -410,6 +412,7 @@ void PFlowMonitor::eflowdRp(const char* folder, const int mode) {
       }
       h_cats[0]->Draw("axissame");
       Can_Efficiency->SaveAs(Form("%s%s%d_%d_%d.eps", outfolder.c_str(), catagory[0].c_str(), mode, ieta, ipt));
+      delete Can_Efficiency;
     }
   }
   return;
