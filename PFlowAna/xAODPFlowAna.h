@@ -266,7 +266,8 @@ class xAODPFlowAna : public EL::Algorithm
    // position of matched and leading clusters
    std::vector<double> _mc_pos1;    //!
    std::vector<double> _mc_imax;    //!
-
+   // size = 12 * nTruthParticle: for each truth particle pos1(eta,phi,vareta,varphi) pos2(eta,phi,vareta,varphi) max(eta,phi,vareta,varphi)
+   std::vector<double> _mc_dRp_componets;//!
 
    std::vector<double> _CalHitEPerClusFromOnePart; //!   //calibration energy per cluster from a certain particle
    std::vector<double> _CalHitEPerClusFromAllPart; //!   //calibration energy per cluster from all particles
@@ -307,10 +308,12 @@ class xAODPFlowAna : public EL::Algorithm
    std::vector<double> _v_Efficiency;//!
    std::vector<double> _v_Purity;//!
    std::vector<double> _full_Efficiency;//!
+   std::vector<double> _full_Efficiency_max;//!
    std::vector<double> _full_Purity;//!
    std::vector<double> _v_dRp;//!
 
-   void eventDisplay(const xAOD::CaloClusterContainer* topocluster, int EventNumber, int pflowNo);
+
+   void eventDisplay(const xAOD::CaloClusterContainer* topocluster, int EventNumber);
 
    // DeltaR calculation
    void CalculateMatrix_MinDeltaR (const xAOD::TruthParticleContainer*, const xAOD::PFOContainer*, float);
@@ -333,7 +336,7 @@ class xAODPFlowAna : public EL::Algorithm
   int fillEffPurHistoDefault(int i_mcPart, xAOD::TruthParticleContainer::const_iterator tp_itr, const std::vector<double>& v_Efficiency, const std::vector<double>& v_Purity);
   void filldRpHistoLeading(xAOD::TruthParticleContainer::const_iterator tp_itr, const xAOD::CaloClusterContainer* topocluster, const std::vector<double>& full_Efficiency);
 
-  double distanceRprime(double tr_eta, double tr_phi, xAOD::CaloClusterContainer::const_iterator& cluster, const xAOD::CalCellInfoContainer* CalCellInfo_TopoCluster);
+  double distanceRprime(const double tr_eta, const double tr_phi, xAOD::CaloClusterContainer::const_iterator& icluster, const xAOD::CalCellInfoContainer* CalCellInfo_TopoCluster, double& etaVar, double& phiVar, double& etaMean, double& phiMean);
   void getClusterVariance(xAOD::CaloClusterContainer::const_iterator icluster, double& etaMean, double& phiMean, double& etaVar, double& phiVar, const xAOD::CalCellInfoContainer* CalCellInfo_TopoCluster);
   unsigned int getNCells(xAOD::CaloClusterContainer::const_iterator icluster, const xAOD::CalCellInfoContainer* _CalCellInfoTopoCluster) const;
   const std::vector<float> getCellEta(xAOD::CaloClusterContainer::const_iterator icluster, const xAOD::CalCellInfoContainer* _CalCellInfoTopoCluster, const unsigned int nCells) const;
@@ -348,7 +351,7 @@ class xAODPFlowAna : public EL::Algorithm
       return false;
   }
 
-
+  void pflowDisplay(int EventNumber, int pflowNo, double etalow, double etahi, double philow, double phihi, const xAOD::CaloClusterContainer* topocluster);
 
 public:
 

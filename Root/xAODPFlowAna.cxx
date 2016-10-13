@@ -811,8 +811,8 @@ EL::StatusCode xAODPFlowAna :: execute ()
     if(m_DijetSubtraction)SubtractionPerf(m_JetETMissChargedParticleFlowObjects,m_topocluster, m_TruthParticles);
     //fill histograms
     fill_RPlus_R0(m_TruthParticles);
-    if (m_eventCounter-1 == 0) {
-    eventDisplay(m_topocluster, m_eventCounter-1,36);
+    if (m_eventCounter - 1 == 0) {
+      eventDisplay(m_topocluster, m_eventCounter - 1);
     }
   }
   
