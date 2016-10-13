@@ -178,8 +178,8 @@ EL::StatusCode xAODPFlowAna :: histInitialize ()
     // Zmumu code
     //==============================================
     //Binning and edges to be checked with the PFlow paper
-    int pt_bin = 20; float pt_low = 0; float pt_up = 400;
-    int E_bin = 70; float E_low = -100; float E_up = 600;
+    int pt_bin = 20; float pt_low = 0; float pt_up = 200; //changed upper limit from 400 to 200
+    int E_bin = 60; float E_low = 0; float E_up = 600;
     int eta_bin = 50; float eta_low = -5; float eta_up = 5;
     int phi_bin = 40; float phi_low = -4; float phi_up = 4;
     
@@ -227,6 +227,27 @@ EL::StatusCode xAODPFlowAna :: histInitialize ()
     //Christian's histogram's
     bookH1DHistogram("h_trackcount", 30, 0, 30);
     bookH1DHistogram("h_chfrac", 10, 0, 1);
+    
+    //framework performance histograms
+    
+    bookH1DHistogram("h_jetScaledPt", pt_bin, pt_low, pt_up);
+    bookH1DHistogram("h_jetScaledE", 30, E_low, E_up);
+    bookH1DHistogram("h_jetScaledM", 20, 0, 100);
+    bookH1DHistogram("h_jetScaledEta", eta_bin, eta_low, eta_up);
+    bookH1DHistogram("h_jetScaledPhi", phi_bin, phi_low, phi_up);
+    
+    bookH1DHistogram("h_jetRawPt", pt_bin, pt_low, pt_up);
+    bookH1DHistogram("h_jetRawE", 30, E_low, E_up);
+    bookH1DHistogram("h_jetRawM", 20, 0, 100);
+    bookH1DHistogram("h_jetRawEta", eta_bin, eta_low, eta_up);
+    bookH1DHistogram("h_jetRawPhi", phi_bin, phi_low, phi_up);
+    
+    
+    bookH1DHistogram("h_jetSmearPt", pt_bin, pt_low, pt_up);
+    bookH1DHistogram("h_jetSmearE", 30, E_low, E_up);
+    bookH1DHistogram("h_jetSmearM", 20, 0, 100);
+    bookH1DHistogram("h_jetSmearEta", eta_bin, eta_low, eta_up);
+    bookH1DHistogram("h_jetSmearPhi", phi_bin, phi_low, phi_up);
   }
 
   return EL::StatusCode::SUCCESS;
@@ -624,19 +645,34 @@ EL::StatusCode xAODPFlowAna :: execute ()
     xAOD::JetContainer::const_iterator jet_itr =  m_PFlowJets->begin();
     xAOD::JetContainer::const_iterator jet_end =  m_PFlowJets->end();
     for( ; jet_itr != jet_end; ++jet_itr ) {
+		
+		//unscaled jets
+	   m_H1Dict["h_jetRawPt"]->Fill((*jet_itr)->pt()/GEV);
+	   m_H1Dict["h_jetRawE"]->Fill((*jet_itr)->e()/GEV);
+       m_H1Dict["h_jetRawM"]->Fill((*jet_itr)->m()/GEV);
+       m_H1Dict["h_jetRawEta"]->Fill((*jet_itr)->eta());
+       m_H1Dict["h_jetRawPhi"]->Fill((*jet_itr)->phi());
       
-      //Info("Execute () ", "Jet before calibration E = %.2f GeV  pt = %.2f GeV eta = %.2f  phi =  %.2f",
-	  // (*jet_itr)->e()/GEV,(*jet_itr)->pt()/GEV, (*jet_itr)->eta(), (*jet_itr)->phi());
-      
-      //Cleaning TOOL
+      Info("Execute () ", "Jet before calibration E = %.2f GeV  pt = %.2f GeV eta = %.2f  phi =  %.2f",
+	   (*jet_itr)->e()/GEV,(*jet_itr)->pt()/GEV, (*jet_itr)->eta(), (*jet_itr)->phi());
+	   
       
       
       //Calibration Tool (Jet Calibration)
       xAOD::Jet* jet = 0;//new xAOD::Jet();
       m_akt4EMPFlowCalibrationTool->calibratedCopy(**jet_itr,jet); //make a calibrated copy, assuming a copy hasn't been made already
       
-      //Info("Execute () ", "Jet after Calibration E = %.10f GeV  pt = %.10f GeV eta = %.2f  phi =  %.2f",
-	   //jet->e()/GEV, jet->pt()/GEV, jet->eta(), jet->phi());
+      Info("Execute () ", "Jet after Calibration E = %.10f GeV  pt = %.10f GeV eta = %.2f  phi =  %.2f",
+	   jet->e()/GEV, jet->pt()/GEV, jet->eta(), jet->phi());
+	   
+	   	   //filling after calibration histograms
+	   m_H1Dict["h_jetScaledPt"]->Fill((jet)->pt()/GEV);
+	   m_H1Dict["h_jetScaledE"]->Fill((jet)->e()/GEV);
+       m_H1Dict["h_jetScaledM"]->Fill((jet)->m()/GEV);
+       m_H1Dict["h_jetScaledEta"]->Fill((jet)->eta());
+       m_H1Dict["h_jetScaledPhi"]->Fill((jet)->phi());
+       
+       
       goodPFlowJets->push_back(jet); // jet acquires the m_akt4CalibEMTopo auxstore
       //JER Tool (Jet Energy Resolution)
       double resMC = m_JERTool->getRelResolutionMC(jet);
@@ -647,13 +683,17 @@ EL::StatusCode xAODPFlowAna :: execute ()
       ANA_CHECK(m_SmearTool->applyCorrection(*jet));
       //virtual CP::CorrectionCode applyCorrection(xAOD::Jet& jet);
       
-      if(!(m_jetsf->passesJvtCut(*jet))) continue; //*** Does it have to be applied to all jets or only those with pt < 40GeV ?
+      if(!(m_jetsf->passesJvtCut(*jet))) continue; 
       
-      //Info("Execute () ", "Jet after Smearing E = %.10f GeV  pt = %.10f GeV eta = %.2f  phi =  %.2f",
-	   //jet->e()/GEV, jet->pt()/GEV, jet->eta(), jet->phi());
+      Info("Execute () ", "Jet after Smearing E = %.10f GeV  pt = %.10f GeV eta = %.2f  phi =  %.2f",
+	   jet->e()/GEV, jet->pt()/GEV, jet->eta(), jet->phi());
 	   
+	   m_H1Dict["h_jetSmearPt"]->Fill((jet)->pt()/GEV);
+	   m_H1Dict["h_jetSmearE"]->Fill((jet)->e()/GEV);
+       m_H1Dict["h_jetSmearM"]->Fill((jet)->m()/GEV);
+       m_H1Dict["h_jetSmearEta"]->Fill((jet)->eta());
+       m_H1Dict["h_jetSmearPhi"]->Fill((jet)->phi());	   
 	   
-     //*jet= **jet_itr; // copies auxdata from one auxstore to the other
       
       
     }
@@ -787,13 +827,10 @@ EL::StatusCode xAODPFlowAna :: execute ()
     //Just to check that GoodMuons has been store properly
     mu_itr =  goodMuons->begin();
     mu_end =  goodMuons->end();
-    bool trigMatch = false;
     for( ; mu_itr != mu_end; ++mu_itr ) {
       //Info("Execute () ", "GoodMuons: E = %.2f GeV  pt = %.2f GeV eta = %.2f  phi =  %.2f",
 	   //(*mu_itr)->e()/GEV,(*mu_itr)->pt()/GEV, (*mu_itr)->eta(), (*mu_itr)->phi());
-           }
-         } // decoration isAvailable
-       } // Loop over triggers
+           
     }
     
     
@@ -807,12 +844,13 @@ EL::StatusCode xAODPFlowAna :: execute ()
 
         bool match_found = false;
     //const std::string& chaintest = m_trigDecisionTool->getChainGroup(trig);
-    const std::string chaintest = "HLT_mu50";
-    if(goodMuons->size() <=1)break;
+    const std::string chaintest = "HLT_mu26_ivarmedium";
+   
     int i(0);
-    for( const auto& mu : *goodMuons ) {
+    for( const auto& mu : *m_Muons ) {
+		if(goodMuons->size() <=1)break;
 		std::cout<<"i="<<i++<<std::endl;
-        if (m_trigmatchingtool->match({mu}, chaintest)) match_found = true;
+        if (m_trigmatchingtool->match({mu}, chaintest, 0.4)) match_found = true;
        if (match_found) break;
       }
 
@@ -829,7 +867,7 @@ EL::StatusCode xAODPFlowAna :: execute ()
     //---------------------------
     // Zmumu selection
     //---------------------------
-    if (ZmumuSelection(goodElectrons, goodMuons)){
+    if (ZmumuSelection(goodElectrons, goodMuons) && match_found){
 		
 		Info("execute()", "here it is __________________________________________________________________________________________________________________________________");
       FillZmumuHistograms(goodMuons);
