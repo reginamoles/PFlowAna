@@ -53,7 +53,7 @@ void xAODPFlowAna::pflowDisplay(int EventNumber, int pflowNo, double etalow, dou
     cluster_ellipse->SetFillColor(color);
     cluster_ellipse->SetFillStyle(style);
     cluster_ellipse->DrawClone();
-    Info("EventDisplay", "Other clusters: (%.3f, %.3f)", eta, phi);
+//    Info("EventDisplay", "Other clusters: (%.3f, %.3f)", eta, phi);
     if (i_clus == _mc_imax.at(ind)) {
       eta = _mc_dRp_componets.at(12 * ind + 8);
       phi = _mc_dRp_componets.at(12 * ind + 9);
@@ -90,6 +90,7 @@ void xAODPFlowAna::pflowDisplay(int EventNumber, int pflowNo, double etalow, dou
   TMarker* track_mark = new TMarker();
   TText* momentum = 0;
   for (int i_mcPart = 0; i_mcPart < _mc_pos1.size(); ++i_mcPart) {
+
     if (_mc_etaExtra[i_mcPart] < etalow + 0.05 || _mc_etaExtra[i_mcPart] > etahi - 0.05 || _mc_phiExtra[i_mcPart] < philow + 0.05 || _mc_phiExtra[i_mcPart] > phihi - 0.05)
       continue;
 
@@ -103,6 +104,8 @@ void xAODPFlowAna::pflowDisplay(int EventNumber, int pflowNo, double etalow, dou
       momentum->SetTextSize(0.03);
       momentum->Draw();
       Info("EventDisplay", "Extrapolated studied track: (%.3f, %.3f)", _mc_etaExtra[i_mcPart], _mc_phiExtra[i_mcPart]);
+      m_track_eta->Fill(_mc_etaExtra[i_mcPart]);
+      m_track_phi->Fill(_mc_etaExtra[i_mcPart]);
     } else if (_mc_pos1[i_mcPart] != -1) {
       track_mark->SetMarkerStyle(29);
       track_mark->SetMarkerSize(1);
@@ -135,7 +138,7 @@ void xAODPFlowAna::pflowDisplay(int EventNumber, int pflowNo, double etalow, dou
 
   h_ED_EtaPhi->Draw("axis same");
   system("mkdir -v -p EvtDisplay");
-  EDCanEtaPhi->SaveAs(Form("EvtDisplay/Evt%d_pflow%d.eps", EventNumber, pflowNo));
+  EDCanEtaPhi->SaveAs(Form("EvtDisplay/Evt%d_pflow%d_pt%d.eps", EventNumber, pflowNo, int(_mc_hasEflowTrackPt.at(ind) / GEV)));
   delete h_ED_EtaPhi;
   delete EDCanEtaPhi;
 }
@@ -152,6 +155,6 @@ void xAODPFlowAna::eventDisplay(const xAOD::CaloClusterContainer* topocluster, i
     int etahi = _mc_etaExtra[i_mcPart] * 10 + 5;
     int philow = _mc_phiExtra[i_mcPart] * 10 - 5;
     int phihi = _mc_phiExtra[i_mcPart] * 10 + 5;
-    pflowDisplay(EventNumber, _mc_hasEflowTrackIndex.at(i_mcPart), etalow*0.1, etahi*0.1, philow*0.1, phihi*0.1, topocluster);
+    pflowDisplay(m_eventCounter, _mc_hasEflowTrackIndex.at(i_mcPart), etalow*0.1, etahi*0.1, philow*0.1, phihi*0.1, topocluster);
   }
 }

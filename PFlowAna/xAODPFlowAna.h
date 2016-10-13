@@ -83,6 +83,8 @@ class xAODPFlowAna : public EL::Algorithm
 
   xAOD::TEvent *m_event;//!
   int m_eventCounter; //!
+  TH1F* m_track_eta; //!
+  TH1F* m_track_phi; //!
 
   double m_EvtWeight; //!
   // Tree *myTree; //!

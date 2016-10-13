@@ -16,7 +16,7 @@
 #include <TH1.h>
 #include <utility> // The pair template is defined in the standard header <utility>
 #include <algorithm> //min_element
-
+#include "TCanvas.h"
 
 
 // this is needed to distribute the algorithm to the workers
@@ -322,6 +322,8 @@ EL::StatusCode xAODPFlowAna :: initialize ()
 
   // Variable initialization
   m_eventCounter = 0; //Count number of events
+  m_track_eta = new TH1F("track_eta", "track_eta", 100, -2.5, 2.5);
+  m_track_phi = new TH1F("track_phi", "track_phi", 100, -M_PI, M_PI);
   // Printing
   PrintDebug = !false; //Printing message criteria -->  Should be chosen from the ATestRun
   
@@ -842,7 +844,14 @@ EL::StatusCode xAODPFlowAna :: execute ()
   */
 
 
-  
+    TCanvas* MatchInfo = new TCanvas("MatchInfo", "MatchInfo", 0, 0, 600, 600);
+    MatchInfo->Divide(2,1);
+    MatchInfo->cd(1);
+    m_track_eta->Draw();
+    MatchInfo->cd(2);
+    m_track_phi->Draw();
+    MatchInfo->SaveAs("EvtDisplay/TrackInfo.eps");
+    m_track_eta->Print();
   
   
   
@@ -889,8 +898,7 @@ EL::StatusCode xAODPFlowAna :: finalize ()
   // finalize(): called once, after the final event has completed 
   
   ANA_CHECK_SET_TYPE(EL::StatusCode);
-  
-  
+
   //Remove the jet tool if it has been created
   if( m_jetCleaning ) {
     delete m_jetCleaning;
