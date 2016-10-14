@@ -551,16 +551,35 @@ void xAODPFlowAna::Calculate_Efficiency_Purity(const xAOD::TruthParticleContaine
 
     }
 
+
+
+
+
+
+
+    unsigned etabin;
+    for (unsigned ietabin = 0; ietabin < _etaRange.size(); ++ietabin) {
+      if (ietabin == _etaRange.size() - 1 && fabs(_mc_etaExtra[i_mcPart]) > _etaRange.at(ietabin)) {
+        etabin = ietabin;
+      } else if (fabs(_mc_etaExtra[i_mcPart]) > _etaRange.at(ietabin) && fabs(_mc_etaExtra[i_mcPart]) < _etaRange.at(ietabin + 1)) {
+        etabin = ietabin;
+      }
+    }
+
     const double max_eff = *max_element(_full_Efficiency.begin(), _full_Efficiency.end());
     int ptbin(_mc_hasEflowTrackPt[i_mcPart] / GEV * 10);
     if (pos1 != -1 && _mc_etaExtra[i_mcPart] > -990) {
+      std::string complete_name;
       if (max_eff > 0.5) {
-        m_H1Dict["h_efficiency5_pt"]->Fill(ptbin, _v_Efficiency.at(3 * i_mcPart + 0));
-        m_H1Dict["h_ntracks5_pt"]->Fill(ptbin, 1);
+        complete_name = histName(etabin, "h_efficiency5_pt", _etaRange);
+        m_H1Dict[complete_name]->Fill(ptbin, _v_Efficiency.at(3 * i_mcPart + 0));
+        complete_name = histName(etabin, "h_ntracks5_pt", _etaRange);
+        m_H1Dict[complete_name]->Fill(ptbin, 1);
         if (max_eff > 0.9) {
-          m_H1Dict["h_efficiency9_pt"]->Fill(ptbin, _v_Efficiency.at(3 * i_mcPart + 0));
-          m_H1Dict["h_ntracks9_pt"]->Fill(ptbin, 1);
-
+          complete_name = histName(etabin, "h_efficiency9_pt", _etaRange);
+          m_H1Dict[complete_name]->Fill(ptbin, _v_Efficiency.at(3 * i_mcPart + 0));
+          complete_name = histName(etabin, "h_ntracks9_pt", _etaRange);
+          m_H1Dict[complete_name]->Fill(ptbin, 1);
         }
       }
     }

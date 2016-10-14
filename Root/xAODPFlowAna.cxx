@@ -78,6 +78,33 @@ void xAODPFlowAna :: bookH1DHistogram(std::string name, int n_bins, float x_low,
   return; 
 }
 
+void xAODPFlowAna :: bookH1DEtaHistogram(std::string name, std::vector<float> EtaRange, int n_bins, float x_low, float x_up)
+{
+    for (unsigned i_eta =0; i_eta<EtaRange.size(); i_eta++){
+
+      std::string complete_name = histName(i_eta, name, EtaRange);
+
+      TH1D* h1 = new TH1D(complete_name.c_str(), complete_name.c_str(),n_bins, x_low, x_up);
+      h1->Sumw2();
+      m_H1Dict[complete_name] = h1;
+      wk()->addOutput (m_H1Dict[complete_name]);
+    }
+  return ;
+}
+
+std::string xAODPFlowAna::histName(unsigned i_eta, const std::string& name, std::vector<float>& EtaRange) {
+
+  std::string complete_name = "WrongName";
+  if (i_eta != EtaRange.size() - 1) {
+    complete_name = (name + "_eta" + std::to_string((int) ((10 * EtaRange.at(i_eta)))) + "_" + std::to_string((int) ((10 * EtaRange.at(i_eta + 1))))).c_str();
+  } else {
+    complete_name = (name + "_eta" + std::to_string((int) ((10 * EtaRange.at(i_eta))))).c_str();
+  }
+
+  return complete_name;
+}
+
+
 std::string xAODPFlowAna::histName(unsigned i_pt, unsigned i_eta, const std::string& name, const std::string& matchScheme, std::vector<float>& PtRange,
                                    std::vector<float>& EtaRange) {
 
@@ -280,10 +307,10 @@ EL::StatusCode xAODPFlowAna :: histInitialize ()
     bookH1DHistogram("h_Extratrack_phi", 100, -M_PI, M_PI);
   }
 
-  bookH1DHistogram("h_efficiency9_pt", 40, 0, 40);
-  bookH1DHistogram("h_ntracks9_pt", 40, 0, 40);
-  bookH1DHistogram("h_efficiency5_pt", 40, 0, 40);
-  bookH1DHistogram("h_ntracks5_pt", 40, 0, 40);
+  bookH1DEtaHistogram("h_efficiency9_pt", _etaRange, 40, 0, 40);
+  bookH1DEtaHistogram("h_ntracks9_pt", _etaRange, 40, 0, 40);
+  bookH1DEtaHistogram("h_efficiency5_pt", _etaRange, 40, 0, 40);
+  bookH1DEtaHistogram("h_ntracks5_pt", _etaRange, 40, 0, 40);
 
     
   return EL::StatusCode::SUCCESS;

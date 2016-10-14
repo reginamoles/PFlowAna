@@ -154,7 +154,8 @@ class xAODPFlowAna : public EL::Algorithm
   //Low performance studies
   std::map<std::string, TH1D*> m_H1Dict;//!
   void bookH1DPerformanceHistogram(std::string, std::string, std::vector<float>, std::vector<float>, int, float, float);
- 
+  void bookH1DEtaHistogram(std::string name, std::vector<float> EtaRange, int n_bins, float x_low, float x_up);
+
   TH1F *_R0;//!
   TH1F *_1MinusChargedR;//!
   void fill_RPlus_R0(const xAOD::TruthParticleContainer*);
@@ -331,6 +332,7 @@ class xAODPFlowAna : public EL::Algorithm
   bool ZmumuSelection(const xAOD::ElectronContainer*,const xAOD::MuonContainer*); //return a trueif event pass the selection
   void JetRecoil_Zmumu(const xAOD::ElectronContainer*, const xAOD::MuonContainer*, const xAOD::JetContainer*);
   std::string histName(unsigned i_pt, unsigned i_eta, const std::string& name, const std::string& matchScheme, std::vector<float>& PtRange, std::vector<float>& EtaRange);
+  std::string histName(unsigned i_eta, const std::string& name, std::vector<float>& EtaRange);
   void fillEffPurVectorDefault(const xAOD::CaloClusterContainer* topocluster, int i_mcPart, const xAOD::TruthParticleContainer* TruthParticles, std::vector<double>& v_Efficiency,
                                std::vector<double>& v_Purity, double tketa, double tkphi);
   void fillEffPurHistoMatch(int i_mcPart, xAOD::TruthParticleContainer::const_iterator tp_itr, const std::vector<double>& v_Efficiency, const std::vector<double>& v_Purity, bool twoClusters, const bool correctMatch, const double max_eff);
