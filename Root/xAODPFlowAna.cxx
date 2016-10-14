@@ -42,7 +42,6 @@ xAODPFlowAna :: xAODPFlowAna (bool SinglePionLowPerformanceStudies, bool DijetLo
   m_Zmumu = Zmumu;
   m_1to2matching = matching;
   m_folder = folder;
-std::cout<<"folder="<<folder<<" m_folder="<<m_folder<<std::endl;
 }
 
 
@@ -280,6 +279,12 @@ EL::StatusCode xAODPFlowAna :: histInitialize ()
     bookH1DHistogram("h_Extratrack_eta", 100, -2.5, 2.5);
     bookH1DHistogram("h_Extratrack_phi", 100, -M_PI, M_PI);
   }
+
+  bookH1DHistogram("h_efficiency9_pt", 40, 0, 40);
+  bookH1DHistogram("h_ntracks9_pt", 40, 0, 40);
+  bookH1DHistogram("h_efficiency5_pt", 40, 0, 40);
+  bookH1DHistogram("h_ntracks5_pt", 40, 0, 40);
+
     
   return EL::StatusCode::SUCCESS;
 }
@@ -588,8 +593,6 @@ EL::StatusCode xAODPFlowAna :: execute ()
   ANA_CHECK(m_event->retrieve( m_Muons, "Muons" ));
 //  Info("execute()", "  number of muons = %lu", m_Muons->size());
   
-  std::cout<<m_folder.empty()<<" aaaaam_folder="<<m_folder<<std::endl;
-
   //---------------------------
   // GRL 
   //--------------------------- 

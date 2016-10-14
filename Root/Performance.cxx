@@ -551,6 +551,19 @@ void xAODPFlowAna::Calculate_Efficiency_Purity(const xAOD::TruthParticleContaine
 
     }
 
+    const double max_eff = *max_element(_full_Efficiency.begin(), _full_Efficiency.end());
+    int ptbin(_mc_hasEflowTrackPt[i_mcPart] / GEV * 10);
+    if (pos1 != -1 && _mc_etaExtra[i_mcPart] > -990) {
+      if (max_eff > 0.5) {
+        m_H1Dict["h_efficiency5_pt"]->Fill(ptbin, _v_Efficiency.at(3 * i_mcPart + 0));
+        m_H1Dict["h_ntracks5_pt"]->Fill(ptbin, 1);
+        if (max_eff > 0.9) {
+          m_H1Dict["h_efficiency9_pt"]->Fill(ptbin, _v_Efficiency.at(3 * i_mcPart + 0));
+          m_H1Dict["h_ntracks9_pt"]->Fill(ptbin, 1);
+
+        }
+      }
+    }
 
     // Fill NClusters reach 90% efficiency: need full_Efficiency
     int NClusters_09 = getNClustersFor90Eff(i_mcPart, _full_Efficiency);
