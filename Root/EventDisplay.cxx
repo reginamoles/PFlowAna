@@ -104,8 +104,10 @@ void xAODPFlowAna::pflowDisplay(int EventNumber, int pflowNo, double etalow, dou
       momentum->SetTextSize(0.03);
       momentum->Draw();
       Info("EventDisplay", "Extrapolated studied track: (%.3f, %.3f)", _mc_etaExtra[i_mcPart], _mc_phiExtra[i_mcPart]);
-      m_track_eta->Fill(_mc_etaExtra[i_mcPart]);
-      m_track_phi->Fill(_mc_etaExtra[i_mcPart]);
+
+      m_H1Dict["h_Extratrack_eta"]->Fill(_mc_etaExtra[i_mcPart]);
+      m_H1Dict["h_Extratrack_phi"]->Fill(_mc_etaExtra[i_mcPart]);
+
     } else if (_mc_pos1[i_mcPart] != -1) {
       track_mark->SetMarkerStyle(29);
       track_mark->SetMarkerSize(1);
@@ -139,7 +141,6 @@ void xAODPFlowAna::pflowDisplay(int EventNumber, int pflowNo, double etalow, dou
   h_ED_EtaPhi->Draw("axis same");
   EDCanEtaPhi->SaveAs(Form("EvtDisplay_%s/Evt%d_pflow%d_pt%d.eps", m_folder.c_str(), EventNumber, pflowNo, int(_mc_hasEflowTrackPt.at(ind) / GEV)));
   system(Form("mkdir -v -p EvtDisplay_%s/", m_folder.c_str()));
-  std::cout<<"m_folder="<<m_folder<<std::endl;
   delete h_ED_EtaPhi;
   delete EDCanEtaPhi;
 }

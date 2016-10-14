@@ -48,7 +48,8 @@ int main( int argc, char* argv[] ) {
 
   // Add our analysis to the job:
   // SinglePionLowPerformanceStudies, DijetLowPerformance, DijetSubtraction, Zmumu
-  xAODPFlowAna* alg = new xAODPFlowAna(false, false, true, false, true);
+  xAODPFlowAna* alg = new xAODPFlowAna(false, false, true, false, true, submitDir);
+  std::cout<<"submitDir="<<submitDir<<std::endl;
   //xAODPFlowAna* alg = new xAODPFlowAna(true, false, false, false);
   job.algsAdd( alg );
 

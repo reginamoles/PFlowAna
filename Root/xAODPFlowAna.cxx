@@ -275,6 +275,11 @@ EL::StatusCode xAODPFlowAna :: histInitialize ()
   //Z+jet system
   bookH1DHistogram("h_ZPt_to_JetPt", 20, 0, 5);
   bookH1DHistogram("h_ZPt_to_JetPt_sum", 20, 0, 5);
+
+  if (!m_folder.empty()) {
+    bookH1DHistogram("h_Extratrack_eta", 100, -2.5, 2.5);
+    bookH1DHistogram("h_Extratrack_phi", 100, -M_PI, M_PI);
+  }
     
   return EL::StatusCode::SUCCESS;
 }
@@ -323,8 +328,6 @@ EL::StatusCode xAODPFlowAna :: initialize ()
 
   // Variable initialization
   m_eventCounter = 0; //Count number of events
-  m_track_eta = new TH1F("track_eta", "track_eta", 100, -2.5, 2.5);
-  m_track_phi = new TH1F("track_phi", "track_phi", 100, -M_PI, M_PI);
   // Printing
   PrintDebug = !false; //Printing message criteria -->  Should be chosen from the ATestRun
   
@@ -815,7 +818,6 @@ EL::StatusCode xAODPFlowAna :: execute ()
     if(m_DijetSubtraction)SubtractionPerf(m_JetETMissChargedParticleFlowObjects,m_topocluster, m_TruthParticles);
     //fill histograms
     fill_RPlus_R0(m_TruthParticles);
-    std::cout<<m_folder.empty()<<" m_folder="<<m_folder<<std::endl;
     if (!m_folder.empty()) {
       eventDisplay(m_topocluster, m_eventCounter - 1);
     }
@@ -847,17 +849,6 @@ EL::StatusCode xAODPFlowAna :: execute ()
   */
 
 
-    TCanvas* MatchInfo = new TCanvas("MatchInfo", "MatchInfo", 0, 0, 600, 600);
-    MatchInfo->Divide(2,1);
-    MatchInfo->cd(1);
-    m_track_eta->Draw();
-    MatchInfo->cd(2);
-    m_track_phi->Draw();
-    MatchInfo->SaveAs("EvtDisplay/TrackInfo.eps");
-    m_track_eta->Print();
-  
-  
-  
   ///////////////////////
   // Clear copy containers
   ////////////////////////
