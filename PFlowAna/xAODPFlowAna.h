@@ -63,7 +63,7 @@ class xAODPFlowAna : public EL::Algorithm
   virtual EL::StatusCode finalize ();
   virtual EL::StatusCode histFinalize ();
   xAODPFlowAna ();
-  xAODPFlowAna (bool SinglePionLowPerformanceStudies, bool DijetLowPerformance, bool DijetSubtraction, bool Zmumu, bool matching);
+  xAODPFlowAna (bool SinglePionLowPerformanceStudies, bool DijetLowPerformance, bool DijetSubtraction, bool Zmumu, bool matching, std::string folder="");
   
  private:
   
@@ -80,6 +80,7 @@ class xAODPFlowAna : public EL::Algorithm
   bool m_DijetSubtraction;
   bool m_Zmumu;
   bool m_1to2matching;
+  std::string m_folder;
 
   xAOD::TEvent *m_event;//!
   int m_eventCounter; //!

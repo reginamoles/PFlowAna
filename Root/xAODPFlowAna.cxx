@@ -34,14 +34,15 @@ xAODPFlowAna :: xAODPFlowAna ()
 }
 
 
-xAODPFlowAna :: xAODPFlowAna (bool SinglePionLowPerformanceStudies, bool DijetLowPerformance, bool DijetSubtraction, bool Zmumu, bool matching)
+xAODPFlowAna :: xAODPFlowAna (bool SinglePionLowPerformanceStudies, bool DijetLowPerformance, bool DijetSubtraction, bool Zmumu, bool matching, std::string folder)
 {
   m_SinglePionLowPerformanceStudies = SinglePionLowPerformanceStudies;
   m_DijetLowPerformance = DijetLowPerformance;
   m_DijetSubtraction = DijetSubtraction;
   m_Zmumu = Zmumu;
   m_1to2matching = matching;
-
+  m_folder = folder;
+std::cout<<"folder="<<folder<<" m_folder="<<m_folder<<std::endl;
 }
 
 
@@ -584,6 +585,7 @@ EL::StatusCode xAODPFlowAna :: execute ()
   ANA_CHECK(m_event->retrieve( m_Muons, "Muons" ));
 //  Info("execute()", "  number of muons = %lu", m_Muons->size());
   
+  std::cout<<m_folder.empty()<<" aaaaam_folder="<<m_folder<<std::endl;
 
   //---------------------------
   // GRL 
@@ -813,7 +815,8 @@ EL::StatusCode xAODPFlowAna :: execute ()
     if(m_DijetSubtraction)SubtractionPerf(m_JetETMissChargedParticleFlowObjects,m_topocluster, m_TruthParticles);
     //fill histograms
     fill_RPlus_R0(m_TruthParticles);
-    if (m_eventCounter - 1 == 0) {
+    std::cout<<m_folder.empty()<<" m_folder="<<m_folder<<std::endl;
+    if (!m_folder.empty()) {
       eventDisplay(m_topocluster, m_eventCounter - 1);
     }
   }

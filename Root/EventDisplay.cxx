@@ -137,8 +137,9 @@ void xAODPFlowAna::pflowDisplay(int EventNumber, int pflowNo, double etalow, dou
 
 
   h_ED_EtaPhi->Draw("axis same");
-  system("mkdir -v -p EvtDisplay");
-  EDCanEtaPhi->SaveAs(Form("EvtDisplay/Evt%d_pflow%d_pt%d.eps", EventNumber, pflowNo, int(_mc_hasEflowTrackPt.at(ind) / GEV)));
+  EDCanEtaPhi->SaveAs(Form("EvtDisplay_%s/Evt%d_pflow%d_pt%d.eps", m_folder.c_str(), EventNumber, pflowNo, int(_mc_hasEflowTrackPt.at(ind) / GEV)));
+  system(Form("mkdir -v -p EvtDisplay_%s/", m_folder.c_str()));
+  std::cout<<"m_folder="<<m_folder<<std::endl;
   delete h_ED_EtaPhi;
   delete EDCanEtaPhi;
 }
