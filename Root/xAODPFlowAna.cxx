@@ -248,6 +248,31 @@ EL::StatusCode xAODPFlowAna :: histInitialize ()
     bookH1DHistogram("h_jetSmearM", 20, 0, 100);
     bookH1DHistogram("h_jetSmearEta", eta_bin, eta_low, eta_up);
     bookH1DHistogram("h_jetSmearPhi", phi_bin, phi_low, phi_up);
+    
+    bookH1DHistogram("h_muonScaledPt", pt_bin, pt_low, pt_up);
+    bookH1DHistogram("h_muonScaledE", 30, E_low, E_up);
+    bookH1DHistogram("h_muonScaledM", 20, 0, 100);
+    bookH1DHistogram("h_muonScaledEta", eta_bin, eta_low, eta_up);
+    bookH1DHistogram("h_muonScaledPhi", phi_bin, phi_low, phi_up);
+    
+    bookH1DHistogram("h_muonRawPt", pt_bin, pt_low, pt_up);
+    bookH1DHistogram("h_muonRawE", 30, E_low, E_up);
+    bookH1DHistogram("h_muonRawM", 20, 0, 100);
+    bookH1DHistogram("h_muonRawEta", eta_bin, eta_low, eta_up);
+    bookH1DHistogram("h_muonRawPhi", phi_bin, phi_low, phi_up);
+    
+    
+    bookH1DHistogram("h_electronScaledPt", 24, 0, 120);
+    bookH1DHistogram("h_electronScaledE", 30, E_low, E_up);
+    bookH1DHistogram("h_electronScaledM", 20, 0, 100);
+    bookH1DHistogram("h_electronScaledEta", eta_bin, eta_low, eta_up);
+    bookH1DHistogram("h_electronScaledPhi", phi_bin, phi_low, phi_up);
+    
+    bookH1DHistogram("h_electronRawPt", 24, 0, 120);
+    bookH1DHistogram("h_electronRawE", 30, E_low, E_up);
+    bookH1DHistogram("h_electronRawM", 20, 0, 100);
+    bookH1DHistogram("h_electronRawEta", eta_bin, eta_low, eta_up);
+    bookH1DHistogram("h_electronRawPhi", phi_bin, phi_low, phi_up);
   }
 
   return EL::StatusCode::SUCCESS;
@@ -732,6 +757,13 @@ EL::StatusCode xAODPFlowAna :: execute ()
       
       //Info("Execute () ", "Electron before slecetion/calibration E = %.2f GeV  pt = %.2f GeV eta = %.2f  phi =  %.2f",
 	  // (*el_itr)->e()/GEV,(*el_itr)->pt()/GEV, (*el_itr)->eta(), (*el_itr)->phi());
+	  
+	  
+	   m_H1Dict["h_electronRawPt"]->Fill((*el_itr)->pt()/GEV);
+	   m_H1Dict["h_electronRawE"]->Fill((*el_itr)->e()/GEV);
+       m_H1Dict["h_electronRawM"]->Fill((*el_itr)->m()/GEV);
+       m_H1Dict["h_electronRawEta"]->Fill((*el_itr)->eta());
+       m_H1Dict["h_electronRawPhi"]->Fill((*el_itr)->phi());
       
       //Reject bad electrons
       if( !(*el_itr)->isGoodOQ(xAOD::EgammaParameters::BADCLUSELECTRON) ) continue;
@@ -777,6 +809,12 @@ EL::StatusCode xAODPFlowAna :: execute ()
       // xAOD::Electron* electrondc = new xAOD::Electron();
       //goodElectrons->push_back( electrondc ); // jet acquires the goodJets auxstore
       // *electrondc= **el_itr; // copies auxdata from one auxstore to the other
+      
+       m_H1Dict["h_electronScaledPt"]->Fill((el)->pt()/GEV);
+	   m_H1Dict["h_electronScaledE"]->Fill((el)->e()/GEV);
+       m_H1Dict["h_electronScaledM"]->Fill((el)->m()/GEV);
+       m_H1Dict["h_electronScaledEta"]->Fill((el)->eta());
+       m_H1Dict["h_electronScaledPhi"]->Fill((el)->phi());
     }
     
     Info("execute()", "  number of good electrons = %lu", goodElectrons->size());
@@ -802,17 +840,31 @@ EL::StatusCode xAODPFlowAna :: execute ()
     xAOD::MuonContainer::const_iterator mu_end = m_Muons->end();
     for( ; mu_itr != mu_end; ++mu_itr ) {
       
-      //Info("Execute () ", "Muons before calibration: E = %.2f GeV  pt = %.2f GeV eta = %.2f  phi =  %.2f",
-	   //(*mu_itr)->e()/GEV,(*mu_itr)->pt()/GEV, (*mu_itr)->eta(), (*mu_itr)->phi());
+      Info("Execute () ", "Muons before calibration: E = %.2f GeV  pt = %.2f GeV eta = %.2f  phi =  %.2f",
+	   (*mu_itr)->e()/GEV,(*mu_itr)->pt()/GEV, (*mu_itr)->eta(), (*mu_itr)->phi());
+	   
+	   
+	   		//unscaled jets
+	   m_H1Dict["h_muonRawPt"]->Fill((*mu_itr)->pt()/GEV);
+	   m_H1Dict["h_muonRawE"]->Fill((*mu_itr)->e()/GEV);
+       m_H1Dict["h_muonRawM"]->Fill((*mu_itr)->m()/GEV);
+       m_H1Dict["h_muonRawEta"]->Fill((*mu_itr)->eta());
+       m_H1Dict["h_muonRawPhi"]->Fill((*mu_itr)->phi());
       
       xAOD::Muon* mu = 0;
       m_muonCalibrationAndSmearingTool->correctedCopy(**mu_itr, mu);
       
+	   m_H1Dict["h_muonScaledPt"]->Fill((mu)->pt()/GEV);
+	   m_H1Dict["h_muonScaledE"]->Fill((mu)->e()/GEV);
+       m_H1Dict["h_muonScaledM"]->Fill((mu)->m()/GEV);
+       m_H1Dict["h_muonScaledEta"]->Fill((mu)->eta());
+       m_H1Dict["h_muonScaledPhi"]->Fill((mu)->phi());
+      
       if (!m_iso->accept( *mu )) continue;
       if ((((mu)->pt()/GEV)<25) || (fabs((mu)->eta())>2.4))continue;
       
-      //Info("execute()", "corrected muon pt = %.2f GeV", ((*mu_itr)->pt()/GEV));
-      //Info("execute()", "corrected muon pt (from copy) = %.2f GeV", (mu->pt()/GEV));
+      Info("execute()", "corrected muon pt = %.2f GeV", ((*mu_itr)->pt()/GEV)); // that is not right. why is it here
+      Info("execute()", "corrected muon pt (from copy) = %.2f GeV", (mu->pt()/GEV));
     
       
       goodMuons->push_back( mu ); // jet acquires the goodJets auxstore
