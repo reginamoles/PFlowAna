@@ -76,6 +76,7 @@ void xAODPFlowAna::pflowDisplay(int EventNumber, int pflowNo, double etalow, dou
       cluster_ellipse->SetY1(phi);
       cluster_ellipse->SetR1(etavar);
       cluster_ellipse->SetR2(phivar);
+      cluster_ellipse->SetFillStyle(3352);
       cluster_ellipse->SetFillColor(5);
       pos1_ellipse = (TEllipse*) (cluster_ellipse->Clone());
       Info("EventDisplay", "Matched cluster: (%.3f, %.3f) (%.3f, %.3f)", eta, phi, etavar, phivar);
@@ -139,8 +140,8 @@ void xAODPFlowAna::pflowDisplay(int EventNumber, int pflowNo, double etalow, dou
 
 
   h_ED_EtaPhi->Draw("axis same");
-  EDCanEtaPhi->SaveAs(Form("EvtDisplay_%s/Evt%d_pflow%d_pt%d.eps", m_folder.c_str(), EventNumber, pflowNo, int(_mc_hasEflowTrackPt.at(ind) / GEV)));
   system(Form("mkdir -v -p EvtDisplay_%s/", m_folder.c_str()));
+  EDCanEtaPhi->SaveAs(Form("EvtDisplay_%s/Evt%d_pflow%d_pt%d.eps", m_folder.c_str(), EventNumber, pflowNo, int(_mc_hasEflowTrackPt.at(ind) / GEV)));
   delete h_ED_EtaPhi;
   delete EDCanEtaPhi;
 }
@@ -157,6 +158,6 @@ void xAODPFlowAna::eventDisplay(const xAOD::CaloClusterContainer* topocluster, i
     int etahi = _mc_etaExtra[i_mcPart] * 10 + 5;
     int philow = _mc_phiExtra[i_mcPart] * 10 - 5;
     int phihi = _mc_phiExtra[i_mcPart] * 10 + 5;
-    pflowDisplay(m_eventCounter, _mc_hasEflowTrackIndex.at(i_mcPart), etalow*0.1, etahi*0.1, philow*0.1, phihi*0.1, topocluster);
+    pflowDisplay(m_eventCounter-1, _mc_hasEflowTrackIndex.at(i_mcPart), etalow*0.1, etahi*0.1, philow*0.1, phihi*0.1, topocluster);
   }
 }

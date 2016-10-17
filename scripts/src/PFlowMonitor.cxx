@@ -79,16 +79,18 @@ void PFlowMonitor::run(char* inputs, char* outfolder)
 
   system(Form("mkdir -vp plots/%s/", outfolder));
   setStyle();
-  Plot(Form("plots/%s/", outfolder));
-  Efficiency(Form("plots/%s/", outfolder));
-  eflowdRp(Form("plots/%s/", outfolder), 0);
-  eflowdRp(Form("plots/%s/", outfolder), 1);
+//  Plot(Form("plots/%s/", outfolder));
+//  Efficiency(Form("plots/%s/", outfolder));
+//  eflowdRp(Form("plots/%s/", outfolder), 0);
+//  eflowdRp(Form("plots/%s/", outfolder), 1);
+
+  AverageEfficiencyPerPt(Form("plots/%s/", outfolder));
+
 }
 
 ////
 //////////////////////////////
-void PFlowMonitor::Plot(const char* folder) {
-  std::string outfolder = folder;
+void PFlowMonitor::Plot(const char* outfolder) {
   bool c_showNumber(!false);
   bool c_overlay(true);
   int tcolor[5] = {4, 2, 8, 6, 28};
@@ -201,7 +203,7 @@ void PFlowMonitor::Plot(const char* folder) {
           h_pTs[ipt]->SetLineColor(1);
           h_pTs[ipt]->Draw("hist");
           Legend->Draw();
-          Can_Efficiency->GetPad(ieta + 1)->SaveAs(Form("%s%s_%d_%d.eps", outfolder.c_str(), catagory[icat].c_str(), ieta, ipt));
+          Can_Efficiency->GetPad(ieta + 1)->SaveAs(Form("%s%s_%d_%d.eps", outfolder, catagory[icat].c_str(), ieta, ipt));
           Legend->Clear();
           Can_Efficiency->GetPad(ieta + 1)->Update();
         }
@@ -214,7 +216,7 @@ void PFlowMonitor::Plot(const char* folder) {
       Legend->Draw();
       h_pTs[0]->Draw("axissame");
       if (c_overlay) {
-        Can_Efficiency->GetPad(ieta + 1)->SaveAs(Form("%s%s_%d.eps", outfolder.c_str(), catagory[icat].c_str(), ieta));
+        Can_Efficiency->GetPad(ieta + 1)->SaveAs(Form("%s%s_%d.eps", outfolder, catagory[icat].c_str(), ieta));
       }
     }
   }
@@ -222,9 +224,7 @@ void PFlowMonitor::Plot(const char* folder) {
 
 }
 
-void PFlowMonitor::Efficiency(const char* folder) {
-  std::string outfolder = folder;
-
+void PFlowMonitor::Efficiency(const char* outfolder) {
   bool c_showNumber(!false);
   int tcolor[4] = {1, 4, 8, 2};
 
@@ -309,16 +309,14 @@ void PFlowMonitor::Efficiency(const char* folder) {
         Legend->Draw();
       }
       h_cats[0]->Draw("axissame");
-      Can_Efficiency->SaveAs(Form("%s%s_%d_%d.eps", outfolder.c_str(), catagory[0].c_str(), ieta, ipt));
-      delete Efficiency;
+      Can_Efficiency->SaveAs(Form("%s%s_%d_%d.eps", outfolder, catagory[0].c_str(), ieta, ipt));
+      delete Can_Efficiency;
     }
   }
   return;
 }
 
-void PFlowMonitor::eflowdRp(const char* folder, const int mode) {
-  std::string outfolder = folder;
-
+void PFlowMonitor::eflowdRp(const char* outfolder, const int mode) {
   bool c_showNumber(!false);
   int tcolor[3] = {1, 4, 2};
 
@@ -411,12 +409,102 @@ void PFlowMonitor::eflowdRp(const char* folder, const int mode) {
         Legend->Draw();
       }
       h_cats[0]->Draw("axissame");
-      Can_Efficiency->SaveAs(Form("%s%s%d_%d_%d.eps", outfolder.c_str(), catagory[0].c_str(), mode, ieta, ipt));
+      Can_Efficiency->SaveAs(Form("%s%s%d_%d_%d.eps", outfolder, catagory[0].c_str(), mode, ieta, ipt));
       delete Can_Efficiency;
     }
   }
   return;
 }
+
+void PFlowMonitor::AverageEfficiencyPerPt(const char* outfolder) {
+  std::cout<<"begin"<<std::endl;
+
+  bool c_showNumber(!false);
+  int tcolor[3] = { 4, 2, 8 };
+
+  std::vector<std::string> catagory;
+  catagory.clear();
+  TH1F* h_cats[4], *h_result[2];
+  catagory.push_back("h_efficiency9_pt");
+  catagory.push_back("h_ntracks9_pt");
+  catagory.push_back("h_efficiency5_pt");
+  catagory.push_back("h_ntracks5_pt");
+
+  double xpos(0.25), ypos(0.88);
+  TLegend* Legend = new TLegend(xpos, ypos - 0.08 * 3, xpos + 0.3, ypos);
+  Legend->SetFillStyle(0);
+  Legend->SetBorderSize(0);
+  Legend->SetTextFont(43);
+  Legend->SetTextSize(20);
+
+  std::string xTitle = "p^{true}_{T} [GeV]";
+
+  for (unsigned int icat = 0; icat < (m_debug ? 1 : catagory.size() / 2); ++icat) {
+    TCanvas* Can_AverEfficiency = new TCanvas("AverEfficiency", "AverEfficiency", 450, 400);
+    for (unsigned int ieta = 0; ieta < (m_debug ? 1 : m_etaRange.size()); ++ieta) {
+
+      std::string names = histName(ieta, catagory[2*icat], m_etaRange);
+      std::string avers = histName(ieta, catagory[2*icat+1], m_etaRange);
+      for (unsigned int ifile = 0; ifile < HistFile.size(); ++ifile) {
+        if (m_debug) std::cout << HistFile[ifile]->GetName() << std::endl;
+        if (ifile == 0) {
+          h_cats[2*icat] = (TH1F*) HistFile[ifile]->Get(names.c_str());
+          h_cats[2*icat+1] = (TH1F*) HistFile[ifile]->Get(avers.c_str());
+          std::cout << __LINE__ << " Add: " << names << std::endl;
+        } else {
+          h_cats[2*icat]->Add((TH1F*) HistFile[ifile]->Get(names.c_str()));
+          h_cats[2*icat+1] = (TH1F*) HistFile[ifile]->Get(avers.c_str());
+          std::cout << __LINE__ << " Add: " << names << std::endl;
+        }
+      }
+
+      if (!h_cats[2*icat] || !h_cats[2*icat+1]) {
+        std::cerr << "[ERROR]\t Histogram " << names <<" or " << avers << " not exist!" << std::endl;
+      }
+
+      h_result[icat] = (TH1F*) h_cats[2 * icat]->Clone();
+      h_result[icat]->Divide(h_cats[2 * icat + 1]);
+
+      h_result[icat]->SetLineWidth(2);
+      h_result[icat]->SetStats(kFALSE);
+      h_result[icat]->GetXaxis()->SetTitle(xTitle.c_str());
+      h_result[icat]->GetYaxis()->SetTitle("Matching efficiency");
+      h_result[icat]->SetLineColor(tcolor[ieta]);
+      std::string lable;
+      double entries = h_cats[2 * icat + 1]->Integral(); // number of tracks
+
+      std::string display;
+      if (ieta == m_etaRange.size() - 1) {
+        display = (Form("%1.1f < |#eta_{EM2}|", m_etaRange[ieta]));
+      } else {
+        display = (Form("%1.1f < |#eta_{EM2}| < %1.1f", m_etaRange[ieta], m_etaRange[ieta + 1]));
+      }
+      if (c_showNumber) {
+        lable = Form("%s (%.0f)", display.c_str(), entries);
+      } else {
+        lable = Form("%s", display.c_str());
+      }
+
+      Legend->AddEntry(h_result[icat], lable.c_str(), "l");
+
+      if (entries == 0) {
+        continue;
+      }
+      if (ieta == 0) {
+        h_result[icat]->GetYaxis()->SetRangeUser(0., 1);
+        h_result[icat]->Draw("hist");
+      } else {
+        h_result[icat]->Draw("samehist");
+      }
+    }
+    Legend->Draw();
+    h_result[0]->Draw("axissame");
+    Can_AverEfficiency->SaveAs(Form("%sAverageEfficiency_%d.eps", outfolder, icat));
+    delete Legend;
+    delete Can_AverEfficiency;
+  }
+}
+
 
 /////////////////////
 void PFlowMonitor::setStyle() {
@@ -472,6 +560,18 @@ std::pair<std::string, std::string> PFlowMonitor::histName(unsigned i_pt, unsign
   }
 
   return std::make_pair(complete_name, legend_name);
+}
+
+std::string PFlowMonitor::histName(unsigned i_eta, const std::string& name, std::vector<float>& EtaRange) {
+
+  std::string complete_name = "WrongName";
+  if (i_eta != EtaRange.size() - 1) {
+    complete_name = (name + "_eta" + std::to_string((int) ((10 * EtaRange.at(i_eta)))) + "_" + std::to_string((int) ((10 * EtaRange.at(i_eta + 1))))).c_str();
+  } else {
+    complete_name = (name + "_eta" + std::to_string((int) ((10 * EtaRange.at(i_eta))))).c_str();
+  }
+
+  return complete_name;
 }
 
 std::string PFlowMonitor::Int_to_String(int n) {

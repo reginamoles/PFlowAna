@@ -43,13 +43,12 @@ int main( int argc, char* argv[] ) {
   // Create an EventLoop job:
   EL::Job job;
   job.sampleHandler( sh );
-  job.options()->setDouble (EL::Job::optSkipEvents, 0);
-  job.options()->setDouble (EL::Job::optMaxEvents, 100);
+  job.options()->setDouble (EL::Job::optSkipEvents, 90); //90
+  job.options()->setDouble (EL::Job::optMaxEvents, 100); //100
 
   // Add our analysis to the job:
   // SinglePionLowPerformanceStudies, DijetLowPerformance, DijetSubtraction, Zmumu
   xAODPFlowAna* alg = new xAODPFlowAna(false, false, true, false, true, submitDir);
-  std::cout<<"submitDir="<<submitDir<<std::endl;
   //xAODPFlowAna* alg = new xAODPFlowAna(true, false, false, false);
   job.algsAdd( alg );
 

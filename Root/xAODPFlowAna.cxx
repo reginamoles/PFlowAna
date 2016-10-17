@@ -480,10 +480,10 @@ EL::StatusCode xAODPFlowAna :: initialize ()
   m_trigConfigTool = new TrigConf::xAODConfigTool("xAODConfigTool"); // gives us access to the meta-data
   ANA_CHECK( m_trigConfigTool->initialize() );
   ToolHandle< TrigConf::ITrigConfigTool > trigConfigHandle( m_trigConfigTool );
-  m_trigDecisionTool = new Trig::TrigDecisionTool("TrigDecisionTool");
-  ANA_CHECK(m_trigDecisionTool->setProperty( "ConfigTool", trigConfigHandle ) ); // connect the TrigDecisionTool to the ConfigTool
-  ANA_CHECK(m_trigDecisionTool->setProperty( "TrigDecisionKey", "xTrigDecision" ) );
-  ANA_CHECK(m_trigDecisionTool->initialize() );
+//  m_trigDecisionTool = new Trig::TrigDecisionTool("TrigDecisionTool");
+//  ANA_CHECK(m_trigDecisionTool->setProperty( "ConfigTool", trigConfigHandle ) ); // connect the TrigDecisionTool to the ConfigTool
+//  ANA_CHECK(m_trigDecisionTool->setProperty( "TrigDecisionKey", "xTrigDecision" ) );
+//  ANA_CHECK(m_trigDecisionTool->initialize() );
   
   //JVT Tool
   m_jetsf = new CP::JetJvtEfficiency("m_jetsf");
@@ -506,20 +506,23 @@ EL::StatusCode xAODPFlowAna :: execute ()
   
   //called once, before the first event is executed 
   ANA_CHECK_SET_TYPE (EL::StatusCode);
+
+  //----------------------------
+  // Event information
+  //---------------------------
+  const xAOD::EventInfo* eventInfo = 0;
+  ANA_CHECK(m_event->retrieve( eventInfo, "EventInfo"));
     
   if( (m_eventCounter % 1) == 0 ){
     Info("execute()", "----------------" );
-    Info("execute()", "   Event %i   ", m_eventCounter );
+    Info("execute()", "   Event %i: %i  ", m_eventCounter, eventInfo->eventNumber() );
     Info("execute()", "----------------" );
   }
+
   m_eventCounter++;
+//  if(m_eventCounter!=6+1)   return EL::StatusCode::SUCCESS;
+//  if(m_eventCounter>7+1)   return EL::StatusCode::SUCCESS;
     
- 
-  //----------------------------
-  // Event information
-  //--------------------------- 
-  const xAOD::EventInfo* eventInfo = 0;
-  ANA_CHECK(m_event->retrieve( eventInfo, "EventInfo"));  
   
   // check if the event is data or MC
   bool isMC = false;
@@ -532,17 +535,17 @@ EL::StatusCode xAODPFlowAna :: execute ()
 //  Info("execute()", "Event number = %llu  Run Number =  %d  Event weight = %.2f  isMC = %s",eventInfo->eventNumber(), eventInfo->runNumber(), m_EvtWeight, (isMC ? "true" : "false"));
 
 
-  //trigger tools: here the trigger chain is chosen
-  auto chainGroup = m_trigDecisionTool->getChainGroup("HLT_mu20_iloose_L1MU15, HLT_mu50");
-  std::map<std::string,int> triggerCounts;
-  int trigger = 0;
-  for(auto &trig : chainGroup->getListOfTriggers()) {
-    auto cg = m_trigDecisionTool->getChainGroup(trig);
-    std::string thisTrig = trig;
-    //Info( "execute()", "%30s chain passed(1)/failed(0): %d total chain prescale (L1*HLT): %.1f", thisTrig.c_str(), cg->isPassed(), cg->getPrescale() );
-    if(cg->isPassed())trigger = 1;
-    //Info("execute()", "Trigger + %i", trigger);
-  } 
+//  //trigger tools: here the trigger chain is chosen
+//  auto chainGroup = m_trigDecisionTool->getChainGroup("HLT_mu20_iloose_L1MU15, HLT_mu50");
+//  std::map<std::string,int> triggerCounts;
+//  int trigger = 0;
+//  for(auto &trig : chainGroup->getListOfTriggers()) {
+//    auto cg = m_trigDecisionTool->getChainGroup(trig);
+//    std::string thisTrig = trig;
+//    //Info( "execute()", "%30s chain passed(1)/failed(0): %d total chain prescale (L1*HLT): %.1f", thisTrig.c_str(), cg->isPassed(), cg->getPrescale() );
+//    if(cg->isPassed())trigger = 1;
+//    //Info("execute()", "Trigger + %i", trigger);
+//  }
 
   //***Later we will require pass the trigger (not added yet)
   
@@ -971,10 +974,10 @@ EL::StatusCode xAODPFlowAna :: finalize ()
     m_trigConfigTool = 0;
   }
   
-  if( m_trigDecisionTool ) {
-    delete m_trigDecisionTool;
-    m_trigDecisionTool = 0;
-  }
+//  if( m_trigDecisionTool ) {
+//    delete m_trigDecisionTool;
+//    m_trigDecisionTool = 0;
+//  }
 
   if(m_jetsf) {
     delete m_jetsf;

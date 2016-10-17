@@ -212,6 +212,7 @@ void xAODPFlowAna :: tp_Selection(const xAOD::TruthParticleContainer* TruthParti
   for( ; tp_itr != tp_end; ++tp_itr ) {
     tp_index = std::distance(TruthParticles->begin(),tp_itr);
 
+
     //Associate truth particle to PFO if it exists
     if ((*tp_itr)->status()==1){ //Stable final-state particle status = 1
       if (fabs((*tp_itr)->pdgId())==211      //pi+=211;
@@ -238,17 +239,8 @@ void xAODPFlowAna :: tp_Selection(const xAOD::TruthParticleContainer* TruthParti
 	  float z0 = 999; 
 	  if (ptrk) { z0 = ptrk->z0();}
 	  
-//	  if(tp_index==188){
-//        std::cout<<"zhangrui cpfo_index "<<cpfo_index<<"  Status "<< _pfo_SubtractStatus.at(cpfo_index)<<" hash "<<_pfo_hashCluster1.at(cpfo_index)<<","<< _pfo_hashCluster2.at(cpfo_index)<<std::endl;
-//        const xAOD::CaloCluster* matchedCluster = (*cpfo_itr)->cluster(0);
-//        if(matchedCluster){std::cout<<"     matchedCluster "<<matchedCluster->phi()<<","<<matchedCluster->eta()<<","<<matchedCluster->e()<<std::endl;}
-//        else std::cout<<"no matchedCluster 1"<<std::endl;
-//        const xAOD::CaloCluster* matchedCluster1 = (*cpfo_itr)->cluster(1);
-//         if(matchedCluster1){ std::cout<<"     matchedCluster "<<matchedCluster1->rawPhi()<<","<<matchedCluster1->rawEta()<<","<<matchedCluster1->rawE()<<std::endl;}
-//         else std::cout<<"      no matchedCluster 2"<<std::endl;
-//	  }
 	  //Check the criteria, why we don´t use DeltaR. Are there truth particles are associated to the same cpfo?
-	  
+
 	  if((*cpfo_itr)->charge()!=0 && (*cpfo_itr)->pt()!=0 
 	     && fabs((*cpfo_itr)->eta()) < 2.5 
 	     && AreBothTracksMatched(tp_index,cpfo_index))
@@ -268,7 +260,6 @@ void xAODPFlowAna :: tp_Selection(const xAOD::TruthParticleContainer* TruthParti
       _mc_subtractStatus.at(tp_index) = _pfo_SubtractStatus.at(cpfo_index);
       _mc_RpMatchedCluster1.at(tp_index) = _pfo_RpMatchedCluster1.at(cpfo_index) * _pfo_RpMatchedCluster1.at(cpfo_index);
       _mc_RpMatchedCluster2.at(tp_index) = _pfo_RpMatchedCluster2.at(cpfo_index) * _pfo_RpMatchedCluster2.at(cpfo_index);
-//             std::cout<<tp_index<<" zhangrui m_1to2matching cpfo_index "<<cpfo_index<<std::endl;
       }
 	  }
 	}
@@ -526,7 +517,7 @@ void xAODPFlowAna::Calculate_Efficiency_Purity(const xAOD::TruthParticleContaine
     if (m_1to2matching) {
       const double max_eff = *max_element(_full_Efficiency.begin(), _full_Efficiency.end());
       fillEffPurHistoMatch(i_mcPart, tp_itr, _v_Efficiency, _v_Purity, twoClusters, (pos1 == imax), max_eff);
-      Info("CheckMatch", "1.(pt: imax == pos1, effmax, effpos1): %.2f: %d == %d, %.3f, %.3f , pflow index = %d", _mc_hasEflowTrackPt.at(i_mcPart) / GEV, imax, pos1, _full_Efficiency.at(imax),
+      Info("CheckMatch", "1.(truth particle - %d, pt: imax == pos1, effmax, effpos1): %.2f: %d == %d, %.3f, %.3f , pflow index = %d", i_mcPart, _mc_hasEflowTrackPt.at(i_mcPart) / GEV, imax, pos1, _full_Efficiency.at(imax),
            _v_Efficiency.at(3*i_mcPart + 0), _mc_hasEflowTrackIndex.at(i_mcPart));
 
       _mc_pos1.at(i_mcPart) = pos1;
@@ -550,10 +541,6 @@ void xAODPFlowAna::Calculate_Efficiency_Purity(const xAOD::TruthParticleContaine
           pos1rawEtmp, _v_dRp.at(0), _mc_RpMatchedCluster1[i_mcPart]);
 
     }
-
-
-
-
 
 
 
@@ -925,6 +912,7 @@ void xAODPFlowAna :: clear_PerformanceVectors(){
   _v_dRp.clear();
   _mc_dRp_componets.clear();
 }
+  _mc_MinDeltaREflowTrackPair.clear();
   _pfo_hasClusterMatched.clear();
   _pfo_hasClusterMatched_Index.clear();
   _pfo_hasClusterMatched_Eta.clear();

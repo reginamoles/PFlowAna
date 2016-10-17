@@ -62,10 +62,23 @@ void xAODPFlowAna :: CalculateMatrix_MinDeltaR ( const xAOD::TruthParticleContai
     _mc_MinDeltaREflowTrackPair.push_back(PairMatched);
     
     // You should eliminate the column to not match twice the same track
-    for(int i = 0; i< (int)TruthParticles->size(); i++){
-      if(i == tp_min) matrix_DeltaR[tp_min][j] = 999; 
-      if(j == cpfo_min) matrix_DeltaR[i][cpfo_min] = 999; 
+    if (cpfo_min != 999999999) {
+      for (int ii = 0; ii < (int) TruthParticles->size(); ii++) {
+        matrix_DeltaR[ii][cpfo_min] = 999;
+      }
     }
+
+    if (tp_min != 999999999) {
+      for (int jj = 0; jj < (int) JetETMissChargedParticleFlowObjects->size(); jj++) {
+        matrix_DeltaR[tp_min][jj] = 999;
+      }
+    }
+
+//    for (int i = 0; i < (int) TruthParticles->size(); i++) {
+//      if (i == tp_min) matrix_DeltaR[tp_min][j] = 999;
+//      if (j == cpfo_min) matrix_DeltaR[i][cpfo_min] = 999;
+//    }
+
   }
   
   //Read PairVector
