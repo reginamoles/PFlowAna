@@ -85,10 +85,10 @@ void xAODPFlowAna::pflowDisplay(int EventNumber, int pflowNo, double etalow, dou
   if (max_ellipse)max_ellipse->DrawClone(); //kBlue
   if (pos1_ellipse)pos1_ellipse->DrawClone(); // kYellow
 
-
+  TLegend* Legend = new TLegend(0.6, 0.89 - 0.04 * 3, 0.9, 0.89);
 
   /* draw track marker */
-  TMarker* track_mark = new TMarker();
+  TMarker* track_mark = new TMarker(), *track;
   TText* momentum = 0;
   for (int i_mcPart = 0; i_mcPart < _mc_pos1.size(); ++i_mcPart) {
 
@@ -105,6 +105,8 @@ void xAODPFlowAna::pflowDisplay(int EventNumber, int pflowNo, double etalow, dou
       momentum->SetTextSize(0.03);
       momentum->Draw();
       Info("EventDisplay", "Extrapolated studied track: (%.3f, %.3f)", _mc_etaExtra[i_mcPart], _mc_phiExtra[i_mcPart]);
+      track = (TMarker*)track_mark->Clone();
+      Legend->AddEntry(track, "Extrapolated track", "p");
 
       m_H1Dict["h_Extratrack_eta"]->Fill(_mc_etaExtra[i_mcPart]);
       m_H1Dict["h_Extratrack_phi"]->Fill(_mc_etaExtra[i_mcPart]);
@@ -138,8 +140,17 @@ void xAODPFlowAna::pflowDisplay(int EventNumber, int pflowNo, double etalow, dou
   }
   if(momentum) momentum->Draw();
 
-
   h_ED_EtaPhi->Draw("axis same");
+
+  Legend->SetFillStyle(0);
+  Legend->SetBorderSize(0);
+  Legend->SetTextFont(43);
+  Legend->SetTextSize(20);
+  Legend->AddEntry(track_mark, "Other tracks", "p");
+  Legend->AddEntry(max_ellipse, "Leading cluster", "f");
+  Legend->AddEntry(pos1_ellipse, "Matched cluster", "f");
+  Legend->Draw();
+
   system(Form("mkdir -v -p EvtDisplay_%s/", m_folder.c_str()));
   EDCanEtaPhi->SaveAs(Form("EvtDisplay_%s/Evt%d_pflow%d_pt%d.eps", m_folder.c_str(), EventNumber, pflowNo, int(_mc_hasEflowTrackPt.at(ind) / GEV)));
   delete h_ED_EtaPhi;
