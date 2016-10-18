@@ -520,7 +520,7 @@ EL::StatusCode xAODPFlowAna :: execute ()
   }
 
   m_eventCounter++;
-  if(m_eventCounter!=6+1)   return EL::StatusCode::SUCCESS;
+//  if(m_eventCounter!=6+1)   return EL::StatusCode::SUCCESS;
 //  if(m_eventCounter>7+1)   return EL::StatusCode::SUCCESS;
     
   
