@@ -417,7 +417,6 @@ void PFlowMonitor::eflowdRp(const char* outfolder, const int mode) {
 }
 
 void PFlowMonitor::AverageEfficiencyPerPt(const char* outfolder) {
-  std::cout<<"begin"<<std::endl;
 
   bool c_showNumber(!false);
   int tcolor[3] = { 4, 2, 8 };
@@ -440,6 +439,7 @@ void PFlowMonitor::AverageEfficiencyPerPt(const char* outfolder) {
   std::string xTitle = "p^{true}_{T} [GeV]";
 
   for (unsigned int icat = 0; icat < (m_debug ? 1 : catagory.size() / 2); ++icat) {
+    bool empty(true);
     TCanvas* Can_AverEfficiency = new TCanvas("AverEfficiency", "AverEfficiency", 450, 400);
     for (unsigned int ieta = 0; ieta < (m_debug ? 1 : m_etaRange.size()); ++ieta) {
 
@@ -450,11 +450,11 @@ void PFlowMonitor::AverageEfficiencyPerPt(const char* outfolder) {
         if (ifile == 0) {
           h_cats[2*icat] = (TH1F*) HistFile[ifile]->Get(names.c_str());
           h_cats[2*icat+1] = (TH1F*) HistFile[ifile]->Get(avers.c_str());
-          std::cout << __LINE__ << " Add: " << names << std::endl;
+          std::cout << __LINE__ << " Add: " << HistFile[ifile]->GetName() << " " << names << std::endl;
         } else {
           h_cats[2*icat]->Add((TH1F*) HistFile[ifile]->Get(names.c_str()));
           h_cats[2*icat+1] = (TH1F*) HistFile[ifile]->Get(avers.c_str());
-          std::cout << __LINE__ << " Add: " << names << std::endl;
+          std::cout << __LINE__ << " Add: " << HistFile[ifile]->GetName() << " "<< names << std::endl;
         }
       }
 
@@ -463,6 +463,8 @@ void PFlowMonitor::AverageEfficiencyPerPt(const char* outfolder) {
       }
 
       h_result[icat] = (TH1F*) h_cats[2 * icat]->Clone();
+      if (h_result[icat]) continue;
+
       h_result[icat]->Divide(h_cats[2 * icat + 1]);
 
       h_result[icat]->SetLineWidth(2);
@@ -479,6 +481,7 @@ void PFlowMonitor::AverageEfficiencyPerPt(const char* outfolder) {
       } else {
         display = (Form("%1.1f < |#eta_{EM2}| < %1.1f", m_etaRange[ieta], m_etaRange[ieta + 1]));
       }
+
       if (c_showNumber) {
         lable = Form("%s (%.0f)", display.c_str(), entries);
       } else {
@@ -496,12 +499,15 @@ void PFlowMonitor::AverageEfficiencyPerPt(const char* outfolder) {
       } else {
         h_result[icat]->Draw("samehist");
       }
+      empty = false;
     }
-    Legend->Draw();
-    h_result[0]->Draw("axissame");
-    Can_AverEfficiency->SaveAs(Form("%sAverageEfficiency_%d.eps", outfolder, icat));
-    delete Legend;
-    delete Can_AverEfficiency;
+    if (!empty) {
+      Legend->Draw();
+      h_result[0]->Draw("axissame");
+      Can_AverEfficiency->SaveAs(Form("%sAverageEfficiency_%d.eps", outfolder, icat));
+      delete Legend;
+    }
+      delete Can_AverEfficiency;
   }
 }
 
