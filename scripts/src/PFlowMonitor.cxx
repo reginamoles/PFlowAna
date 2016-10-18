@@ -79,7 +79,7 @@ void PFlowMonitor::run(char* inputs, char* outfolder)
 
   system(Form("mkdir -vp plots/%s/", outfolder));
   setStyle();
-  Plot(Form("plots/%s/", outfolder));
+  PlotEtaPtBins(Form("plots/%s/", outfolder));
   Efficiency(Form("plots/%s/", outfolder));
   eflowdRp(Form("plots/%s/", outfolder), 0);
   eflowdRp(Form("plots/%s/", outfolder), 1);
