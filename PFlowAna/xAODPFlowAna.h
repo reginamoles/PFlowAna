@@ -254,6 +254,7 @@ class xAODPFlowAna : public EL::Algorithm
   //Charge shower subtraction vectors (from Chris code):
   //This is 1 if there is a charged eflow object associated with that mc particle
   std::vector<int> _mc_hasEflowTrack;//! 
+  std::vector<int> _mc_LFI;    //!
   //The index of the eflow charged object associated with the ith mc particle.
    std::vector<int> _mc_hasEflowTrackIndex;//!
    std::vector<float> _mc_hasEflowTrackP;    //!

@@ -18,6 +18,7 @@ void xAODPFlowAna :: resize_tpVectors(const xAOD::TruthParticleContainer* TruthP
 //  Info("resize_tpVectors () ", "In resize_tpVectors...");
   //Vectors for storing true information
   _mc_hasEflowTrack.resize(TruthParticles->size());
+  _mc_LFI.resize(TruthParticles->size());
   _mc_hasEflowTrackIndex.resize(TruthParticles->size());
   _mc_hasEflowTrackP.resize(TruthParticles->size());
   _mc_hasEflowTrackPt.resize(TruthParticles->size());
@@ -249,6 +250,7 @@ void xAODPFlowAna :: tp_Selection(const xAOD::TruthParticleContainer* TruthParti
 	     //&& (fabs(z0-tp_z0)*sin(2*atan(exp(-1.0*(*cpfo_itr)->eta())))) < 2.)
       {
 	    _mc_hasEflowTrack.at(tp_index) = 1; //=1 indicates that we have a eflowTrack matched to the mc particle
+	    _mc_LFI.at(tp_index) = _pfo_LFI.at(cpfo_index);
 	    _mc_hasEflowTrackIndex.at(tp_index) = cpfo_index; //say us which eflowObject corresponds for each mc particle (not association = 0)
       _mc_hasEflowTrackP.at(tp_index) = fabs(1. / ptrk->qOverP());
       _mc_hasEflowTrackPt.at(tp_index) =  (*cpfo_itr)->pt();
@@ -847,6 +849,7 @@ void xAODPFlowAna :: clear_PerformanceVectors(){
 
   //tpVectors
   _mc_hasEflowTrack.clear();
+  _mc_LFI.clear();
   _mc_hasEflowTrackIndex.clear();
   _mc_hasEflowTrackP.clear();
   _mc_hasEflowTrackPt.clear();
