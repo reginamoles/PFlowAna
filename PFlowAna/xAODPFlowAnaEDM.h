@@ -65,6 +65,7 @@ const xAOD::TrackParticleContainer* m_InDetTrackParticles;
 const xAOD::CaloClusterContainer* m_topocluster;
 const xAOD::PFOContainer* m_JetETMissChargedParticleFlowObjects;
 const xAOD::PFOContainer* m_JetETMissNeutralParticleFlowObjects;
+const xAOD::CaloClusterContainer* m_JetETMissCaloClusterObjects;
 
 const xAOD::CaloClusterContainer* m_PFOcluster;
 

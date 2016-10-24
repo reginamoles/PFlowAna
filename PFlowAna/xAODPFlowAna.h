@@ -125,8 +125,10 @@ class xAODPFlowAna : public EL::Algorithm
   //----------------------------
   void resize_tpVectors(const xAOD::TruthParticleContainer*);
   void resize_PFOVectors(const xAOD::PFOContainer*);
+  void resize_CaloFromPFO(const xAOD::CaloClusterContainer*);
   void initialise_PFOVectors(int, int, int);
   void fill_PFOVectors(const xAOD::PFOContainer*);  
+  void fill_CaloFromPFO(const xAOD::CaloClusterContainer*);
   void tp_Selection(const xAOD::TruthParticleContainer* ,const xAOD::PFOContainer*);
   void ComputeCalibHitsPerParticle(const xAOD::CalCellInfoContainer* ,const xAOD::CalCellInfoContainer*, const xAOD::TruthParticleContainer*);
   void ComputeCalibHitsPerCluster(const xAOD::CalCellInfoContainer*, const xAOD::CaloClusterContainer*, int);
@@ -294,6 +296,12 @@ class xAODPFlowAna : public EL::Algorithm
    std::vector<double> _CalHitEPerPar; //!                  //calibration hit energy per particle
    std::vector<double> _CalHitEPerParAfterSubtraction; //! //calibration hit energy per particle
 
+   //Calotopocluster container from eflowRec
+   std::vector<long int> _calo_hash; //!
+   std::vector<double> _calo_EtaVariance; //!
+   std::vector<double> _calo_PhiVariance; //!
+   std::vector<double> _calo_MeanEta; //!
+   std::vector<double> _calo_MeanPhi; //!
 
    //The sum of all calibration hits in topoclusters for the ith mc particle
    //std::vector<float> _mc_trueE;//! 
@@ -315,8 +323,8 @@ class xAODPFlowAna : public EL::Algorithm
    std::vector<double> _full_Purity;//!
    std::vector<double> _v_dRp;//!
 
-
-   void eventDisplay(const xAOD::CaloClusterContainer* topocluster, int EventNumber);
+   void pflowDisplay(int EventNumber, int pflowNo, double etalow, double etahi, double philow, double phihi, const xAOD::CaloClusterContainer* topocluster, const xAOD::CaloClusterContainer* JetETMissCaloClusterObjects);
+   void eventDisplay(const xAOD::CaloClusterContainer* JetETMissCaloClusterObjects,const xAOD::CaloClusterContainer* topocluster, int EventNumber);
 
    // DeltaR calculation
    void CalculateMatrix_MinDeltaR (const xAOD::TruthParticleContainer*, const xAOD::PFOContainer*, float);
@@ -354,8 +362,6 @@ class xAODPFlowAna : public EL::Algorithm
     else
       return false;
   }
-
-  void pflowDisplay(int EventNumber, int pflowNo, double etalow, double etahi, double philow, double phihi, const xAOD::CaloClusterContainer* topocluster);
 
 public:
 

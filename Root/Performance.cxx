@@ -20,6 +20,7 @@ void xAODPFlowAna :: resize_tpVectors(const xAOD::TruthParticleContainer* TruthP
   _mc_hasEflowTrack.resize(TruthParticles->size());
   _mc_LFI.resize(TruthParticles->size());
   _mc_hasEflowTrackIndex.resize(TruthParticles->size());
+  for(int i=0; i<_mc_hasEflowTrackIndex.size();++i) _mc_hasEflowTrackIndex.at(i) = -1;
   _mc_hasEflowTrackP.resize(TruthParticles->size());
   _mc_hasEflowTrackPt.resize(TruthParticles->size());
   _mc_hasEflowTrackEtaAtLayer.resize(TruthParticles->size());
@@ -99,6 +100,19 @@ void xAODPFlowAna :: resize_PFOVectors(const xAOD::PFOContainer* JetETMissCharge
 
   
   return;
+}
+
+/////////////////////////////
+// Resize CaloFromPFO vectors
+/////////////////////////////
+void xAODPFlowAna::resize_CaloFromPFO(const xAOD::CaloClusterContainer* m_JetETMissCaloClusterObjects) {
+  _calo_hash.resize(m_JetETMissCaloClusterObjects->size());
+  _calo_EtaVariance.resize(m_JetETMissCaloClusterObjects->size());
+  _calo_PhiVariance.resize(m_JetETMissCaloClusterObjects->size());
+  _calo_MeanEta.resize(m_JetETMissCaloClusterObjects->size());
+  _calo_MeanPhi.resize(m_JetETMissCaloClusterObjects->size());
+  return;
+
 }
 
 /////////////////////////////
@@ -200,6 +214,24 @@ void xAODPFlowAna :: fill_PFOVectors(const xAOD::PFOContainer* JetETMissChargedP
   return;
 }
 
+void xAODPFlowAna::fill_CaloFromPFO(const xAOD::CaloClusterContainer* JetETMissCaloClusterObjects) {
+
+  xAOD::CaloClusterContainer::const_iterator calopfo_itr = JetETMissCaloClusterObjects->begin();
+  xAOD::CaloClusterContainer::const_iterator cpfo_end = JetETMissCaloClusterObjects->end();
+  int cpfo_index = 0;
+  for( ; calopfo_itr != cpfo_end; ++calopfo_itr ) {
+
+    cpfo_index = std::distance(JetETMissCaloClusterObjects->begin(),calopfo_itr);
+    _calo_hash.at(cpfo_index) = (*calopfo_itr)->auxdata< long int >("AllClusterHash");
+    _calo_EtaVariance.at(cpfo_index) = (*calopfo_itr)->auxdata< float >("MatchedClusterEtaVariance");
+    _calo_PhiVariance.at(cpfo_index) = (*calopfo_itr)->auxdata< float >("MatchedClusterPhiVariance");
+    _calo_MeanEta.at(cpfo_index) = (*calopfo_itr)->auxdata< float >("MeanEta");
+    _calo_MeanPhi.at(cpfo_index) = (*calopfo_itr)->auxdata< float >("MeanPhi");
+
+  }
+  return;
+
+}
 
 /////////////////////////////
 // Truth particle SELECTION

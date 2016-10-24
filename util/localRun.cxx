@@ -44,7 +44,7 @@ int main( int argc, char* argv[] ) {
   EL::Job job;
   job.sampleHandler( sh );
   job.options()->setDouble (EL::Job::optSkipEvents, 0); //90
-  job.options()->setDouble (EL::Job::optMaxEvents, 1); //100
+  job.options()->setDouble (EL::Job::optMaxEvents, 100); //100
 
   // Add our analysis to the job:
   // SinglePionLowPerformanceStudies, DijetLowPerformance, DijetSubtraction, Zmumu

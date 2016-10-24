@@ -585,7 +585,8 @@ EL::StatusCode xAODPFlowAna :: execute ()
   m_JetETMissNeutralParticleFlowObjects = 0;
   ANA_CHECK(m_event->retrieve(m_JetETMissNeutralParticleFlowObjects,"JetETMissNeutralParticleFlowObjects"));
 //  PrintPFOInfo( m_JetETMissChargedParticleFlowObjects,m_JetETMissNeutralParticleFlowObjects, PrintDebug);
-
+  m_JetETMissCaloClusterObjects = 0;
+  ANA_CHECK(m_event->retrieve(m_JetETMissCaloClusterObjects,"JetETMissCaloClusterObjects"));
   //---------------------------
   // EMTopoCluster and PFO cluster
   //---------------------------
@@ -832,8 +833,10 @@ EL::StatusCode xAODPFlowAna :: execute ()
   if(m_SinglePionLowPerformanceStudies || m_DijetLowPerformance || m_DijetSubtraction){
     resize_tpVectors(m_TruthParticles);
     resize_PFOVectors(m_JetETMissChargedParticleFlowObjects);
+    resize_CaloFromPFO(m_JetETMissCaloClusterObjects);
     initialise_PFOVectors((int)m_TruthParticles->size(), (int)m_topocluster->size(), (int)m_JetETMissChargedParticleFlowObjects->size());
     fill_PFOVectors(m_JetETMissChargedParticleFlowObjects);
+    fill_CaloFromPFO(m_JetETMissCaloClusterObjects);
     // Calculate the MinDeltaR between cPFO and truth particles and fill the vector _mc_MinDeltaREflowTrackPair
     CalculateMatrix_MinDeltaR (m_TruthParticles, m_JetETMissChargedParticleFlowObjects, 0.03);
     //truth particle selection
@@ -852,7 +855,7 @@ EL::StatusCode xAODPFlowAna :: execute ()
     //fill histograms
     fill_RPlus_R0(m_TruthParticles);
     if (!m_folder.empty()) {
-      eventDisplay(m_topocluster, m_eventCounter - 1);
+      eventDisplay(m_JetETMissCaloClusterObjects, m_topocluster, m_eventCounter - 1);
     }
   }
   
