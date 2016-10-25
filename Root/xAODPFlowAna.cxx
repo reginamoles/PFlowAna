@@ -328,6 +328,7 @@ EL::StatusCode xAODPFlowAna :: initialize ()
   GEV = 1000.; //Units
   
   // *WIP* Counters for Data-MC CutFlow (Christian)
+  // I am confused
   m_select = 0;
   m_trigger = 0;
   m_number = 0;
@@ -400,6 +401,7 @@ EL::StatusCode xAODPFlowAna :: initialize ()
   //jerTool.msg()->setLevel(MSG::DEBUG);
   ANA_CHECK( m_JERTool->setProperty("PlotFileName", "JetResolution/Prerec2015_xCalib_2012JER_ReducedTo9NP_Plots_v2.root") );
   ANA_CHECK( m_JERTool->setProperty("CollectionName", "AntiKt4EMTopoJets") );
+  //searchforthis
   ANA_CHECK( m_JERTool->initialize() );
 
   // Configure the JERSmearingTool
@@ -422,6 +424,13 @@ EL::StatusCode xAODPFlowAna :: initialize ()
   const CP::SystematicRegistry& registry = CP::SystematicRegistry::getInstance();
   const CP::SystematicSet& recommendedSystematics = registry.recommendedSystematics(); // get list of recommended systematics
   m_sysList = CP::make_systematics_vector(recommendedSystematics); 
+  
+  m_muonSelection = new CP::MuonSelectionTool("MuonSelection");
+  //m_muonSelection.msg()->setLevel( MSG::VERBOSE );
+  ANA_CHECK( m_muonSelection->setProperty( "MaxEta", 2.5 ));
+  ANA_CHECK( m_muonSelection->setProperty( "MuQuality", 1));
+  ANA_CHECK (m_muonSelection->initialize());
+        
   
   //Electron calibration	
   m_electronCalibrationAndSmearingTool = new CP::EgammaCalibrationAndSmearingTool("ElectronCorrectionTool"); 
@@ -479,6 +488,11 @@ EL::StatusCode xAODPFlowAna :: initialize ()
   
   ANA_CHECK(m_pileuptool->initialize() );
   
+  m_trig_sf = new CP::MuonTriggerScaleFactors("TrigSFClass");
+  ANA_CHECK(m_trig_sf->initialize());
+
+  
+  
  return EL::StatusCode::SUCCESS;
 }
 
@@ -513,6 +527,8 @@ EL::StatusCode xAODPFlowAna :: execute ()
 	float pileupWeight = m_pileuptool->getCombinedWeight( *m_EventInfo);
 	std::cout<<" pileupWeight = " <<pileupWeight<<std::endl; 
 	Info("execute()", "pileupweight = %f", m_pileuptool->getCombinedWeight( *m_EventInfo )); 
+	
+	//CorrectionCode setRunNumber(Int_t runNumber);
 
   
   // check if the event is data or MC
@@ -542,7 +558,7 @@ EL::StatusCode xAODPFlowAna :: execute ()
   
   //trigger tools: here the trigger chain is chosen
 //  auto chainGroup = m_trigDecisionTool->getChainGroup("HLT_mu26_ivarmedium, HLT_mu50");
-  auto chainGroup = m_trigDecisionTool->getChainGroup("HLT_mu50"); //zhangrui
+  auto chainGroup = m_trigDecisionTool->getChainGroup("HLT_mu26_ivarmedium, HLT_mu50"); //zhangrui
   std::map<std::string,int> triggerCounts;
   int trigger = 0;
   for(auto &trig : chainGroup->getListOfTriggers()) {

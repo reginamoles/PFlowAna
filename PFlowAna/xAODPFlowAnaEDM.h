@@ -43,6 +43,8 @@
 #include "JetResolution/JERTool.h"
 #include "JetResolution/JERSmearingTool.h"
 #include "MuonMomentumCorrections/MuonCalibrationAndSmearingTool.h"
+#include "MuonEfficiencyCorrections/MuonTriggerScaleFactors.h"
+#include "MuonSelectorTools/MuonSelectionTool.h"
 #include <ElectronPhotonFourMomentumCorrection/EgammaCalibrationAndSmearingTool.h>
 #include <IsolationSelection/IsolationSelectionTool.h>
 #include "ElectronPhotonSelectorTools/AsgElectronLikelihoodTool.h"
@@ -107,6 +109,9 @@ JERSmearingTool *m_SmearTool;
 //Tool for Muon-Calibration (+systematics)
 CP::MuonCalibrationAndSmearingTool *m_muonCalibrationAndSmearingTool; 
 std::vector<CP::SystematicSet> m_sysList; 
+CP::MuonTriggerScaleFactors *m_trig_sf;
+CP::MuonSelectionTool *m_muonSelection;
+
 
 //Tool for electron calibration
 CP::IEgammaCalibrationAndSmearingTool *m_electronCalibrationAndSmearingTool;
