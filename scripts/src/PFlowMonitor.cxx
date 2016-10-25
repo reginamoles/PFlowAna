@@ -92,6 +92,8 @@ void PFlowMonitor::run(char* inputs, char* outfolder)
 ////
 //////////////////////////////
 void PFlowMonitor::PlotEtaPtBins(const char* outfolder) {
+  std::string out = outfolder;
+
   bool c_showNumber(!false);
   bool c_overlay(true);
   int tcolor[5] = {4, 2, 8, 6, 28};
@@ -204,7 +206,7 @@ void PFlowMonitor::PlotEtaPtBins(const char* outfolder) {
           h_pTs[ipt]->SetLineColor(1);
           h_pTs[ipt]->Draw("hist");
           Legend->Draw();
-          Can_Efficiency->GetPad(ieta + 1)->SaveAs(Form("%s%s_%d_%d.eps", outfolder, catagory[icat].c_str(), ieta, ipt));
+          Can_Efficiency->GetPad(ieta + 1)->SaveAs(Form("%s%s_%d_%d.eps", out.c_str(), catagory[icat].c_str(), ieta, ipt));
           Legend->Clear();
           Can_Efficiency->GetPad(ieta + 1)->Update();
         }
@@ -217,7 +219,7 @@ void PFlowMonitor::PlotEtaPtBins(const char* outfolder) {
       Legend->Draw();
       h_pTs[0]->Draw("axissame");
       if (c_overlay) {
-        Can_Efficiency->GetPad(ieta + 1)->SaveAs(Form("%s%s_%d.eps", outfolder, catagory[icat].c_str(), ieta));
+        Can_Efficiency->GetPad(ieta + 1)->SaveAs(Form("%s%s_%d.eps", out.c_str(), catagory[icat].c_str(), ieta));
       }
     }
   }
@@ -226,6 +228,8 @@ void PFlowMonitor::PlotEtaPtBins(const char* outfolder) {
 }
 
 void PFlowMonitor::Efficiency(const char* outfolder) {
+  std::string out = outfolder;
+
   bool c_showNumber(!false);
   int tcolor[4] = {1, 4, 8, 2};
 
@@ -310,7 +314,7 @@ void PFlowMonitor::Efficiency(const char* outfolder) {
         Legend->Draw();
       }
       h_cats[0]->Draw("axissame");
-      Can_Efficiency->SaveAs(Form("%s%s_%d_%d.eps", outfolder, catagory[0].c_str(), ieta, ipt));
+      Can_Efficiency->SaveAs(Form("%s%s_%d_%d.eps", out.c_str(), catagory[0].c_str(), ieta, ipt));
       delete Can_Efficiency;
     }
   }
@@ -318,6 +322,8 @@ void PFlowMonitor::Efficiency(const char* outfolder) {
 }
 
 void PFlowMonitor::eflowdRp(const char* outfolder, const int mode) {
+  std::string out = outfolder;
+
   bool c_showNumber(!false);
   int tcolor[3] = {1, 4, 2};
 
@@ -410,7 +416,7 @@ void PFlowMonitor::eflowdRp(const char* outfolder, const int mode) {
         Legend->Draw();
       }
       h_cats[0]->Draw("axissame");
-      Can_Efficiency->SaveAs(Form("%s%s%d_%d_%d.eps", outfolder, catagory[0].c_str(), mode, ieta, ipt));
+      Can_Efficiency->SaveAs(Form("%s%s%d_%d_%d.eps", out.c_str(), catagory[0].c_str(), mode, ieta, ipt));
       delete Can_Efficiency;
     }
   }
@@ -418,6 +424,7 @@ void PFlowMonitor::eflowdRp(const char* outfolder, const int mode) {
 }
 
 void PFlowMonitor::AverageEfficiencyPerPt(const char* outfolder) {
+  std::string out = outfolder;
 
   bool c_showNumber(!false);
   int tcolor[3] = { 4, 2, 8 };
@@ -504,13 +511,14 @@ void PFlowMonitor::AverageEfficiencyPerPt(const char* outfolder) {
     if (!empty) {
       Legend->Draw();
       h_result[0]->Draw("axissame");
-      Can_AverEfficiency->SaveAs(Form("%sAverageEfficiency_%d.eps", outfolder, icat));
+      Can_AverEfficiency->SaveAs(Form("%sAverageEfficiency_%d.eps", out.c_str(), icat));
     }
     delete Can_AverEfficiency;
   }
 }
 
 void PFlowMonitor::PlotSimple(const char* outfolder) {
+  std::string out = outfolder;
 
   std::vector<std::string> catagory;
   catagory.push_back("h_Extratrack_eta");
@@ -551,7 +559,7 @@ void PFlowMonitor::PlotSimple(const char* outfolder) {
     if (entries != 0) {
       h_pTs->SetLineColor(1);
       h_pTs->Draw("hist");
-      Can_simple->SaveAs(Form("%s%s.eps", outfolder, catagory[icat].c_str()));
+      Can_simple->SaveAs(Form("%s%s.eps", out.c_str(), catagory[icat].c_str()));
     }
   }
 

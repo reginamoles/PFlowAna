@@ -49,7 +49,7 @@ void xAODPFlowAna::pflowDisplay(int EventNumber, int pflowNo, double etalow, dou
     double etavar = sqrt(_calo_EtaVariance[i_clus]);
     double phivar = sqrt(_calo_PhiVariance[i_clus]);
     if (etavar < 0.00001) continue; // too little energy in the cluster
-    if (eta < etalow + 0.05 || eta > etahi - 0.05 || phi < philow + 0.05 || phi > phihi - 0.05) continue;
+    if (i_clus != _mc_imax.at(imc) && (eta < etalow + 0.05 || eta > etahi - 0.05 || phi < philow + 0.05 || phi > phihi - 0.05)) continue;
     long int calohash = _calo_hash[i_clus];
 
     cluster_ellipse->SetX1(eta);
@@ -98,24 +98,26 @@ void xAODPFlowAna::pflowDisplay(int EventNumber, int pflowNo, double etalow, dou
     max_ellipse->DrawClone(); //kBlue
     TArrow* maxArror = 0;
     if (max_ellipse->GetX1() < etalow) {
-      maxArror = new TArrow(0,0.1,max_ellipse->GetY1(), max_ellipse->GetY1());
+      maxArror = new TArrow(etalow+0.1,max_ellipse->GetY1(), etalow,max_ellipse->GetY1(), 0.02,"|>");
     }
     if (max_ellipse->GetX1() > etahi) {
-      maxArror = new TArrow(0.9,1,max_ellipse->GetY1(), max_ellipse->GetY1());
+      maxArror = new TArrow(etahi-0.1,max_ellipse->GetY1(),etahi, max_ellipse->GetY1(), 0.02,"|>");
     }
     if (max_ellipse->GetY1() > phihi) {
-      maxArror = new TArrow(max_ellipse->GetX1(), max_ellipse->GetX1(), 0.9, 1);
+      maxArror = new TArrow(max_ellipse->GetX1(), phihi-0.1, max_ellipse->GetX1(), phihi, 0.02,"|>");
     }
     if (max_ellipse->GetY1() < philow) {
-      maxArror = new TArrow(max_ellipse->GetX1(), max_ellipse->GetX1(), 0., 0.1);
+      maxArror = new TArrow(max_ellipse->GetX1(), philow-0.1, max_ellipse->GetX1(), philow, 0.02,"|>");
     }
     if (maxArror) {
+      maxArror->SetLineColor(4);
+      maxArror->SetLineWidth(2);
       maxArror->Draw();
     }
   }
   if (pos1_ellipse)pos1_ellipse->DrawClone(); // kYellow
 
-  TLegend* Legend = new TLegend(0.6, 0.89, 0.9, 0.89);
+  TLegend* Legend = new TLegend(0.5, 0.89, 0.9, 0.89);
 
   /* draw track marker */
   TMarker* track_mark = new TMarker(), *track, *otrack = 0, *wotrack = 0;
@@ -131,14 +133,14 @@ void xAODPFlowAna::pflowDisplay(int EventNumber, int pflowNo, double etalow, dou
       track_mark->SetMarkerSize(2);
       track_mark->SetMarkerColor(kRed);
       track_mark->DrawMarker(_mc_etaExtra[i_mcPart], _mc_phiExtra[i_mcPart]);
-      momentum = new TText(_mc_etaExtra[i_mcPart], _mc_phiExtra[i_mcPart], Form("%.1f[%d]", _mc_hasEflowTrackPt.at(imc) / GEV, _mc_LFI.at(imc)));
-      momentum->SetTextColor(kRed+2);
-      momentum->SetTextSize(0.03);
-      momentum->Draw();
+//      momentum = new TText(_mc_etaExtra[i_mcPart], _mc_phiExtra[i_mcPart], Form("%.1f[%d]", _mc_hasEflowTrackPt.at(imc) / GEV, _mc_LFI.at(imc)));
+//      momentum->SetTextColor(kRed+2);
+//      momentum->SetTextSize(0.03);
+//      momentum->Draw();
       Info("EventDisplay", "Extrapolated studied track: (%.3f, %.3f), LFI = %d", _mc_etaExtra[i_mcPart], _mc_phiExtra[i_mcPart], _mc_LFI.at(imc));
       track = (TMarker*)track_mark->Clone();
       Legend->SetY1(Legend->GetY1() - 0.04);
-      Legend->AddEntry(track, "Extrapolated track", "p");
+      Legend->AddEntry(track, Form("Studied track %.1f GeV [%d]", _mc_hasEflowTrackPt.at(imc) / GEV, _mc_LFI.at(imc)), "p");
 
       m_H1Dict["h_Extratrack_eta"]->Fill(_mc_etaExtra[i_mcPart]);
       m_H1Dict["h_Extratrack_phi"]->Fill(_mc_etaExtra[i_mcPart]);
@@ -162,19 +164,19 @@ void xAODPFlowAna::pflowDisplay(int EventNumber, int pflowNo, double etalow, dou
     }
 
   }
-  if (max_ellipse) {
-    TText* eff_imax = new TText(max_ellipse->GetX1(), max_ellipse->GetY1(), Form("%.2f", _full_Efficiency_max[imc]));
-    eff_imax->SetTextSize(0.03);
-    eff_imax->Draw();
-  }
-  if (pos1_ellipse) {
-    TText* eff_pos1 = new TText(pos1_ellipse->GetX1(), pos1_ellipse->GetY1(), Form("%.2f", _v_Efficiency[3 * imc + 0]));
-    eff_pos1->SetTextSize(0.03);
-    eff_pos1->Draw();
-  }
-  if(momentum) {
-    momentum->Draw();
-  }
+//  if (max_ellipse) {
+//    TText* eff_imax = new TText(max_ellipse->GetX1(), max_ellipse->GetY1(), Form("%.2f", _full_Efficiency_max[imc]));
+//    eff_imax->SetTextSize(0.03);
+//    eff_imax->Draw();
+//  }
+//  if (pos1_ellipse) {
+//    TText* eff_pos1 = new TText(pos1_ellipse->GetX1(), pos1_ellipse->GetY1(), Form("%.2f", _v_Efficiency[3 * imc + 0]));
+//    eff_pos1->SetTextSize(0.03);
+//    eff_pos1->Draw();
+//  }
+//  if(momentum) {
+//    momentum->Draw();
+//  }
 
   h_ED_EtaPhi->Draw("axis same");
 
@@ -192,11 +194,11 @@ void xAODPFlowAna::pflowDisplay(int EventNumber, int pflowNo, double etalow, dou
   }
   if(max_ellipse) {
     Legend->SetY1(Legend->GetY1() - 0.04);
-    Legend->AddEntry(max_ellipse, "Leading cluster", "f");
+    Legend->AddEntry(max_ellipse, Form("Leading cluster (%.2f)", _full_Efficiency_max[imc]), "f");
   }
   if(pos1_ellipse) {
     Legend->SetY1(Legend->GetY1() - 0.04);
-    Legend->AddEntry(pos1_ellipse, "Matched cluster", "f");
+    Legend->AddEntry(pos1_ellipse, Form("Matched cluster (%.2f)", _v_Efficiency[3 * imc + 0]), "f");
   }
   Legend->Draw();
 
@@ -213,7 +215,8 @@ void xAODPFlowAna::eventDisplay(const xAOD::CaloClusterContainer* JetETMissCaloC
     if (_mc_pos1[i_mcPart] == _mc_imax[i_mcPart]) continue;
     if (_mc_etaExtra[i_mcPart] < -990 || _mc_phiExtra[i_mcPart] < -990) continue;
 
-//    if(_mc_hasEflowTrackIndex.at(i_mcPart)!=0) continue;
+//    if(EventNumber == 11) return;
+//    if(_mc_hasEflowTrackIndex.at(i_mcPart)!=80) continue;
 
     int etalow = _mc_etaExtra[i_mcPart] * 10 - 5;
     int etahi = _mc_etaExtra[i_mcPart] * 10 + 5;
