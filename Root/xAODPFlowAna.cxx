@@ -227,6 +227,7 @@ EL::StatusCode xAODPFlowAna :: histInitialize ()
     //Christian's histogram's
     bookH1DHistogram("h_trackcount", 30, 0, 30);
     bookH1DHistogram("h_chfrac", 10, 0, 1);
+    bookH1DHistogram("h_cuts", 7, 0, 7);
     
     //framework performance histograms
     
@@ -488,8 +489,8 @@ EL::StatusCode xAODPFlowAna :: initialize ()
   
   ANA_CHECK(m_pileuptool->initialize() );
   
-  m_trig_sf = new CP::MuonTriggerScaleFactors("TrigSFClass");
-  ANA_CHECK(m_trig_sf->initialize());
+  //m_trig_sf = new CP::MuonTriggerScaleFactors("TrigSFClass");
+  //ANA_CHECK(m_trig_sf->initialize());
 
   
   
@@ -523,10 +524,7 @@ EL::StatusCode xAODPFlowAna :: execute ()
   ANA_CHECK(m_event->retrieve( m_EventInfo, "EventInfo"));  
   
   
-	m_pileuptool->apply(*m_EventInfo, true);
-	float pileupWeight = m_pileuptool->getCombinedWeight( *m_EventInfo);
-	std::cout<<" pileupWeight = " <<pileupWeight<<std::endl; 
-	Info("execute()", "pileupweight = %f", m_pileuptool->getCombinedWeight( *m_EventInfo )); 
+	
 	
 	//CorrectionCode setRunNumber(Int_t runNumber);
 
@@ -536,11 +534,25 @@ EL::StatusCode xAODPFlowAna :: execute ()
   m_EvtWeight = 1.0;
   
   if( m_EventInfo->eventType( xAOD::EventInfo::IS_SIMULATION ) ) isMC = true; 
+  
+  
+  if( isMC ){
+  m_pileuptool->apply(*m_EventInfo, true);
+	float pileupWeight = m_pileuptool->getCombinedWeight( *m_EventInfo);
+	std::cout<<" pileupWeight = " <<pileupWeight<<std::endl; 
+	Info("execute()", "pileupweight = %f", m_pileuptool->getCombinedWeight( *m_EventInfo )); 
+	
+}
+
+
   //info mismatch
   if( isMC ) { m_EvtWeight = m_EventInfo->mcEventWeight();}
   Info("execute()", "Event number = %llu  Run Number =  %d  Event weight = %.2f  isMC = %s",m_EventInfo->eventNumber(), m_EventInfo->runNumber(), m_EvtWeight, (isMC ? "true" : "false"));
 
-
+	m_H1Dict["h_cuts"]->Fill(1, m_EvtWeight); //general events
+	
+	
+	
   //--------------------------------------------------------------------------------------------------
   // Event cleaning to be applied on data:
   // Cuts defined to remove problematic luminosity blocks (~1 minute of data taking) based on the GRL
@@ -554,7 +566,7 @@ EL::StatusCode xAODPFlowAna :: execute ()
       return EL::StatusCode::SUCCESS; // go to the next event
     } 
   }
-  
+  m_H1Dict["h_cuts"]->Fill(2, m_EvtWeight);//after grl
   
   //trigger tools: here the trigger chain is chosen
 //  auto chainGroup = m_trigDecisionTool->getChainGroup("HLT_mu26_ivarmedium, HLT_mu50");
@@ -569,7 +581,7 @@ EL::StatusCode xAODPFlowAna :: execute ()
     Info("execute()", "Trigger + %i", trigger);
   } 
 
-  //***Later we will require pass the trigger (not added yet)
+  if(trigger) m_H1Dict["h_cuts"]->Fill(3, m_EvtWeight); //after trigger
   
   
   if( isMC ){
@@ -921,6 +933,8 @@ EL::StatusCode xAODPFlowAna :: execute ()
         if (m_trigmatchingtool->match({mu}, chaintest, 0.4)) match_found = true;
        if (match_found) break;
       }
+      
+      if(match_found) m_H1Dict["h_cuts"]->Fill(4, m_EvtWeight); //after trigger matching
 
       
       
@@ -932,6 +946,8 @@ EL::StatusCode xAODPFlowAna :: execute ()
     
     
     if(ZmumuSelection(goodElectrons, goodMuons) && match_found) m_goodevents++;
+    
+    if(ZmumuSelection(goodElectrons, goodMuons) && match_found) m_H1Dict["h_cuts"]->Fill(5, m_EvtWeight); //after selection
     //---------------------------
     // Zmumu selection
     //---------------------------
