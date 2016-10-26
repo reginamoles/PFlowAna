@@ -80,12 +80,12 @@ void PFlowMonitor::run(char* inputs, char* outfolder)
   system(Form("mkdir -vp plots/%s/", outfolder));
   setStyle();
   PlotEtaPtBins(Form("plots/%s/", outfolder));
-  Efficiency(Form("plots/%s/", outfolder));
-  eflowdRp(Form("plots/%s/", outfolder), 0);
-  eflowdRp(Form("plots/%s/", outfolder), 1);
-
-  AverageEfficiencyPerPt(Form("plots/%s/", outfolder));
-  PlotSimple(Form("plots/%s/", outfolder));
+//  Efficiency(Form("plots/%s/", outfolder));
+//  eflowdRp(Form("plots/%s/", outfolder), 0);
+//  eflowdRp(Form("plots/%s/", outfolder), 1);
+//
+//  AverageEfficiencyPerPt(Form("plots/%s/", outfolder));
+//  PlotSimple(Form("plots/%s/", outfolder));
 
 }
 
@@ -98,16 +98,17 @@ void PFlowMonitor::PlotEtaPtBins(const char* outfolder) {
   bool c_overlay(true);
   int tcolor[5] = {4, 2, 8, 6, 28};
 
-  std::vector<std::string> catagory;
-  catagory.push_back("EffMatch1");
-  catagory.push_back("EffMatchboth");
-  catagory.push_back("PurMatch1");
-  catagory.push_back("PurMatch2");
-  catagory.push_back("dRp_leading");
-  catagory.push_back("dRp_1st");
-  catagory.push_back("dRp_2nd");
-  catagory.push_back("SubtractStatus");
-  catagory.push_back("NClus_09");
+  std::vector<std::string> catagory; int over(0);
+  catagory.push_back("EffMatch1"); over++;
+  catagory.push_back("EffMatchboth"); over++;
+  catagory.push_back("PurMatch1"); over++;
+  catagory.push_back("PurMatch2"); over++;
+  catagory.push_back("dRp_leading"); over++;
+  catagory.push_back("dRp_1st"); over++;
+  catagory.push_back("dRp_2nd"); over++;
+  catagory.push_back("SubtractStatus"); over++;
+  catagory.push_back("LHED"); over++;
+  catagory.push_back("NClus_09"); over++;
 
   catagory.push_back("EffLeading");
 
@@ -120,11 +121,12 @@ void PFlowMonitor::PlotEtaPtBins(const char* outfolder) {
   xTitle.push_back("#Delta R'_{1st cluster}^2");
   xTitle.push_back("#Delta R'_{2nd cluster}^2");
   xTitle.push_back("Stage");
+  xTitle.push_back("LHED");
   xTitle.push_back("N_{cluster}(#Sigma E^{true}>90%)");
   xTitle.push_back("#varepsilon_{leading cluster}");
 
   for (unsigned int icat = 0; icat < (m_debug ? 1 : catagory.size()); ++icat) {
-    if (icat > 8) c_overlay = false;
+    if ((int)icat > over) c_overlay = false;
     TCanvas* Can_Efficiency = new TCanvas(catagory[icat].c_str(), catagory[icat].c_str(), 900, 800);
     Can_Efficiency->Divide(2, 2);
     TH1F* h_pTs[5];
@@ -139,9 +141,9 @@ void PFlowMonitor::PlotEtaPtBins(const char* outfolder) {
       Legend->SetTextSize(20);
 
       int first(0);
+      double maxY(0);
       for (unsigned int ipt = 0; ipt < m_ptRange.size(); ++ipt) {
         std::pair<std::string, std::string> names = histName(ipt, ieta, catagory[icat], "", m_ptRange, m_etaRange);
-
         for(unsigned int ifile = 0; ifile < HistFile.size(); ++ifile) {
           if (m_debug) std::cout<<HistFile[ifile]->GetName()<<std::endl;
           if (ifile == 0) {
@@ -174,9 +176,10 @@ void PFlowMonitor::PlotEtaPtBins(const char* outfolder) {
           h_pTs[ipt]->Scale(1. / entries);
           first++;
         }
-        double maxY = h_pTs[ipt]->GetBinCenter(h_pTs[ipt]->GetMaximumBin());
+        double tmp(h_pTs[ipt]->GetBinContent(h_pTs[ipt]->GetMaximumBin()));
+        maxY = (maxY > tmp) ? maxY : tmp;
         if (c_overlay) {
-          h_pTs[ipt]->GetYaxis()->SetRangeUser(0, (maxY > 0.8 ? maxY * 1.2 : 0.8));
+          h_pTs[0]->GetYaxis()->SetRangeUser(0, (maxY > 0.8 ? maxY * 1.2 : 0.8));
         } else {
 //          h_pTs[ipt]->GetYaxis()->SetRangeUser(0, maxY);
         }
