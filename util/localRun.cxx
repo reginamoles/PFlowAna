@@ -16,9 +16,11 @@ int main( int argc, char* argv[] ) {
   std::string submitDir = "submitDir";
   std::string path = "";
   std::string input = "";
+  int number(100);
   if( argc > 1 ) submitDir = argv[ 1 ];
   if( argc > 2 ) path = argv[ 2 ];
   if( argc > 3 ) input = argv[ 3 ];
+  if( argc > 4 ) number = atoi(argv[ 4 ]);
 
   // Set up the job for xAOD access:
   xAOD::Init().ignore();
@@ -44,7 +46,7 @@ int main( int argc, char* argv[] ) {
   EL::Job job;
   job.sampleHandler( sh );
   job.options()->setDouble (EL::Job::optSkipEvents, 0); //90
-  job.options()->setDouble (EL::Job::optMaxEvents, 100); //100
+  job.options()->setDouble (EL::Job::optMaxEvents, number); //100
 
   // Add our analysis to the job:
   // SinglePionLowPerformanceStudies, DijetLowPerformance, DijetSubtraction, Zmumu

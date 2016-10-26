@@ -15,6 +15,7 @@
 
 
 void xAODPFlowAna::pflowDisplay(int EventNumber, int pflowNo, double etalow, double etahi, double philow, double phihi, const xAOD::CaloClusterContainer* topocluster, const xAOD::CaloClusterContainer* JetETMissCaloClusterObjects) {
+
   TCanvas* EDCanEtaPhi = new TCanvas("EDCanEtaPhi", "Event Display: Eta-Phi view", 0, 0, 600, 600);
   /* declare eta-phi histogram */
   char htitle[100];
@@ -39,13 +40,13 @@ void xAODPFlowAna::pflowDisplay(int EventNumber, int pflowNo, double etalow, dou
   }
 
   /* draw cluster cloud */
+  if(true) {
   xAOD::CaloClusterContainer::const_iterator CaloCluster_itr = topocluster->begin();
   xAOD::CaloClusterContainer::const_iterator CaloCluster_end = topocluster->end();
   for (; CaloCluster_itr != CaloCluster_end; ++CaloCluster_itr) {
     int i_clus = std::distance(topocluster->begin(), CaloCluster_itr);
     double eta = (*CaloCluster_itr)->rawEta();
     double phi = (*CaloCluster_itr)->rawPhi();
-//    double etavar(0.05), phivar(0.05);
     double etavar = sqrt(_calo_EtaVariance[i_clus]);
     double phivar = sqrt(_calo_PhiVariance[i_clus]);
     if (etavar < 0.00001) continue; // too little energy in the cluster
@@ -59,7 +60,7 @@ void xAODPFlowAna::pflowDisplay(int EventNumber, int pflowNo, double etalow, dou
     cluster_ellipse->SetFillColor(color);
     cluster_ellipse->SetFillStyle(style);
     cluster_ellipse->DrawClone();
-    double dRp = sqrt(pow((eta-_mc_etaExtra[imc])/etavar, 2.) + pow((phi - _mc_phiExtra[imc])/phivar, 2));
+    double dRp = sqrt(pow((eta-_mc_etaTrkEM2[imc])/etavar, 2.) + pow((phi - _mc_phiTrkEM2[imc])/phivar, 2));
     Info("EventDisplay", "Other clusters: (%.3f, %.3f) (%.3f, %.3f) : %.3f", eta, phi, etavar, phivar, dRp);
 
 
@@ -75,7 +76,7 @@ void xAODPFlowAna::pflowDisplay(int EventNumber, int pflowNo, double etalow, dou
       cluster_ellipse->SetFillStyle(3544);
       cluster_ellipse->SetFillColor(4);
       max_ellipse = (TEllipse*) (cluster_ellipse->Clone());
-      double dRp = sqrt(pow((eta-_mc_etaExtra[imc])/etavar, 2.) + pow((phi - _mc_phiExtra[imc])/phivar, 2));
+      double dRp = sqrt(pow((eta-_mc_etaTrkEM2[imc])/etavar, 2.) + pow((phi - _mc_phiTrkEM2[imc])/phivar, 2));
       Info("EventDisplay", "Leading cluster: (%.3f, %.3f) (%.3f, %.3f) : %.3f", eta, phi, etavar, phivar, dRp);
     } else if (i_clus == _mc_pos1.at(imc)) {
       assert(calohash ==_mc_matchedClusterHash.at(imc).first);
@@ -90,7 +91,7 @@ void xAODPFlowAna::pflowDisplay(int EventNumber, int pflowNo, double etalow, dou
       cluster_ellipse->SetFillStyle(3352);
       cluster_ellipse->SetFillColor(5);
       pos1_ellipse = (TEllipse*) (cluster_ellipse->Clone());
-      double dRp = sqrt(pow((eta-_mc_etaExtra[imc])/etavar, 2.) + pow((phi - _mc_phiExtra[imc])/phivar, 2));
+      double dRp = sqrt(pow((eta-_mc_etaTrkEM2[imc])/etavar, 2.) + pow((phi - _mc_phiTrkEM2[imc])/phivar, 2));
       Info("EventDisplay", "Matched cluster: (%.3f, %.3f) (%.3f, %.3f) : %.3f", eta, phi, etavar, phivar, dRp);
     }
   }
@@ -116,67 +117,64 @@ void xAODPFlowAna::pflowDisplay(int EventNumber, int pflowNo, double etalow, dou
     }
   }
   if (pos1_ellipse)pos1_ellipse->DrawClone(); // kYellow
+  }
 
   TLegend* Legend = new TLegend(0.5, 0.89, 0.9, 0.89);
 
   /* draw track marker */
-  TMarker* track_mark = new TMarker(), *track, *otrack = 0, *wotrack = 0;
-  TText* momentum = 0;
+  TMarker* track_mark_1 = new TMarker(), *track_mark_2 = new TMarker(), *track_mark_3 = new TMarker(), *track, *otrack = 0, *wotrack = 0;
+  if(true) {
   for (int i_mcPart = 0; i_mcPart < _mc_pos1.size(); ++i_mcPart) {
 
-    if (_mc_etaExtra[i_mcPart] < etalow + 0.05 || _mc_etaExtra[i_mcPart] > etahi - 0.05 || _mc_phiExtra[i_mcPart] < philow + 0.05 || _mc_phiExtra[i_mcPart] > phihi - 0.05)
+    if (_mc_etaTrkEM2[i_mcPart] < etalow + 0.05 || _mc_etaTrkEM2[i_mcPart] > etahi - 0.05 || _mc_phiTrkEM2[i_mcPart] < philow + 0.05 || _mc_phiTrkEM2[i_mcPart] > phihi - 0.05)
       continue;
 
     if (_mc_hasEflowTrackIndex.at(i_mcPart) == pflowNo) {
+      track_mark_1->SetMarkerStyle(20);
+      track_mark_1->SetMarkerSize(1.);
+      track_mark_1->SetMarkerColor(kRed-9);
+      track_mark_1->DrawMarker(_mc_etaTrkEM1[i_mcPart], _mc_phiTrkEM1[i_mcPart]);
 
-      track_mark->SetMarkerStyle(20);
-      track_mark->SetMarkerSize(2);
-      track_mark->SetMarkerColor(kRed);
-      track_mark->DrawMarker(_mc_etaExtra[i_mcPart], _mc_phiExtra[i_mcPart]);
-//      momentum = new TText(_mc_etaExtra[i_mcPart], _mc_phiExtra[i_mcPart], Form("%.1f[%d]", _mc_hasEflowTrackPt.at(imc) / GEV, _mc_LFI.at(imc)));
-//      momentum->SetTextColor(kRed+2);
-//      momentum->SetTextSize(0.03);
-//      momentum->Draw();
-      Info("EventDisplay", "Extrapolated studied track: (%.3f, %.3f), LFI = %d", _mc_etaExtra[i_mcPart], _mc_phiExtra[i_mcPart], _mc_LFI.at(imc));
-      track = (TMarker*)track_mark->Clone();
+      track_mark_2->SetMarkerStyle(20);
+      track_mark_2->SetMarkerSize(1.);
+      track_mark_2->SetMarkerColor(kRed);
+      track_mark_2->DrawMarker(_mc_etaTrkEM2[i_mcPart], _mc_phiTrkEM2[i_mcPart]);
+
+      track_mark_3->SetMarkerStyle(20);
+      track_mark_3->SetMarkerSize(1.);
+      track_mark_3->SetMarkerColor(kRed+2);
+      track_mark_3->DrawMarker(_mc_etaTrkEM3[i_mcPart], _mc_phiTrkEM3[i_mcPart]);
+
+      std::cout<<"zhangrui "<<_mc_etaTrkEM1[i_mcPart]<<","<< _mc_phiTrkEM1[i_mcPart]<<",("<<_mc_etaTrkEM2[i_mcPart]<<","<< _mc_phiTrkEM2[i_mcPart]<<",("<<_mc_etaTrkEM3[i_mcPart]<<","<< _mc_phiTrkEM3[i_mcPart]<<std::endl;
+
+      Info("EventDisplay", "Extrapolated studied track: (%.3f, %.3f), LFI = %d", _mc_etaTrkEM2[i_mcPart], _mc_phiTrkEM2[i_mcPart], _mc_LFI.at(imc));
+      track = (TMarker*)track_mark_2->Clone();
       Legend->SetY1(Legend->GetY1() - 0.04);
       Legend->AddEntry(track, Form("Studied track %.1f GeV [%d]", _mc_hasEflowTrackPt.at(imc) / GEV, _mc_LFI.at(imc)), "p");
 
-      m_H1Dict["h_Extratrack_eta"]->Fill(_mc_etaExtra[i_mcPart]);
-      m_H1Dict["h_Extratrack_phi"]->Fill(_mc_etaExtra[i_mcPart]);
+      if (_v_Efficiency[3 * imc + 0] < 0.01) {
+        m_H1Dict["Extratrack_eta_EM2"]->Fill(_mc_etaTrkEM2[i_mcPart]);
+        m_H1Dict["Extratrack_phi_EM2"]->Fill(_mc_phiTrkEM2[i_mcPart]);
+      }
 
     } else if (_mc_pos1[i_mcPart] != -1) {
-      track_mark->SetMarkerStyle(29);
-      track_mark->SetMarkerSize(1);
-      track_mark->SetMarkerColor(6);
-      track_mark->DrawMarker(_mc_etaExtra[i_mcPart], _mc_phiExtra[i_mcPart]);
-      Info("EventDisplay", "Track w/ matched cluster: (%.3f, %.3f)", _mc_etaExtra[i_mcPart], _mc_phiExtra[i_mcPart]);
-      otrack = (TMarker*)track_mark->Clone();
+      otrack->SetMarkerStyle(29);
+      otrack->SetMarkerSize(1);
+      otrack->SetMarkerColor(6);
+      otrack->DrawMarker(_mc_etaTrkEM2[i_mcPart], _mc_phiTrkEM2[i_mcPart]);
+      Info("EventDisplay", "Track w/ matched cluster: (%.3f, %.3f)", _mc_etaTrkEM2[i_mcPart], _mc_phiTrkEM2[i_mcPart]);
     } else if (_mc_imax[i_mcPart] != -1) {
-      track_mark->SetMarkerStyle(29);
-      track_mark->SetMarkerSize(1);
-      track_mark->SetMarkerColor(7);
-      track_mark->DrawMarker(_mc_etaExtra[i_mcPart], _mc_phiExtra[i_mcPart]);
-      Info("EventDisplay", "Track w/o matched cluster: (%.3f, %.3f)", _mc_etaExtra[i_mcPart], _mc_phiExtra[i_mcPart]);
-      wotrack = (TMarker*)track_mark->Clone();
+      wotrack->SetMarkerStyle(29);
+      wotrack->SetMarkerSize(1);
+      wotrack->SetMarkerColor(7);
+      wotrack->DrawMarker(_mc_etaTrkEM2[i_mcPart], _mc_etaTrkEM2[i_mcPart]);
+      Info("EventDisplay", "Track w/o matched cluster: (%.3f, %.3f)", _mc_etaTrkEM2[i_mcPart], _mc_etaTrkEM2[i_mcPart]);
     } else {
       continue;
     }
 
   }
-//  if (max_ellipse) {
-//    TText* eff_imax = new TText(max_ellipse->GetX1(), max_ellipse->GetY1(), Form("%.2f", _full_Efficiency_max[imc]));
-//    eff_imax->SetTextSize(0.03);
-//    eff_imax->Draw();
-//  }
-//  if (pos1_ellipse) {
-//    TText* eff_pos1 = new TText(pos1_ellipse->GetX1(), pos1_ellipse->GetY1(), Form("%.2f", _v_Efficiency[3 * imc + 0]));
-//    eff_pos1->SetTextSize(0.03);
-//    eff_pos1->Draw();
-//  }
-//  if(momentum) {
-//    momentum->Draw();
-//  }
+  }
 
   h_ED_EtaPhi->Draw("axis same");
 
@@ -213,15 +211,15 @@ void xAODPFlowAna::eventDisplay(const xAOD::CaloClusterContainer* JetETMissCaloC
 
   for (int i_mcPart = 0; i_mcPart < _mc_pos1.size(); ++i_mcPart) {
     if (_mc_pos1[i_mcPart] == _mc_imax[i_mcPart]) continue;
-    if (_mc_etaExtra[i_mcPart] < -990 || _mc_phiExtra[i_mcPart] < -990) continue;
+    if (_mc_etaTrkEM2[i_mcPart] < -990 || _mc_phiTrkEM2[i_mcPart] < -990) continue;
 
 //    if(EventNumber == 11) return;
-//    if(_mc_hasEflowTrackIndex.at(i_mcPart)!=80) continue;
+    if(_mc_hasEflowTrackIndex.at(i_mcPart)!=72) continue;
 
-    int etalow = _mc_etaExtra[i_mcPart] * 10 - 5;
-    int etahi = _mc_etaExtra[i_mcPart] * 10 + 5;
-    int philow = _mc_phiExtra[i_mcPart] * 10 - 5;
-    int phihi = _mc_phiExtra[i_mcPart] * 10 + 5;
+    int etalow = _mc_etaTrkEM2[i_mcPart] * 10 - 5;
+    int etahi = _mc_etaTrkEM2[i_mcPart] * 10 + 5;
+    int philow = _mc_phiTrkEM2[i_mcPart] * 10 - 5;
+    int phihi = _mc_phiTrkEM2[i_mcPart] * 10 + 5;
     pflowDisplay(m_eventCounter-1, _mc_hasEflowTrackIndex.at(i_mcPart), etalow*0.1, etahi*0.1, philow*0.1, phihi*0.1, topocluster, JetETMissCaloClusterObjects);
   }
 }

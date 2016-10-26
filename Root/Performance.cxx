@@ -28,8 +28,12 @@ void xAODPFlowAna :: resize_tpVectors(const xAOD::TruthParticleContainer* TruthP
   _mc_subtractStatus.resize(TruthParticles->size());
   _mc_RpMatchedCluster1.resize(TruthParticles->size());
   _mc_RpMatchedCluster2.resize(TruthParticles->size());
-  _mc_etaExtra.resize(TruthParticles->size());
-  _mc_phiExtra.resize(TruthParticles->size());
+  _mc_etaTrkEM1.resize(TruthParticles->size());
+  _mc_phiTrkEM1.resize(TruthParticles->size());
+  _mc_etaTrkEM2.resize(TruthParticles->size());
+  _mc_phiTrkEM2.resize(TruthParticles->size());
+  _mc_etaTrkEM3.resize(TruthParticles->size());
+  _mc_phiTrkEM3.resize(TruthParticles->size());
   _mc_pos1.resize(TruthParticles->size());
   _mc_imax.resize(TruthParticles->size());
   _mc_dRp_componets.resize(12*TruthParticles->size());
@@ -48,8 +52,6 @@ void xAODPFlowAna :: resize_PFOVectors(const xAOD::PFOContainer* JetETMissCharge
   _pfo_iniEoPexp.resize(JetETMissChargedParticleFlowObjects->size());
   _pfo_inisigmaEoPexp.resize(JetETMissChargedParticleFlowObjects->size());
   _pfo_LFI.resize(JetETMissChargedParticleFlowObjects->size());
-  _pfo_etaExtra.resize(JetETMissChargedParticleFlowObjects->size());
-  _pfo_phiExtra.resize(JetETMissChargedParticleFlowObjects->size());
   if(m_1to2matching) {
   _pfo_SubtractStatus.resize(JetETMissChargedParticleFlowObjects->size());
   _pfo_EtaEMB1.resize(JetETMissChargedParticleFlowObjects->size());
@@ -151,9 +153,6 @@ void xAODPFlowAna :: fill_PFOVectors(const xAOD::PFOContainer* JetETMissChargedP
     _pfo_iniEoPexp.at(cpfo_index) = (*cpfo_itr)->auxdata< float >("EExpect"); //eflowRec_tracksExpectedEnergyDeposit
     _pfo_inisigmaEoPexp.at(cpfo_index) = (*cpfo_itr)->auxdata< float >("varEExpect"); //eflowRec_tracksExpectedEnergyDepositVariance
     _pfo_LFI.at(cpfo_index) = (*cpfo_itr)->auxdata< int >("FirstIntLayer"); //eflowRec_FirstIntLayer
-
-    _pfo_etaExtra.at(cpfo_index) = (*cpfo_itr)->auxdata< float >("etaExtra");
-    _pfo_phiExtra.at(cpfo_index) = (*cpfo_itr)->auxdata< float >("phiExtra");
 
     if(m_1to2matching) {
     _pfo_SubtractStatus.at(cpfo_index) = (*cpfo_itr)->auxdata< int >("SubtractStatus");
@@ -286,8 +285,12 @@ void xAODPFlowAna :: tp_Selection(const xAOD::TruthParticleContainer* TruthParti
 	    _mc_hasEflowTrackIndex.at(tp_index) = cpfo_index; //say us which eflowObject corresponds for each mc particle (not association = 0)
       _mc_hasEflowTrackP.at(tp_index) = fabs(1. / ptrk->qOverP());
       _mc_hasEflowTrackPt.at(tp_index) =  (*cpfo_itr)->pt();
-      _mc_etaExtra.at(tp_index) = _pfo_etaExtra.at(cpfo_index);
-      _mc_phiExtra.at(tp_index) = _pfo_phiExtra.at(cpfo_index);
+      _mc_etaTrkEM1.at(tp_index) = _pfo_EtaEMB1.at(cpfo_index) > -990 ? _pfo_EtaEMB1.at(cpfo_index) : _pfo_EtaEME1.at(cpfo_index);
+      _mc_phiTrkEM1.at(tp_index) = _pfo_PhiEMB1.at(cpfo_index) > -990 ? _pfo_PhiEMB1.at(cpfo_index) : _pfo_PhiEME1.at(cpfo_index);
+      _mc_etaTrkEM2.at(tp_index) = _pfo_EtaEMB2.at(cpfo_index) > -990 ? _pfo_EtaEMB2.at(cpfo_index) : _pfo_EtaEME2.at(cpfo_index);
+      _mc_phiTrkEM2.at(tp_index) = _pfo_PhiEMB2.at(cpfo_index) > -990 ? _pfo_PhiEMB2.at(cpfo_index) : _pfo_PhiEME2.at(cpfo_index);
+      _mc_etaTrkEM3.at(tp_index) = _pfo_EtaEMB3.at(cpfo_index) > -990 ? _pfo_EtaEMB3.at(cpfo_index) : _pfo_EtaEME3.at(cpfo_index);
+      _mc_phiTrkEM3.at(tp_index) = _pfo_PhiEMB3.at(cpfo_index) > -990 ? _pfo_PhiEMB3.at(cpfo_index) : _pfo_PhiEME3.at(cpfo_index);
 
       if(m_1to2matching) {
       _mc_matchedClusterHash.at(tp_index) = std::make_pair(_pfo_hashCluster1.at(cpfo_index), _pfo_hashCluster2.at(cpfo_index));
@@ -488,13 +491,13 @@ void xAODPFlowAna::Calculate_Efficiency_Purity(const xAOD::TruthParticleContaine
       double etaVar(-1), phiVar(-1);
       double etaMean(-1), phiMean(-1);
       CaloCluster_itr = topocluster->begin() + pos1;
-      _v_dRp.at(0) = (pos1 == -1 ? -1 : distanceRprime(_mc_etaExtra[i_mcPart], _mc_phiExtra[i_mcPart], CaloCluster_itr, CalCellInfo_TopoCluster, etaVar, phiVar, etaMean, phiMean));
+      _v_dRp.at(0) = (pos1 == -1 ? -1 : distanceRprime(_mc_etaTrkEM2[i_mcPart], _mc_phiTrkEM2[i_mcPart], CaloCluster_itr, CalCellInfo_TopoCluster, etaVar, phiVar, etaMean, phiMean));
       _mc_dRp_componets[12*i_mcPart+0] = (pos1 == -1 ? -1 : etaMean);
       _mc_dRp_componets[12*i_mcPart+1] = (pos1 == -1 ? -1 : phiMean);
       _mc_dRp_componets[12*i_mcPart+2] = (pos1 == -1 ? -1 : etaVar);
       _mc_dRp_componets[12*i_mcPart+3] = (pos1 == -1 ? -1 : phiVar);
       CaloCluster_itr = topocluster->begin() + pos2;
-      _v_dRp.at(1) = (pos2 == -1 ? -1 : distanceRprime(_mc_etaExtra[i_mcPart], _mc_phiExtra[i_mcPart], CaloCluster_itr, CalCellInfo_TopoCluster, etaVar, phiVar, etaMean, phiMean));
+      _v_dRp.at(1) = (pos2 == -1 ? -1 : distanceRprime(_mc_etaTrkEM2[i_mcPart], _mc_phiTrkEM2[i_mcPart], CaloCluster_itr, CalCellInfo_TopoCluster, etaVar, phiVar, etaMean, phiMean));
       _mc_dRp_componets[12*i_mcPart+4] = (pos2 == -1 ? -1 : etaMean);
       _mc_dRp_componets[12*i_mcPart+5] = (pos2 == -1 ? -1 : phiMean);
       _mc_dRp_componets[12*i_mcPart+6] = (pos2 == -1 ? -1 : etaVar);
@@ -539,7 +542,7 @@ void xAODPFlowAna::Calculate_Efficiency_Purity(const xAOD::TruthParticleContaine
       xAOD::CaloClusterContainer::const_iterator CaloCluster_itr = topocluster->begin() + imax;
       double etaVar(-1), phiVar(-1);
       double etaMean(-1), phiMean(-1);
-      _v_dRp.at(2) = distanceRprime(_mc_etaExtra[i_mcPart], _mc_phiExtra[i_mcPart], CaloCluster_itr, CalCellInfo_TopoCluster, etaVar, phiVar, etaMean, phiMean);
+      _v_dRp.at(2) = distanceRprime(_mc_etaTrkEM2[i_mcPart], _mc_phiTrkEM2[i_mcPart], CaloCluster_itr, CalCellInfo_TopoCluster, etaVar, phiVar, etaMean, phiMean);
       _mc_dRp_componets[12*i_mcPart+8] = etaMean;
       _mc_dRp_componets[12*i_mcPart+9] = phiMean;
       _mc_dRp_componets[12*i_mcPart+10] = etaVar;
@@ -551,8 +554,8 @@ void xAODPFlowAna::Calculate_Efficiency_Purity(const xAOD::TruthParticleContaine
     if (m_1to2matching) {
       const double max_eff = *max_element(_full_Efficiency.begin(), _full_Efficiency.end());
       fillEffPurHistoMatch(i_mcPart, tp_itr, _v_Efficiency, _v_Purity, twoClusters, (pos1 == imax), max_eff);
-      Info("CheckMatch", "1.(truth particle - %d, pt: imax == pos1, effmax, effpos1): %.2f: %d == %d, %.3f, %.3f , pflow index = %d", i_mcPart, _mc_hasEflowTrackPt.at(i_mcPart) / GEV, imax, pos1, _full_Efficiency.at(imax),
-           _v_Efficiency.at(3*i_mcPart + 0), _mc_hasEflowTrackIndex.at(i_mcPart));
+      Info("CheckMatch", "1.(truth particle - %d, pt: imax == pos1, effmax, effpos1 [LFI]): %.2f: %d == %d, %.3f, %.3f [%d] , pflow index = %d", i_mcPart, _mc_hasEflowTrackPt.at(i_mcPart) / GEV, imax, pos1, _full_Efficiency.at(imax),
+           _v_Efficiency.at(3*i_mcPart + 0), _mc_LFI.at(i_mcPart), _mc_hasEflowTrackIndex.at(i_mcPart));
 
       _mc_pos1.at(i_mcPart) = pos1;
       _mc_imax.at(i_mcPart) = imax;
@@ -569,7 +572,7 @@ void xAODPFlowAna::Calculate_Efficiency_Purity(const xAOD::TruthParticleContaine
       Info(
           "CheckMatch",
           "2.trackEtaPhiPtE: (%.3f, %.3f; %.1f, %.1f); leadingEtaPhiE,dRp: (%.3f/%.3f, %.3f/%.3f; %.1f): %.3f; pos1EtaPhiE,dRp_cal_eflow: (%.3f/%.3f, %.3f/%.3f; %.1f): %.3f, %.3f;",
-          _mc_etaExtra[i_mcPart], _mc_phiExtra[i_mcPart], _mc_hasEflowTrackPt[i_mcPart] / GEV, _mc_hasEflowTrackP[i_mcPart] / GEV, _mc_dRp_componets.at(12 * i_mcPart + 8),
+          _mc_etaTrkEM2[i_mcPart], _mc_phiTrkEM2[i_mcPart], _mc_hasEflowTrackPt[i_mcPart] / GEV, _mc_hasEflowTrackP[i_mcPart] / GEV, _mc_dRp_componets.at(12 * i_mcPart + 8),
           _mc_dRp_componets.at(12 * i_mcPart + 10), _mc_dRp_componets.at(12 * i_mcPart + 9), _mc_dRp_componets.at(12 * i_mcPart + 11), (*maxcluster)->rawE() / GEV, _v_dRp.at(2),
           _mc_dRp_componets.at(12 * i_mcPart + 0), _mc_dRp_componets.at(12 * i_mcPart + 2), _mc_dRp_componets.at(12 * i_mcPart + 1), _mc_dRp_componets.at(12 * i_mcPart + 3),
           pos1rawEtmp, _v_dRp.at(0), _mc_RpMatchedCluster1[i_mcPart]);
@@ -580,16 +583,16 @@ void xAODPFlowAna::Calculate_Efficiency_Purity(const xAOD::TruthParticleContaine
 
     unsigned etabin;
     for (unsigned ietabin = 0; ietabin < _etaRange.size(); ++ietabin) {
-      if (ietabin == _etaRange.size() - 1 && fabs(_mc_etaExtra[i_mcPart]) > _etaRange.at(ietabin)) {
+      if (ietabin == _etaRange.size() - 1 && fabs(_mc_etaTrkEM2[i_mcPart]) > _etaRange.at(ietabin)) {
         etabin = ietabin;
-      } else if (fabs(_mc_etaExtra[i_mcPart]) > _etaRange.at(ietabin) && fabs(_mc_etaExtra[i_mcPart]) < _etaRange.at(ietabin + 1)) {
+      } else if (fabs(_mc_etaTrkEM2[i_mcPart]) > _etaRange.at(ietabin) && fabs(_mc_etaTrkEM2[i_mcPart]) < _etaRange.at(ietabin + 1)) {
         etabin = ietabin;
       }
     }
 
     const double max_eff = *max_element(_full_Efficiency.begin(), _full_Efficiency.end());
     int ptbin(_mc_hasEflowTrackPt[i_mcPart] / GEV * 10);
-    if (pos1 != -1 && _mc_etaExtra[i_mcPart] > -990) {
+    if (pos1 != -1 && _mc_etaTrkEM2[i_mcPart] > -990) {
       std::string complete_name;
       if (max_eff > 0.5) {
         complete_name = histName(etabin, "h_efficiency5_pt", _etaRange);
@@ -640,6 +643,8 @@ void xAODPFlowAna::fillEffPurHistoMatch(int i_mcPart, xAOD::TruthParticleContain
       m_H1Dict[complete_name]->Fill(v_Efficiency[3*i_mcPart + 2]);
       complete_name = histName(iptbin, ietabin, "SubtractStatus", "", _ptRange, _etaRange);
       m_H1Dict[complete_name]->Fill(_mc_subtractStatus[i_mcPart]);
+      complete_name = histName(iptbin, ietabin, "LHED", "", _ptRange, _etaRange);
+      m_H1Dict[complete_name]->Fill(_mc_LFI[i_mcPart]);
       complete_name = histName(iptbin, ietabin, "eflowdR1", "", _ptRange, _etaRange);
       m_H1Dict[complete_name]->Fill(_mc_RpMatchedCluster1[i_mcPart]);
       complete_name = histName(iptbin, ietabin, "eflowdR2", "", _ptRange, _etaRange);
@@ -890,8 +895,8 @@ void xAODPFlowAna :: clear_PerformanceVectors(){
   _mc_subtractStatus.clear();
   _mc_RpMatchedCluster1.clear();
   _mc_RpMatchedCluster2.clear();
-  _mc_etaExtra.clear();
-  _mc_phiExtra.clear();
+  _mc_etaTrkEM2.clear();
+  _mc_phiTrkEM2.clear();
   _mc_pos1.clear();
   _mc_imax.clear();
 
@@ -900,8 +905,6 @@ void xAODPFlowAna :: clear_PerformanceVectors(){
   _pfo_iniEoPexp.clear();
   _pfo_inisigmaEoPexp.clear();
   _pfo_LFI.clear();
-  _pfo_etaExtra.clear();
-  _pfo_phiExtra.clear();
   if(m_1to2matching) {
   _pfo_SubtractStatus.clear();
   _pfo_EtaEMB1.clear();

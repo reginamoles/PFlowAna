@@ -220,6 +220,7 @@ EL::StatusCode xAODPFlowAna :: histInitialize ()
   // 1->2 Matching
   //====================================
   bookH1DPerformanceHistogram("SubtractStatus","",_ptRange, _etaRange, 5, 0, 5);
+  bookH1DPerformanceHistogram("LHED","",_ptRange, _etaRange, 8, 0, 8);
   bookH1DPerformanceHistogram("EOP","",_ptRange, _etaRange, 5, 0, 1.5);
   bookH1DPerformanceHistogram("EOPtotal","",_ptRange, _etaRange, 5, 0, 1.5);
   bookH1DPerformanceHistogram("Energy1st","",_ptRange, _etaRange, 20, 0, 20);
@@ -303,12 +304,13 @@ EL::StatusCode xAODPFlowAna :: histInitialize ()
   bookH1DHistogram("h_ZPt_to_JetPt_sum", 20, 0, 5);
 
   if (!m_folder.empty()) {
-    bookH1DHistogram("h_Extratrack_eta", 100, -2.5, 2.5);
-    bookH1DHistogram("h_Extratrack_phi", 100, -M_PI, M_PI);
+    bookH1DHistogram("Extratrack_eta_EM2", 100, -2.5, 2.5);
+    bookH1DHistogram("Extratrack_phi_EM2", 100, -M_PI, M_PI);
   }
 
   bookH1DEtaHistogram("h_efficiency9_pt", _etaRange, 40, 0, 40);
   bookH1DEtaHistogram("h_ntracks9_pt", _etaRange, 40, 0, 40);
+
   bookH1DEtaHistogram("h_efficiency5_pt", _etaRange, 40, 0, 40);
   bookH1DEtaHistogram("h_ntracks5_pt", _etaRange, 40, 0, 40);
 

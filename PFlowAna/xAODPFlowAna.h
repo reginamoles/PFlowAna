@@ -169,10 +169,6 @@ class xAODPFlowAna : public EL::Algorithm
   std::vector<float> _pfo_Pt;//!
   //Layer of first interaction
   std::vector<int> _pfo_LFI;//!
-  //Extrapolate track eta
-  std::vector<float> _pfo_etaExtra;
-  //Extrapolate track phi
-  std::vector<float> _pfo_phiExtra;
   //The expected E/p value of the pth charged object
   std::vector<float> _pfo_iniEoPexp;//!
   //The expected width of E/p value of the pth charged object
@@ -266,8 +262,12 @@ class xAODPFlowAna : public EL::Algorithm
    std::vector<int> _mc_subtractStatus;    //!
    std::vector<double> _mc_RpMatchedCluster1;    //!
    std::vector<double> _mc_RpMatchedCluster2;    //!
-   std::vector<double> _mc_etaExtra;    //!
-   std::vector<double> _mc_phiExtra;    //!
+   std::vector<double> _mc_etaTrkEM1;    //!
+   std::vector<double> _mc_phiTrkEM1;    //!
+   std::vector<double> _mc_etaTrkEM2;    //!
+   std::vector<double> _mc_phiTrkEM2;    //!
+   std::vector<double> _mc_etaTrkEM3;    //!
+   std::vector<double> _mc_phiTrkEM3;    //!
    // position of matched and leading clusters
    std::vector<double> _mc_pos1;    //!
    std::vector<double> _mc_imax;    //!
