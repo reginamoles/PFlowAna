@@ -74,6 +74,7 @@ void xAODPFlowAna :: JetRecoil_Zmumu(const xAOD::MuonContainer* goodMuons, const
   xAOD::JetContainer::const_iterator jet_end = goodPFlowJets->end();
   for( ; jet_itr != jet_end; ++jet_itr ) {
     if( (*jet_itr)->pt()/GEV < 20 ) continue;
+    if( fabs((*jet_itr)->eta()) > 2.5 ) continue;
     if( fabs(deltaPhi((*jet_itr)->phi(), Z.Phi())) > (M_PI - 0.4)) continue;
     Info("execute", "gtc %i", (*jet_itr)->auxdata< int >("GhostTrackCount"));
     n_RecoilingJets++;
@@ -82,8 +83,9 @@ void xAODPFlowAna :: JetRecoil_Zmumu(const xAOD::MuonContainer* goodMuons, const
     m_H1Dict["h_jetM"]->Fill((*jet_itr)->m()/GEV);
     m_H1Dict["h_jetEta"]->Fill((*jet_itr)->eta());
     m_H1Dict["h_jetPhi"]->Fill((*jet_itr)->phi());
-    m_H1Dict["h_trackcount"]->Fill( (*jet_itr)->getAttribute<std::vector<int> >("NumTrkPt500")[0]);
-    m_H1Dict["h_chfrac"]->Fill( ((*jet_itr)->getAttribute<std::vector<float> >("SumPtTrkPt500")[0])/((*jet_itr)->pt()));
+    m_H1Dict["h_trackcount"]->Fill( (*jet_itr)->getAttribute<std::vector<int> >("NumChargedPFOPt500")[0]);
+    m_H1Dict["h_chfrac"]->Fill( ((*jet_itr)->getAttribute<std::vector<float> >("SumPtChargedPFOPt500")[0])/((*jet_itr)->pt()));
+    m_H1Dict["h_trackwidth"]->Fill( ((*jet_itr)->getAttribute<std::vector<float> >("ChargedPFOWidthPt500")[0]));
     SumPt_RecoilingJets = SumPt_RecoilingJets + (*jet_itr)->pt();
     // *WIP* These distributions has to be crosscheck (odd results for n_RecoilingJets == 1)
     // I think the distributions look better now. We need more events to confirm. Right now the errors are too great

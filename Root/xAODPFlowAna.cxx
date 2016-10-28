@@ -225,9 +225,10 @@ EL::StatusCode xAODPFlowAna :: histInitialize ()
     bookH1DHistogram("h_ZPt_to_JetPt_sum", 20, 0, 5);
     
     //Christian's histogram's
-    bookH1DHistogram("h_trackcount", 30, 0, 30);
-    bookH1DHistogram("h_chfrac", 10, 0, 1);
-    bookH1DHistogram("h_cuts", 7, 0, 7);
+    bookH1DHistogram("h_trackcount", 15, 0, 15);
+    bookH1DHistogram("h_chfrac", 20, 0, 1);
+    bookH1DHistogram("h_cuts", 5, 0, 5);
+    bookH1DHistogram("h_trackwidth", 10, 0, 1);
     
     //framework performance histograms
     
@@ -541,15 +542,15 @@ EL::StatusCode xAODPFlowAna :: execute ()
 	float pileupWeight = m_pileuptool->getCombinedWeight( *m_EventInfo);
 	std::cout<<" pileupWeight = " <<pileupWeight<<std::endl; 
 	Info("execute()", "pileupweight = %f", m_pileuptool->getCombinedWeight( *m_EventInfo )); 
-	
 }
+	else float pileupWeight = 1;
 
 
   //info mismatch
   if( isMC ) { m_EvtWeight = m_EventInfo->mcEventWeight();}
   Info("execute()", "Event number = %llu  Run Number =  %d  Event weight = %.2f  isMC = %s",m_EventInfo->eventNumber(), m_EventInfo->runNumber(), m_EvtWeight, (isMC ? "true" : "false"));
 
-	m_H1Dict["h_cuts"]->Fill(1, m_EvtWeight); //general events
+	m_H1Dict["h_cuts"]->Fill(0., m_EvtWeight); //general events
 	
 	
 	
@@ -566,7 +567,7 @@ EL::StatusCode xAODPFlowAna :: execute ()
       return EL::StatusCode::SUCCESS; // go to the next event
     } 
   }
-  m_H1Dict["h_cuts"]->Fill(2, m_EvtWeight);//after grl
+  m_H1Dict["h_cuts"]->Fill(1, m_EvtWeight);//after grl
   
   //trigger tools: here the trigger chain is chosen
 //  auto chainGroup = m_trigDecisionTool->getChainGroup("HLT_mu26_ivarmedium, HLT_mu50");
@@ -581,7 +582,7 @@ EL::StatusCode xAODPFlowAna :: execute ()
     Info("execute()", "Trigger + %i", trigger);
   } 
 
-  if(trigger) m_H1Dict["h_cuts"]->Fill(3, m_EvtWeight); //after trigger
+  if(trigger) m_H1Dict["h_cuts"]->Fill(2, m_EvtWeight); //after trigger
   
   
   if( isMC ){
@@ -934,7 +935,7 @@ EL::StatusCode xAODPFlowAna :: execute ()
        if (match_found) break;
       }
       
-      if(match_found) m_H1Dict["h_cuts"]->Fill(4, m_EvtWeight); //after trigger matching
+      if(match_found) m_H1Dict["h_cuts"]->Fill(3, m_EvtWeight); //after trigger matching
 
       
       
@@ -947,7 +948,7 @@ EL::StatusCode xAODPFlowAna :: execute ()
     
     if(ZmumuSelection(goodElectrons, goodMuons) && match_found) m_goodevents++;
     
-    if(ZmumuSelection(goodElectrons, goodMuons) && match_found) m_H1Dict["h_cuts"]->Fill(5, m_EvtWeight); //after selection
+    if(ZmumuSelection(goodElectrons, goodMuons) && match_found) m_H1Dict["h_cuts"]->Fill(4, m_EvtWeight); //after selection
     //---------------------------
     // Zmumu selection
     //---------------------------

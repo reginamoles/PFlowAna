@@ -27,7 +27,7 @@ int main( int argc, char* argv[] ) {
   bool DijetSubtraction = false;
   bool Zmumu = true;
   //data or MC
-  bool data = true;
+  bool data = false;
   bool MC = !data;
   std::string matchScheme = (std::string)"_EM2";
   bool UseNarrowPtRange = false;
