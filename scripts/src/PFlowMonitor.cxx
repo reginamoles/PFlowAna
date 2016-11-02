@@ -80,12 +80,12 @@ void PFlowMonitor::run(char* inputs, char* outfolder)
   system(Form("mkdir -vp plots/%s/", outfolder));
   setStyle();
   PlotEtaPtBins(Form("plots/%s/", outfolder));
-//  Efficiency(Form("plots/%s/", outfolder));
-//  eflowdRp(Form("plots/%s/", outfolder), 0);
-//  eflowdRp(Form("plots/%s/", outfolder), 1);
-//
-//  AverageEfficiencyPerPt(Form("plots/%s/", outfolder));
-//  PlotSimple(Form("plots/%s/", outfolder));
+  Efficiency(Form("plots/%s/", outfolder));
+  eflowdRp(Form("plots/%s/", outfolder), 0);
+  eflowdRp(Form("plots/%s/", outfolder), 1);
+
+  AverageEfficiencyPerPt(Form("plots/%s/", outfolder));
+  PlotSimple(Form("plots/%s/", outfolder));
 
 }
 
@@ -475,6 +475,10 @@ void PFlowMonitor::AverageEfficiencyPerPt(const char* outfolder) {
 
       h_result[icat] = (TH1F*) h_cats[2 * icat]->Clone();
       if (h_result[icat]->Integral() == 0) continue;
+      double entries = h_cats[2 * icat + 1]->Integral(); // number of tracks
+      if (entries == 0) {
+        continue;
+      }
 
       h_result[icat]->Divide(h_cats[2 * icat + 1]);
       h_result[icat]->SetLineWidth(2);
@@ -483,10 +487,6 @@ void PFlowMonitor::AverageEfficiencyPerPt(const char* outfolder) {
       h_result[icat]->GetYaxis()->SetTitle("Matching efficiency");
       h_result[icat]->SetLineColor(tcolor[ieta]);
       std::string lable;
-      double entries = h_cats[2 * icat + 1]->Integral(); // number of tracks
-      if (entries == 0) {
-        continue;
-      }
 
       std::string display;
       if (ieta == m_etaRange.size() - 1) {

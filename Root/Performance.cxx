@@ -113,6 +113,8 @@ void xAODPFlowAna::resize_CaloFromPFO(const xAOD::CaloClusterContainer* m_JetETM
   _calo_PhiVariance.resize(m_JetETMissCaloClusterObjects->size());
   _calo_MeanEta.resize(m_JetETMissCaloClusterObjects->size());
   _calo_MeanPhi.resize(m_JetETMissCaloClusterObjects->size());
+  _calo_type.resize(m_JetETMissCaloClusterObjects->size());
+
   return;
 
 }
@@ -226,6 +228,7 @@ void xAODPFlowAna::fill_CaloFromPFO(const xAOD::CaloClusterContainer* JetETMissC
     _calo_PhiVariance.at(cpfo_index) = (*calopfo_itr)->auxdata< float >("MatchedClusterPhiVariance");
     _calo_MeanEta.at(cpfo_index) = (*calopfo_itr)->auxdata< float >("MeanEta");
     _calo_MeanPhi.at(cpfo_index) = (*calopfo_itr)->auxdata< float >("MeanPhi");
+//    _calo_type.at(cpfo_index) = (*calopfo_itr)->auxdata< int >("type");
 
   }
   return;

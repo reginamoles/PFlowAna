@@ -302,6 +302,7 @@ class xAODPFlowAna : public EL::Algorithm
    std::vector<double> _calo_PhiVariance; //!
    std::vector<double> _calo_MeanEta; //!
    std::vector<double> _calo_MeanPhi; //!
+   std::vector<int> _calo_type; //!
 
    //The sum of all calibration hits in topoclusters for the ith mc particle
    //std::vector<float> _mc_trueE;//! 
