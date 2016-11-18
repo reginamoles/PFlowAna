@@ -594,7 +594,7 @@ void xAODPFlowAna::Calculate_Efficiency_Purity(const xAOD::TruthParticleContaine
     }
 
     const double max_eff = *max_element(_full_Efficiency.begin(), _full_Efficiency.end());
-    int ptbin(_mc_hasEflowTrackPt[i_mcPart] / GEV * 10);
+    int ptbin(_mc_hasEflowTrackPt[i_mcPart] / GEV);
     if (pos1 != -1 && _mc_etaTrkEM2[i_mcPart] > -990) {
       std::string complete_name;
       if (max_eff > 0.5) {
