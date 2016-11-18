@@ -430,7 +430,7 @@ void PFlowMonitor::AverageEfficiencyPerPt(const char* outfolder) {
   std::string out = outfolder;
 
   bool c_showNumber(!false);
-  int tcolor[3] = { 4, 2, 8 };
+  int tcolor[4] = { 4, 2, 8, 6 };
 
   std::vector<std::string> catagory;
   catagory.clear();
@@ -441,8 +441,8 @@ void PFlowMonitor::AverageEfficiencyPerPt(const char* outfolder) {
   catagory.push_back("h_ntracks5_pt");
 
   for (unsigned int icat = 0; icat < (m_debug ? 1 : catagory.size() / 2); ++icat) {
-    double xpos(0.25), ypos(0.88);
-    TLegend* Legend = new TLegend(xpos, ypos - 0.08 * 3, xpos + 0.3, ypos);
+    double xpos(0.25), ypos(0.2);
+    TLegend* Legend = new TLegend(xpos, ypos + 0.08 * 3, xpos + 0.3, ypos);
     Legend->SetFillStyle(0);
     Legend->SetBorderSize(0);
     Legend->SetTextFont(43);
@@ -452,7 +452,7 @@ void PFlowMonitor::AverageEfficiencyPerPt(const char* outfolder) {
 
     bool empty(true);
     TCanvas* Can_AverEfficiency = new TCanvas("AverEfficiency", "AverEfficiency", 450, 400);
-    for (unsigned int ieta = 0; ieta < (m_debug ? 1 : m_etaRange.size()); ++ieta) {
+    for (unsigned int ieta = 0; ieta < (m_debug ? 1 : m_etaRange.size()-1); ++ieta) {
 
       std::string names = histName(ieta, catagory[2 * icat], m_etaRange);
       std::string avers = histName(ieta, catagory[2 * icat + 1], m_etaRange);
@@ -461,11 +461,11 @@ void PFlowMonitor::AverageEfficiencyPerPt(const char* outfolder) {
         if (ifile == 0) {
           h_cats[2 * icat] = (TH1F*) HistFile[ifile]->Get(names.c_str());
           h_cats[2 * icat + 1] = (TH1F*) HistFile[ifile]->Get(avers.c_str());
-          std::cout << __LINE__ << " Add: " << HistFile[ifile]->GetName() << " " << names << std::endl;
+          std::cout << __LINE__ << " Get: " << HistFile[ifile]->GetName() << " " << names << " entries: "<< h_cats[2 * icat]->Integral()/h_cats[2 * icat + 1]->Integral() << std::endl;
         } else {
           h_cats[2 * icat]->Add((TH1F*) HistFile[ifile]->Get(names.c_str()));
-          h_cats[2 * icat + 1] = (TH1F*) HistFile[ifile]->Get(avers.c_str());
-          std::cout << __LINE__ << " Add: " << HistFile[ifile]->GetName() << " " << names << std::endl;
+          h_cats[2 * icat + 1]->Add((TH1F*) HistFile[ifile]->Get(avers.c_str()));
+          std::cout << __LINE__ << " Add: " << HistFile[ifile]->GetName() << " " << names << " entries: "<< h_cats[2 * icat]->Integral()/h_cats[2 * icat + 1]->Integral() << std::endl;
         }
       }
 
@@ -524,8 +524,8 @@ void PFlowMonitor::PlotSimple(const char* outfolder) {
   std::string out = outfolder;
 
   std::vector<std::string> catagory;
-  catagory.push_back("h_Extratrack_eta");
-  catagory.push_back("h_Extratrack_phi");
+  catagory.push_back("Extratrack_eta_EM2");
+  catagory.push_back("Extratrack_phi_EM2");
 
   std::vector<std::string> xTitle;
   xTitle.push_back("#eta_{EM2}");
