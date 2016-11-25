@@ -344,9 +344,9 @@ class xAODPFlowAna : public EL::Algorithm
   std::string histName(unsigned i_pt, unsigned i_eta, const std::string& name, const std::string& matchScheme, std::vector<float>& PtRange, std::vector<float>& EtaRange);
   std::string histName(unsigned i_eta, const std::string& name, std::vector<float>& EtaRange);
   void fillEffPurVectorDefault(const xAOD::CaloClusterContainer* topocluster, int i_mcPart, const xAOD::TruthParticleContainer* TruthParticles, std::vector<double>& v_Efficiency,
-                               std::vector<double>& v_Purity, double tketa, double tkphi);
+                               std::vector<double>& v_Purity);
   void fillEffPurHistoMatch(int i_mcPart, xAOD::TruthParticleContainer::const_iterator tp_itr, const std::vector<double>& v_Efficiency, const std::vector<double>& v_Purity, bool twoClusters, const bool correctMatch, const double max_eff);
-  int fillEffPurHistoDefault(int i_mcPart, xAOD::TruthParticleContainer::const_iterator tp_itr, const std::vector<double>& v_Efficiency, const std::vector<double>& v_Purity);
+  int fillEffPurHistoDefault(int i_mcPart, const std::vector<double>& v_Efficiency, const std::vector<double>& v_Purity);
   void filldRpHistoLeading(xAOD::TruthParticleContainer::const_iterator tp_itr, const xAOD::CaloClusterContainer* topocluster, const std::vector<double>& full_Efficiency);
 
   double distanceRprime(const double tr_eta, const double tr_phi, xAOD::CaloClusterContainer::const_iterator& icluster, const xAOD::CalCellInfoContainer* CalCellInfo_TopoCluster, double& etaVar, double& phiVar, double& etaMean, double& phiMean);

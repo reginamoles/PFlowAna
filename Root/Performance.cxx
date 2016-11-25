@@ -288,6 +288,7 @@ void xAODPFlowAna :: tp_Selection(const xAOD::TruthParticleContainer* TruthParti
 	    _mc_hasEflowTrackIndex.at(tp_index) = cpfo_index; //say us which eflowObject corresponds for each mc particle (not association = 0)
       _mc_hasEflowTrackP.at(tp_index) = fabs(1. / ptrk->qOverP());
       _mc_hasEflowTrackPt.at(tp_index) =  (*cpfo_itr)->pt();
+      _mc_hasEflowTrackEtaAtLayer.at(tp_index) = (*tp_itr)->eta();
       _mc_etaTrkEM1.at(tp_index) = _pfo_EtaEMB1.at(cpfo_index) > -990 ? _pfo_EtaEMB1.at(cpfo_index) : _pfo_EtaEME1.at(cpfo_index);
       _mc_phiTrkEM1.at(tp_index) = _pfo_PhiEMB1.at(cpfo_index) > -990 ? _pfo_PhiEMB1.at(cpfo_index) : _pfo_PhiEME1.at(cpfo_index);
       _mc_etaTrkEM2.at(tp_index) = _pfo_EtaEMB2.at(cpfo_index) > -990 ? _pfo_EtaEMB2.at(cpfo_index) : _pfo_EtaEME2.at(cpfo_index);
@@ -425,7 +426,8 @@ void xAODPFlowAna :: fill_RPlus_R0(const xAOD::TruthParticleContainer* TruthPart
 
 
 void xAODPFlowAna::fillEffPurVectorDefault(const xAOD::CaloClusterContainer* topocluster, int i_mcPart, const xAOD::TruthParticleContainer* TruthParticles,
-                                           std::vector<double>& full_Efficiency, std::vector<double>& full_Purity, double tketa, double tkphi) {
+                                           std::vector<double>& full_Efficiency, std::vector<double>& full_Purity) {
+  std::cout<<"zhangrui full_Efficiency="<<full_Efficiency.size()<<" full_Purity="<<full_Purity.size()<<std::endl;
   xAOD::CaloClusterContainer::const_iterator CaloCluster_itr = topocluster->begin();
   xAOD::CaloClusterContainer::const_iterator CaloCluster_end = topocluster->end();
 
@@ -437,16 +439,14 @@ void xAODPFlowAna::fillEffPurVectorDefault(const xAOD::CaloClusterContainer* top
     } else {
       full_Efficiency.at(i_clus) = -999;
     }
-//    Info("LeadCluster", " v_Efficicency.at(%i)  = %.3f ", i_clus, full_Efficiency.at(i_clus));
-//    std::cout<<"fillEffPurVectorDefault energy "<<(*CaloCluster_itr)->rawPhi()<<","<<(*CaloCluster_itr)->rawEta()<<","<<(*CaloCluster_itr)->rawE()<<std::endl;
+    Info("LeadCluster", " v_Efficicency.at(%i)  = %.3f ", i_clus, full_Efficiency.at(i_clus));
     if (_CalHitEPerClusFromAllPart.at(i_clus) != 0) {
       float Pur = _CalHitEPerClusFromOnePart.at(i_clus * TruthParticles->size() + i_mcPart) / _CalHitEPerClusFromAllPart.at(i_clus);
       full_Purity.at(i_clus) = Pur;
     } else {
       full_Purity.at(i_clus) = -999;
     }
-//    Info("LeadCluster", " v_PURITY.at(%i)  = %.3f ", i_clus, full_Purity.at(i_clus));
-//    std::cout<<"LeadCluster "<<i_clus<<" eta="<<_CalClusEta.at(i_clus)<<" phi="<<_CalClusPhi.at(i_clus)<<" track "<<tketa<<","<<tkphi<<" R2="<<(tketa-_CalClusEta.at(i_clus))*(tketa-_CalClusEta.at(i_clus)) + (tkphi-_CalClusPhi.at(i_clus))*(tkphi-_CalClusPhi.at(i_clus))<<std::endl;
+    Info("LeadCluster", " v_PURITY.at(%i)  = %.3f ", i_clus, full_Purity.at(i_clus));
   } //end loop over cluster
   return ;
 }
@@ -538,9 +538,11 @@ void xAODPFlowAna::Calculate_Efficiency_Purity(const xAOD::TruthParticleContaine
     }
     _full_Efficiency.resize(_n_clusters);
     _full_Purity.resize(_n_clusters);
-    fillEffPurVectorDefault(topocluster, i_mcPart, TruthParticles, _full_Efficiency, _full_Purity, (*tp_itr)->eta(), (*tp_itr)->phi());
+    fillEffPurVectorDefault(topocluster, i_mcPart, TruthParticles, _full_Efficiency, _full_Purity);
 
-    int imax = fillEffPurHistoDefault(i_mcPart, tp_itr, _full_Efficiency, _full_Purity);
+    int imax = fillEffPurHistoDefault(i_mcPart, _full_Efficiency, _full_Purity);
+    Info("LeadCluster", " imax: (%i) pt=(%.3f) eta=(%.3f) eff=(%.3f) pur=(%.3f) ", imax, _mc_hasEflowTrackPt.at(i_mcPart) / GEV, _mc_hasEflowTrackEtaAtLayer.at(i_mcPart), _full_Efficiency.at(imax), _full_Purity.at(imax));
+
     if (m_1to2matching) {
       xAOD::CaloClusterContainer::const_iterator CaloCluster_itr = topocluster->begin() + imax;
       double etaVar(-1), phiVar(-1);
@@ -658,12 +660,19 @@ void xAODPFlowAna::fillEffPurHistoMatch(int i_mcPart, xAOD::TruthParticleContain
       if (_mc_subtractStatus[i_mcPart] == 1) {
         std::string complete_name = histName(iptbin, ietabin, "EffMatch1", "", _ptRange, _etaRange);
         m_H1Dict[complete_name]->Fill(v_Efficiency[3*i_mcPart + 0]);
+//        std::cout<<"zhangrui "<<complete_name<<" eff="<<v_Efficiency[3*i_mcPart + 0]<<" pur="<<v_Purity[0]<<std::endl;
+//        if(v_Efficiency[3*i_mcPart + 0]>0.2){
         complete_name = histName(iptbin, ietabin, "PurMatch1", "", _ptRange, _etaRange);
         m_H1Dict[complete_name]->Fill(v_Purity[0]);
+//        }
+
         complete_name = histName(iptbin, ietabin, "EffMatchboth", "", _ptRange, _etaRange);
         m_H1Dict[complete_name]->Fill(v_Efficiency[3*i_mcPart + 2]);
+
+//        if(v_Efficiency[3*i_mcPart + 0]>0.2){
         complete_name = histName(iptbin, ietabin, "PurMatch2", "", _ptRange, _etaRange);
         m_H1Dict[complete_name]->Fill(v_Purity[1]);
+//        }
 
         if (twoClusters) {
           complete_name = histName(iptbin, ietabin, "EffClusterboth_CLS2", "", _ptRange, _etaRange);
@@ -700,18 +709,16 @@ void xAODPFlowAna::fillEffPurHistoMatch(int i_mcPart, xAOD::TruthParticleContain
 
 }
 
-int xAODPFlowAna::fillEffPurHistoDefault(int i_mcPart, xAOD::TruthParticleContainer::const_iterator tp_itr, const std::vector<double>& full_Efficiency,
+int xAODPFlowAna::fillEffPurHistoDefault(int i_mcPart, const std::vector<double>& full_Efficiency,
                                    const std::vector<double>& full_Purity) {
   // Fill efficiency & purity for cluster matched to histograms
   double max_eff = *max_element(full_Efficiency.begin(), full_Efficiency.end());
   _full_Efficiency_max[i_mcPart] = max_eff;
   int i_max_eff = distance(full_Efficiency.begin(), max_element(full_Efficiency.begin(), full_Efficiency.end()));
-//  std::cout<<"fillDefault begin "<<max_eff<<" "<<i_max_eff<<std::endl;
 
-  _mc_hasEflowTrackEtaAtLayer.at(i_mcPart) = (*tp_itr)->eta();
+//  _mc_hasEflowTrackEtaAtLayer.at(i_mcPart) = (*tp_itr)->eta();
   for (unsigned iptbin = 0; iptbin < _ptRange.size(); ++iptbin) {
     for (unsigned ietabin = 0; ietabin < _etaRange.size(); ++ietabin) {
-//      std::cout<<"iptbin="<<iptbin<<" ietabin="<<ietabin<<std::endl;
       bool inRegion[2] = { false, false };
       if (iptbin == _ptRange.size() - 1 && _mc_hasEflowTrackPt.at(i_mcPart) / GEV > _ptRange.at(iptbin)) {
         inRegion[0] = true;
@@ -728,9 +735,7 @@ int xAODPFlowAna::fillEffPurHistoDefault(int i_mcPart, xAOD::TruthParticleContai
       if (!(inRegion[0] && inRegion[1])) continue;
 
       std::string complete_name = histName(iptbin, ietabin, "EffLeading", "", _ptRange, _etaRange);
-//      std::cout<<"before fill max_eff="<<max_eff<<std::endl;
       m_H1Dict[complete_name]->Fill(max_eff);
-//      std::cout<<"after fill max_eff="<<max_eff<<std::endl;
       if (full_Efficiency.at(i_max_eff) > 0.5) {
         std::string complete_name = histName(iptbin, ietabin, "PurLeading", "", _ptRange, _etaRange);
         m_H1Dict[complete_name]->Fill(full_Purity.at(i_max_eff));
