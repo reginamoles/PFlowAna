@@ -111,6 +111,7 @@ void PFlowMonitor::PlotEtaPtBins(const char* outfolder) {
   catagory.push_back("NClus_09"); over++;
 
   catagory.push_back("EffLeading");
+  catagory.push_back("PurLeading");
 
   std::vector<std::string> xTitle;
   xTitle.push_back("#varepsilon_{1st cluster}");
@@ -124,6 +125,7 @@ void PFlowMonitor::PlotEtaPtBins(const char* outfolder) {
   xTitle.push_back("LHED");
   xTitle.push_back("N_{cluster}(#Sigma E^{true}>90%)");
   xTitle.push_back("#varepsilon_{leading cluster}");
+  xTitle.push_back("P_{leading cluster}");
 
   for (unsigned int icat = 0; icat < (m_debug ? 1 : catagory.size()); ++icat) {
     if ((int)icat > over) c_overlay = false;
