@@ -34,7 +34,16 @@ bool xAODPFlowAna :: ZmumuSelection(const xAOD::ElectronContainer* goodElectrons
 
   return true;
 }
-
+/*
+	xAOD::JetContainer::const_iterator jet_itr = goodPFlowJets->begin();
+	xAOD::JetContainer::const_iterator jet_end = goodPFlowJets->end();
+  for( ; jet_itr != jet_end; ++jet_itr ) {
+    if( (*jet_itr)->pt()/GEV < 20 ) continue;
+    if( fabs((*jet_itr)->eta()) > 2.5 ) continue;
+    if( fabs(deltaPhi((*jet_itr)->phi(), Z.Phi())) > (M_PI - 0.4)) continue;
+    n_RecoilingJets++;
+}
+*/
 
 
 void xAODPFlowAna :: FillZmumuHistograms(const xAOD::MuonContainer* goodMuons){
