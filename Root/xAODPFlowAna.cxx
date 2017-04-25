@@ -84,8 +84,6 @@ EL::StatusCode xAODPFlowAna :: histInitialize ()
   if (m_UseNarrowEtaRange) _etaRange= {0, 1, 2, 2.5};
   else _etaRange= {0.0, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 2.0, 2.5};
   
-  
-  /* WIP: a directory structure has to be created to store the histograms */
  
   if(m_DijetSubtraction){
     
@@ -207,12 +205,30 @@ EL::StatusCode xAODPFlowAna :: histInitialize ()
     bookH1DHistogram("h_jetEta", eta_bin, eta_low, eta_up);
     bookH1DHistogram("h_jetPhi", phi_bin, phi_low, phi_up);
     
+    bookH1DHistogram("h_ljetPt", pt_bin, pt_low, pt_up);
+    bookH1DHistogram("h_ljetE", E_bin, E_low, E_up);
+    bookH1DHistogram("h_ljetM", 20, 0, 100); //Is this a proper range? 
+    bookH1DHistogram("h_ljetEta", eta_bin, eta_low, eta_up);
+    bookH1DHistogram("h_ljetPhi", phi_bin, phi_low, phi_up);
+    
     //Muon histograms
     bookH1DHistogram("h_muonPt", pt_bin, pt_low, pt_up);
     bookH1DHistogram("h_muonE", E_bin, E_low, E_up);
     bookH1DHistogram("h_muonM", 20, 0, 100); //Is this a proper range? 
     bookH1DHistogram("h_muonEta", eta_bin, eta_low, eta_up);
     bookH1DHistogram("h_muonPhi", phi_bin, phi_low, phi_up);
+    
+    bookH1DHistogram("h_muon1Pt", pt_bin, pt_low, pt_up);
+    bookH1DHistogram("h_muon1E", E_bin, E_low, E_up);
+    bookH1DHistogram("h_muon1M", 20, 0, 100); //Is this a proper range? 
+    bookH1DHistogram("h_muon1Eta", eta_bin, eta_low, eta_up);
+    bookH1DHistogram("h_muon1Phi", phi_bin, phi_low, phi_up);
+    
+    bookH1DHistogram("h_muon2Pt", pt_bin, pt_low, pt_up);
+    bookH1DHistogram("h_muon2E", E_bin, E_low, E_up);
+    bookH1DHistogram("h_muon2M", 20, 0, 100); //Is this a proper range? 
+    bookH1DHistogram("h_muon2Eta", eta_bin, eta_low, eta_up);
+    bookH1DHistogram("h_muon2Phi", phi_bin, phi_low, phi_up);
     
     //Z distributions
     bookH1DHistogram("h_ZPt", pt_bin, pt_low, pt_up);
@@ -226,12 +242,49 @@ EL::StatusCode xAODPFlowAna :: histInitialize ()
     
     //Christian's histogram's
     bookH1DHistogram("h_trackcount", 15, 0, 15);
+    bookH1DHistogram("h_ltrackcount", 15, 0, 15);
     bookH1DHistogram("h_chfrac", 20, 0, 1);
+    bookH1DHistogram("h_lchfrac", 20, 0, 1);
+    bookH1DHistogram("h_averageinteractions",10, 0, 40);
+    bookH1DHistogram("h_vertices",10, 0, 40);
     bookH1DHistogram("h_cuts", 5, 0, 5);
-    bookH1DHistogram("h_trackwidth", 10, 0, 1);
+    bookH1DHistogram("h_trackwidth", 12, 0, 0.6);
+    bookH1DHistogram("h_ltrackwidth", 12, 0, 0.6);
+    
+    //this is duplicated using weights
+    
+    //Jet histograms
+    bookH1DHistogram("h_jetPtw", pt_bin, pt_low, pt_up);
+    bookH1DHistogram("h_jetEw", E_bin, E_low, E_up);
+    bookH1DHistogram("h_jetMw", 20, 0, 100); //Is this a proper range? 
+    bookH1DHistogram("h_jetEtaw", eta_bin, eta_low, eta_up);
+    bookH1DHistogram("h_jetPhiw", phi_bin, phi_low, phi_up);
+    
+    //Muon histograms
+    bookH1DHistogram("h_muonPtw", pt_bin, pt_low, pt_up);
+    bookH1DHistogram("h_muonEw", E_bin, E_low, E_up);
+    bookH1DHistogram("h_muonMw", 20, 0, 100); //Is this a proper range? 
+    bookH1DHistogram("h_muonEtaw", eta_bin, eta_low, eta_up);
+    bookH1DHistogram("h_muonPhiw", phi_bin, phi_low, phi_up);
+    
+    //Z distributions
+    bookH1DHistogram("h_ZPtw", pt_bin, pt_low, pt_up);
+    bookH1DHistogram("h_ZEw", E_bin, E_low, E_up);
+    bookH1DHistogram("h_ZMw", 10, 70, 120); //Is this a proper range? 
+    bookH1DHistogram("h_ZEtaw", eta_bin, eta_low, eta_up);
+    bookH1DHistogram("h_ZPhiw", phi_bin, phi_low, phi_up);
+    
+    //Christian's histogram's
+    bookH1DHistogram("h_trackcountw", 15, 0, 15);
+    bookH1DHistogram("h_chfracw", 20, 0, 0.01);
+    bookH1DHistogram("h_averageinteractionsw",10, 0, 40);
+    bookH1DHistogram("h_verticesw",10, 0, 40);
+    bookH1DHistogram("h_cutsw", 5, 0, 5);
+    bookH1DHistogram("h_trackwidthw", 10, 0, 1);
+    bookH1DHistogram("h_photoncheck", 32, -2, 30);
     
     //framework performance histograms
-    
+    /*
     bookH1DHistogram("h_jetScaledPt", pt_bin, pt_low, pt_up);
     bookH1DHistogram("h_jetScaledE", 30, E_low, E_up);
     bookH1DHistogram("h_jetScaledM", 20, 0, 100);
@@ -275,6 +328,7 @@ EL::StatusCode xAODPFlowAna :: histInitialize ()
     bookH1DHistogram("h_electronRawM", 20, 0, 100);
     bookH1DHistogram("h_electronRawEta", eta_bin, eta_low, eta_up);
     bookH1DHistogram("h_electronRawPhi", phi_bin, phi_low, phi_up);
+    */
   }
 
   return EL::StatusCode::SUCCESS;
